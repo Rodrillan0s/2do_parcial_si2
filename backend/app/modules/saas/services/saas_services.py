@@ -256,10 +256,30 @@ def consultar_plan(empresa):
                 pass
 
             vigente = estado == 'VIGENTE'
+            modo_solo_lectura = not vigente
+            dias_restantes = None
+            proximo_a_vencer = False
+            now_utc = datetime.now(timezone.utc)
+
+            fin_ref = row[3] if row else (ultima[1] if (not row and ultima and ultima[1]) else None)
+            if fin_ref:
+                try:
+                    if fin_ref.tzinfo is None:
+                        fin_ref = fin_ref.replace(tzinfo=timezone.utc)
+                    delta_segundos = (fin_ref - now_utc).total_seconds()
+                    dias_restantes = int(delta_segundos // 86400) if delta_segundos >= 0 else int(delta_segundos // 86400)
+                    if vigente and 0 <= dias_restantes <= 5:
+                        proximo_a_vencer = True
+                except Exception:
+                    pass
+
             return {
                 'id_empresa': empresa,
                 'estado': estado,
                 'vigente': vigente,
+                'modo_solo_lectura': modo_solo_lectura,
+                'dias_restantes': dias_restantes,
+                'proximo_a_vencer': proximo_a_vencer,
                 'id_suscripcion': row[0] if row else None,
                 'codigo_plan': row[1] if row else None,
                 'inicio': row[2] if row else None,
@@ -274,13 +294,31 @@ def consultar_plan(empresa):
         _error(503, 'MIGRACION_PENDIENTE', 'La migración SaaS todavía no fue aplicada.')
 
 
-def exigir_vigencia(empresa, reportes=False):
+def exigir_vigencia(empresa, reportes=False, operacion: Optional[str] = None):
     estado = consultar_plan(empresa)
     if not estado['vigente']:
-        _error(403, 'SUSCRIPCION_NO_VIGENTE', 'La empresa no tiene una suscripción vigente.')
+        detalle = f"Operación no permitida: la tienda no cuenta con una suscripción activa (Estado: {estado['estado']}). La tienda se encuentra en Modo Solo Lectura."
+        if operacion:
+            detalle = f"No es posible {operacion}: la tienda no cuenta con una suscripción activa (Estado: {estado['estado']}). La tienda se encuentra en Modo Solo Lectura."
+        _error(403, 'SUSCRIPCION_NO_VIGENTE', detalle)
     if reportes and not estado['capacidades']['reportes_generativos']:
-        _error(403, 'PLAN_NO_HABILITA_REPORTES', 'El motor de reportes requiere el plan Profesional.')
+        _error(403, 'PLAN_NO_HABILITA_REPORTES', 'El motor dinámico de reportes y exportación avanzada requiere el plan Profesional.')
     return estado
+
+
+def validar_capacidad_sucursales(empresa: int):
+    """Verifica que la empresa tenga una suscripción activa y cupo disponible para activar otra sucursal."""
+    info = exigir_vigencia(empresa, operacion="crear o activar una sucursal")
+    disponibles = info.get('disponibles', 0)
+    if disponibles <= 0:
+        limite = info.get('limites', {}).get('sucursales_activas', 0)
+        plan = info.get('codigo_plan', 'Actual')
+        _error(
+            409,
+            'LIMITE_SUCURSALES',
+            f"Has alcanzado el límite máximo de {limite} sucursales activas permitido por tu Plan {plan}. Para habilitar más sucursales, actualiza al Plan Profesional."
+        )
+    return info
 
 
 def crear_suscripcion(empresa, datos, actor):

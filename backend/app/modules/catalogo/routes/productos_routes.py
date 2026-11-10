@@ -75,12 +75,30 @@ def obtener_producto(
         "data": producto
     }
 
+def _exigir_vigencia_producto(token_data: dict, id_producto: Optional[int] = None, id_empresa: Optional[int] = None, operacion: str = "gestionar productos"):
+    from app.core.tenant_guard import resolver_tenant_operacion
+    from app.modules.saas.services.saas_services import exigir_vigencia
+    from app.modules.catalogo.repos import productos_repos
+
+    emp_efectiva = id_empresa
+    if not emp_efectiva and id_producto:
+        prod = productos_repos.obtener_producto_por_id(id_producto)
+        if prod:
+            emp_efectiva = prod.get("id_empresa")
+
+    emp_efectiva = resolver_tenant_operacion(token_data, emp_efectiva, permitir_global=False)
+    if emp_efectiva:
+        exigir_vigencia(emp_efectiva, operacion=operacion)
+    return emp_efectiva
+
+
 @router.post('', status_code=status.HTTP_201_CREATED, summary="Registrar nuevo producto con variantes y fotos")
 def crear_producto(
     datos: dict,
     request: Request,
     token_data: dict = Depends(require_permission('productos.crear'))
 ):
+    _exigir_vigencia_producto(token_data, id_empresa=datos.get("id_empresa"), operacion="crear nuevos productos")
     ip_cliente = request.client.host if request.client else "127.0.0.1"
     resultado = productos_services.crear_producto_service(
         datos=datos,
@@ -96,6 +114,7 @@ def actualizar_producto(
     request: Request,
     token_data: dict = Depends(require_permission('productos.editar'))
 ):
+    _exigir_vigencia_producto(token_data, id_producto=id_producto, operacion="modificar este producto")
     ip_cliente = request.client.host if request.client else "127.0.0.1"
     resultado = productos_services.actualizar_producto_service(
         id_producto=id_producto,
@@ -112,6 +131,7 @@ def actualizar_precios_variantes(
     request: Request,
     token_data: dict = Depends(require_permission('productos.editar'))
 ):
+    _exigir_vigencia_producto(token_data, id_producto=id_producto, operacion="modificar precios de variantes")
     ip_cliente = request.client.host if request.client else "127.0.0.1"
     return productos_services.actualizar_precios_variantes_service(
         id_producto=id_producto,
@@ -127,6 +147,7 @@ def cambiar_estado(
     request: Request,
     token_data: dict = Depends(require_permission('productos.eliminar'))
 ):
+    _exigir_vigencia_producto(token_data, id_producto=id_producto, operacion="cambiar el estado de este producto")
     activo = bool(datos.get("activo", True))
     ip_cliente = request.client.host if request.client else "127.0.0.1"
     resultado = productos_services.cambiar_estado_service(
@@ -142,6 +163,7 @@ async def subir_imagen_producto(
     file: UploadFile = File(...),
     token_data: dict = Depends(require_permission('productos.crear'))
 ):
+    _exigir_vigencia_producto(token_data, operacion="subir fotos de productos")
     """
     Sube un archivo de imagen (JPG, PNG, WEBP, máx 5MB) a Cloudinary en la carpeta aurora_store/productos.
     """
@@ -193,6 +215,7 @@ def agregar_imagen_a_producto(
     datos: dict,
     token_data: dict = Depends(require_permission('productos.editar'))
 ):
+    _exigir_vigencia_producto(token_data, id_producto=id_producto, operacion="vincular imágenes al producto")
     imagen_url = datos.get("imagen_url")
     public_id = datos.get("public_id")
     es_principal = bool(datos.get("es_principal", False))
@@ -214,6 +237,7 @@ def marcar_portada(
     id_imagen: int,
     token_data: dict = Depends(require_permission('productos.editar'))
 ):
+    _exigir_vigencia_producto(token_data, id_producto=id_producto, operacion="marcar portada del producto")
     return productos_services.marcar_portada_service(
         id_producto=id_producto,
         id_imagen=id_imagen,
@@ -226,6 +250,7 @@ def eliminar_imagen(
     id_imagen: int,
     token_data: dict = Depends(require_permission('productos.editar'))
 ):
+    _exigir_vigencia_producto(token_data, id_producto=id_producto, operacion="eliminar imágenes del producto")
     return productos_services.eliminar_imagen_service(
         id_producto=id_producto,
         id_imagen=id_imagen,
@@ -238,6 +263,7 @@ def eliminar_producto(
     request: Request,
     token_data: dict = Depends(require_permission('productos.editar'))
 ):
+    _exigir_vigencia_producto(token_data, id_producto=id_producto, operacion="eliminar productos")
     ip_cliente = request.client.host if request.client else "127.0.0.1"
     return productos_services.eliminar_producto_service(
         id_producto=id_producto,
@@ -255,6 +281,7 @@ def asignar_promocion_producto(
     porcentaje_descuento: float,
     token_data: dict = Depends(require_permission('productos.editar'))
 ):
+    _exigir_vigencia_producto(token_data, id_producto=id_producto, operacion="asignar promociones")
     id_promocion_producto = productos_services.asignar_promocion_producto_service(
         token_data=token_data,
         id_promocion=id_promocion,
@@ -314,6 +341,7 @@ def eliminar_promocion_producto(
     id_promocion_producto: int,
     token_data: dict = Depends(require_permission('productos.editar'))
 ):
+    _exigir_vigencia_producto(token_data, id_producto=id_producto, operacion="quitar promociones")
     resultado = productos_services.eliminar_promocion_producto_service(
         token_data=token_data,
         id_producto=id_producto,

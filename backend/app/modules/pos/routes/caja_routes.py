@@ -176,6 +176,9 @@ def abrir_caja(
         id_emp = _obtener_empresa_efectiva(token_data, body.id_empresa)
         id_suc = _obtener_sucursal_efectiva(token_data, body.id_sucursal, id_emp)
 
+        from app.modules.saas.services.saas_services import exigir_vigencia
+        exigir_vigencia(id_emp, operacion="abrir turnos de caja POS")
+
         # Si no se pasó id_caja, obtener o crear la caja por defecto de la sucursal
         id_caja = body.id_caja
         if not id_caja:
@@ -372,6 +375,9 @@ def registrar_caja(
     try:
         id_emp = _obtener_empresa_efectiva(token_data, body.id_empresa)
         id_suc = _obtener_sucursal_efectiva(token_data, body.id_sucursal, id_emp)
+
+        from app.modules.saas.services.saas_services import exigir_vigencia
+        exigir_vigencia(id_emp, operacion="abrir turnos de caja POS")
 
         nueva_caja = caja_repos.crear_nueva_caja(
             id_sucursal=id_suc,

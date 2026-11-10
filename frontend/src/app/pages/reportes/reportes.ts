@@ -24,6 +24,7 @@ import {
 } from '../../services/motor-reportes';
 import { AuthService } from '../../services/auth';
 import { KpisService } from '../../services/kpis';
+import { SaasService, PlanVigenciaData } from '../../services/saas';
 import { extraerMensajeError } from '../../utils/error-helper';
 
 export type TipoReporte = 'ventas' | 'inventario' | 'productos' | 'sucursales' | 'valoraciones';
@@ -41,10 +42,14 @@ export class ReportesComponent implements OnInit, OnDestroy {
   public motorService = inject(MotorReportesService);
   public authService = inject(AuthService);
   private kpisService = inject(KpisService);
+  private saasService = inject(SaasService);
   private route = inject(ActivatedRoute);
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
+
+  // Control de capacidades SaaS y límites
+  planVigencia: PlanVigenciaData | null = null;
 
   // Control de peticiones reactivas y cancelación de consultas anteriores
   private recargarReporte$ = new Subject<void>();
@@ -151,6 +156,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
       this.sucursalSeleccionada = this.authService.activeBranch()?.id || null;
 
       this.cargarTenants();
+      this.cargarPlanVigencia();
 
       // Suscribirse reactivamente al cambio de Empresa en el Header
       this.authService.companyChanged$
@@ -164,6 +170,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
             this.empresaSeleccionada = newId;
             const t = this.tenants.find(x => x.id_empresa === this.empresaSeleccionada);
             this.tiendaNombre = t?.nombre_empresa || empresa?.nombre_empresa || '';
+            this.cargarPlanVigencia();
             this.consultarReporte();
           }
         });
@@ -334,12 +341,33 @@ export class ReportesComponent implements OnInit, OnDestroy {
     }
   }
 
+  cargarPlanVigencia() {
+    if (this.authService.getScopeLevel() === 'PLATAFORMA') return;
+    this.saasService.consultarPlan(this.empresaSeleccionada || undefined)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          if (res && res.data) {
+            this.planVigencia = res.data;
+            this.cdr.detectChanges();
+          }
+        },
+        error: () => {}
+      });
+  }
+
   ejecutarComandoSugerido(cmd: string) {
     this.comandoTexto = cmd;
     this.ejecutarComandoTexto(cmd);
   }
 
   ejecutarComandoTexto(textoManual?: string) {
+    if (this.planVigencia && !this.planVigencia.capacidades.reportes_generativos && this.authService.getScopeLevel() !== 'PLATAFORMA') {
+      this.mensajeError = 'El motor generativo de reportes y consultas ad-hoc requiere el Plan Profesional. Tu tienda cuenta actualmente con el Plan Básico. Puedes consultar los reportes estándar fijos en las pestañas inferiores.';
+      this.cdr.detectChanges();
+      return;
+    }
+
     const query = (textoManual || this.comandoTexto || '').trim();
     if (!query) {
       this.mensajeError = 'Por favor ingresa o dicta un comando para el motor de reportes.';

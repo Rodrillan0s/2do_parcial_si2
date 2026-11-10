@@ -1,12 +1,14 @@
 import { Component, OnInit, inject, ChangeDetectorRef, NgZone, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { AuthService } from '../../../services/auth';
 import { Sucursal, SucursalService } from '../../../services/sucursales';
 import { Ciudad, CiudadService } from '../../../services/ciudades';
 import { Empresa, EmpresaService } from '../../../services/empresa';
+import { SaasService, PlanVigenciaData } from '../../../services/saas';
 import { MapaSucursalComponent } from '../mapa-sucursal/mapa-sucursal';
 import { extraerMensajeError } from '../../../utils/error-helper';
 
@@ -16,6 +18,7 @@ import { extraerMensajeError } from '../../../utils/error-helper';
   imports: [
     CommonModule,
     FormsModule,
+    RouterModule,
     MapaSucursalComponent
   ],
   templateUrl: './lista-sucursales.html'
@@ -25,6 +28,7 @@ export class ListaSucursalesComponent implements OnInit {
   private sucursalService = inject(SucursalService);
   private ciudadService = inject(CiudadService);
   private empresaService = inject(EmpresaService);
+  private saasService = inject(SaasService);
   public authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
   private ngZone = inject(NgZone);
@@ -32,6 +36,9 @@ export class ListaSucursalesComponent implements OnInit {
   private busquedaSucursalSubject = new Subject<string>();
   private busquedaCiudadSubject = new Subject<string>();
   ciudadesCargadas: boolean = false;
+
+  // Plan SaaS y límites
+  planVigencia: PlanVigenciaData | null = null;
 
   // Tab navigation
 tabActiva: 'SUCURSALES' | 'CIUDADES' | 'MAPA' = 'SUCURSALES';
@@ -155,6 +162,7 @@ get sucursalesParaMapa(): Sucursal[] {
       }
 
       this.cargarSucursales();
+      this.cargarPlanVigencia();
 
       this.authService.companyChanged$
         .pipe(
@@ -319,6 +327,23 @@ get sucursalesParaMapa(): Sucursal[] {
       departamento: 'Santa Cruz',
       estado: true
     };
+  }
+
+  cargarPlanVigencia() {
+    if (this.authService.getScopeLevel() === 'PLATAFORMA') return;
+    this.saasService.consultarPlan(undefined, true)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.ngZone.run(() => {
+            if (res && res.data) {
+              this.planVigencia = res.data;
+              this.cdr.detectChanges();
+            }
+          });
+        },
+        error: () => {}
+      });
   }
 
   // ============================================================
@@ -515,6 +540,10 @@ get sucursalesParaMapa(): Sucursal[] {
     this.modoEdicionSucursal = false;
     this.mensajeModalError = '';
 
+    if (this.planVigencia && this.planVigencia.disponibles <= 0 && this.authService.getScopeLevel() !== 'PLATAFORMA') {
+      this.mensajeModalError = `Has alcanzado el límite máximo de ${this.planVigencia.limites.sucursales_activas} sucursales de tu Plan ${this.planVigencia.codigo_plan}. Actualiza al Plan Profesional para abrir hasta 10 sucursales.`;
+    }
+
     this.sucursalForm = this.inicializarSucursal();
 
     this.inputCiudadTexto = '';
@@ -692,6 +721,7 @@ get sucursalesParaMapa(): Sucursal[] {
               this.cerrarModalSucursal();
 
               this.cargarSucursales();
+      this.cargarPlanVigencia();
               this.cargarCiudades();
 
               this.mostrarNotificacionExito(
@@ -724,6 +754,7 @@ get sucursalesParaMapa(): Sucursal[] {
               this.cerrarModalSucursal();
 
               this.cargarSucursales();
+      this.cargarPlanVigencia();
               this.cargarCiudades();
 
               this.mostrarNotificacionExito(
@@ -776,6 +807,7 @@ get sucursalesParaMapa(): Sucursal[] {
           this.ngZone.run(() => {
 
             this.cargarSucursales();
+      this.cargarPlanVigencia();
 
             this.mostrarNotificacionExito(
               `Sucursal '${s.nombre}' ${

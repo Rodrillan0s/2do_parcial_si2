@@ -44,6 +44,32 @@
     </div>
   </div>
 
+  <!-- Alerta de Capacidad de Sucursales SaaS Alcanzada -->
+  <div *ngIf="planVigencia && planVigencia.disponibles === 0 && authService.getScopeLevel() !== 'PLATAFORMA'"
+       role="alert"
+       class="p-5 rounded-3xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm animate-fadeIn">
+    <div class="flex items-start sm:items-center gap-3.5">
+      <div class="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+        <i class="ph ph-storefront text-xl"></i>
+      </div>
+      <div>
+        <h3 class="text-sm font-bold text-amber-950 dark:text-amber-100 flex items-center gap-2">
+          <span>Capacidad Máxima de Sucursales Alcanzada ({{ planVigencia.uso?.sucursales_activas }}/{{ planVigencia.limites.sucursales_activas }})</span>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-200 text-amber-900 dark:bg-amber-950 dark:text-amber-300">Plan {{ planVigencia.codigo_plan }}</span>
+        </h3>
+        <p class="text-xs text-amber-800/90 dark:text-amber-300/80 mt-0.5">
+          Tu plan actual permite hasta {{ planVigencia.limites.sucursales_activas }} sucursales activas en simultáneo. Para expandir tu red de tiendas y habilitar hasta 10 sucursales, actualiza al Plan Profesional.
+        </p>
+      </div>
+    </div>
+    <div class="shrink-0">
+      <a routerLink="/admin/suscripciones"
+         class="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm">
+        <span>Actualizar a Plan Profesional →</span>
+      </a>
+    </div>
+  </div>
+
   <!-- Navigation Tabs -->
   <div class="flex items-center gap-3 border-b border-stone-200 dark:border-zinc-800 pb-3">
 

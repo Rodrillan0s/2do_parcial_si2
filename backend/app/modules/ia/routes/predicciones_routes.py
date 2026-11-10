@@ -97,6 +97,10 @@ def _validar_permisos_ia(token_data: dict, id_empresa_param: Optional[int] = Non
         finally:
             db.close_connection()
 
+    if empresa:
+        from app.modules.saas.services.saas_services import exigir_vigencia
+        exigir_vigencia(empresa, operacion="consultar predicciones analíticas")
+
     return empresa, sucursal
 
 

@@ -96,6 +96,34 @@
     </div>
   </div>
 
+  <!-- Alerta SaaS: Plan Básico no cuenta con Motor Generativo Dinámico -->
+  <div *ngIf="planVigencia && !planVigencia.capacidades.reportes_generativos && authService.getScopeLevel() !== 'PLATAFORMA'"
+       role="alert"
+       class="p-5 rounded-3xl bg-gradient-to-r from-indigo-900/10 via-purple-900/10 to-transparent border border-indigo-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm animate-fadeIn">
+    <div class="flex items-start sm:items-center gap-3.5">
+      <div class="w-10 h-10 rounded-2xl bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+          <span>Motor Generativo de Reportes (Exclusivo Plan Profesional)</span>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-stone-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">Plan {{ planVigencia.codigo_plan }}</span>
+        </h3>
+        <p class="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
+          Las consultas ad-hoc en lenguaje natural, comandos de voz y exportaciones dinámicas avanzadas requieren el Plan Profesional. Puedes seguir consultando todos los reportes estándar fijos en las pestañas inferiores.
+        </p>
+      </div>
+    </div>
+    <div class="shrink-0">
+      <a routerLink="/admin/suscripciones"
+         class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm">
+        <span>Actualizar a Plan Profesional →</span>
+      </a>
+    </div>
+  </div>
+
   <!-- ============================================================================ -->
   <!-- BARRA DE COMANDOS INTELIGENTE (VOZ Y TEXTO - SIN IA / DETERMINÍSTICO)        -->
   <!-- ============================================================================ -->

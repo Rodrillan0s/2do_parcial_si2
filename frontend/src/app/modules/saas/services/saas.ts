@@ -151,6 +151,9 @@ export interface PlanVigenciaData {
   id_empresa: number;
   estado: EstadoSuscripcion;
   vigente: boolean;
+  modo_solo_lectura?: boolean;
+  dias_restantes?: number | null;
+  proximo_a_vencer?: boolean;
   id_suscripcion: number | null;
   codigo_plan: CodigoPlan | null;
   inicio: string | null;

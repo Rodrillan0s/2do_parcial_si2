@@ -155,6 +155,10 @@ def registrar_sucursal(
         permitir_global=False
     )
 
+    if activo:
+        from app.modules.saas.services.saas_services import validar_capacidad_sucursales
+        validar_capacidad_sucursales(id_empresa)
+
     # Coordenadas por defecto según departamento / ciudad
     DEPARTAMENTO_COORDS = {
         'santa cruz': (-17.7833, -63.1821),
@@ -434,6 +438,9 @@ def cambiar_estado_sucursal(
     )
 
     nuevo_activo = bool(data.get('activo', False))
+    if nuevo_activo:
+        from app.modules.saas.services.saas_services import validar_capacidad_sucursales
+        validar_capacidad_sucursales(sucursal_db.get('id_empresa'))
 
     exito = sucursales_repos.cambiar_estado_sucursal_db(
         id_sucursal,
