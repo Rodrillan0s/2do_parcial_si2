@@ -1,0 +1,1361 @@
+<div class="min-h-full space-y-8 antialiased text-zinc-900 dark:text-zinc-100">
+
+  <!-- Header / Workspace Context Banner -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white dark:bg-zinc-950/90 p-8 rounded-3xl border border-stone-200 dark:border-zinc-800 shadow-sm dark:shadow-2xl backdrop-blur-xl relative overflow-hidden transition-colors duration-200">
+
+    <div class="absolute -top-16 -right-16 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="space-y-2 relative z-10">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-[10px] font-bold uppercase tracking-widest">
+        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-amber-400 animate-pulse"></span>
+        Arquitectura Multi-Tenant • AURORA Sedes Físicas
+      </div>
+
+      <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 dark:text-white flex items-center gap-3">
+        <span>Gestión de Sucursales & Ciudades</span>
+      </h1>
+
+      <p class="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 max-w-2xl leading-relaxed">
+        Administra las sucursales físicas por empresa (Tenant) y el catálogo de referencia de ciudades en Bolivia para control de inventario, retiro en tienda y logística.
+      </p>
+    </div>
+
+    <!-- Primary Action Button -->
+    <div class="relative z-10 shrink-0 flex items-center gap-3">
+
+      <button
+        *ngIf="tabActiva === 'SUCURSALES'"
+        (click)="abrirModalNuevaSucursal()"
+        class="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:scale-[0.98] text-zinc-950 text-xs font-black rounded-2xl shadow-lg shadow-amber-500/20 transition-all ring-1 ring-amber-400/40 focus:outline-none cursor-pointer"
+      >
+        <i class="ph ph-plus-circle text-base"></i>
+        <span>Registrar Sucursal</span>
+      </button>
+
+      <button
+        *ngIf="tabActiva === 'CIUDADES'"
+        (click)="abrirModalNuevaCiudad()"
+        class="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:scale-[0.98] text-zinc-950 text-xs font-black rounded-2xl shadow-lg shadow-amber-500/20 transition-all ring-1 ring-amber-400/40 focus:outline-none cursor-pointer"
+      >
+        <i class="ph ph-map-pin-plus text-base"></i>
+        <span>Nueva Ciudad</span>
+      </button>
+
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="flex items-center gap-3 border-b border-stone-200 dark:border-zinc-800 pb-3">
+
+    <!-- Sucursales Físicas -->
+    <button
+      (click)="cambiarTab('SUCURSALES')"
+      [ngClass]="tabActiva === 'SUCURSALES'
+        ? 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400 font-black'
+        : 'bg-white dark:bg-zinc-900/60 border-stone-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'"
+      class="px-5 py-2.5 rounded-2xl border text-xs flex items-center gap-2.5 transition-all cursor-pointer shadow-xs"
+    >
+      <i class="ph ph-storefront text-base"></i>
+
+      <span>Sucursales Físicas</span>
+
+      <span
+        class="px-2 py-0.5 rounded-full text-[10px] font-mono"
+        [ngClass]="tabActiva === 'SUCURSALES'
+          ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300'
+          : 'bg-stone-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400'"
+      >
+        {{ totalSucursales }}
+      </span>
+    </button>
+
+    <!-- Catálogo de Ciudades -->
+    <button
+      (click)="cambiarTab('CIUDADES')"
+      [ngClass]="tabActiva === 'CIUDADES'
+        ? 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400 font-black'
+        : 'bg-white dark:bg-zinc-900/60 border-stone-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'"
+      class="px-5 py-2.5 rounded-2xl border text-xs flex items-center gap-2.5 transition-all cursor-pointer shadow-xs"
+    >
+      <i class="ph ph-map-trifold text-base"></i>
+
+      <span>Catálogo de Ciudades (Bolivia)</span>
+
+      <span
+        class="px-2 py-0.5 rounded-full text-[10px] font-mono"
+        [ngClass]="tabActiva === 'CIUDADES'
+          ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300'
+          : 'bg-stone-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400'"
+      >
+        {{ ciudades.length }}
+      </span>
+    </button>
+
+    <!-- Mapa de Sucursales -->
+    <button
+      (click)="cambiarTab('MAPA')"
+      [ngClass]="tabActiva === 'MAPA'
+        ? 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400 font-black'
+        : 'bg-white dark:bg-zinc-900/60 border-stone-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'"
+      class="px-5 py-2.5 rounded-2xl border text-xs flex items-center gap-2.5 transition-all cursor-pointer shadow-xs"
+    >
+      <i class="ph ph-map-pin-area text-base"></i>
+
+      <span>Mapa de Sucursales</span>
+
+      <span
+        class="px-2 py-0.5 rounded-full text-[10px] font-mono"
+        [ngClass]="tabActiva === 'MAPA'
+          ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300'
+          : 'bg-stone-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400'"
+      >
+        {{ sucursalesParaMapa.length }}
+      </span>
+    </button>
+
+  </div>
+
+  <!-- Success Notification Banner -->
+  <div
+    *ngIf="mensajeExito"
+    class="p-4 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-500/40 rounded-2xl text-xs sm:text-sm font-semibold text-emerald-800 dark:text-emerald-300 flex items-center justify-between gap-3 shadow-sm dark:shadow-lg dark:shadow-emerald-950/50 animate-fade-in backdrop-blur-md"
+  >
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+        <i class="ph ph-check-circle text-lg"></i>
+      </div>
+
+      <span>{{ mensajeExito }}</span>
+    </div>
+
+    <button
+      (click)="mensajeExito = ''"
+      class="text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-200 text-xs px-2 py-1 cursor-pointer"
+    >
+      ✕
+    </button>
+  </div>
+
+  <!-- Error Banner -->
+  <div
+    *ngIf="mensajeError"
+    class="p-5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 rounded-2xl text-xs sm:text-sm font-semibold text-rose-800 dark:text-rose-300 flex items-center gap-3 backdrop-blur-md shadow-sm"
+  >
+    <i class="ph ph-warning-circle text-lg text-rose-500 dark:text-rose-400 shrink-0"></i>
+    <span>{{ mensajeError }}</span>
+  </div>
+
+  <!-- Metric Strip -->
+  <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+
+    <!-- Total -->
+    <div class="bg-white dark:bg-zinc-950/80 p-5 rounded-3xl border border-stone-200 dark:border-zinc-800 shadow-sm dark:shadow-xl flex items-center justify-between group hover:border-amber-500/40 transition-all">
+      <div class="space-y-1">
+        <p class="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">
+          Total Sucursales
+        </p>
+
+        <p class="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
+          {{ totalSucursales }}
+        </p>
+
+        <p class="text-[11px] font-medium text-amber-600 dark:text-amber-400/80">
+          Sedes comerciales
+        </p>
+      </div>
+
+      <div class="w-11 h-11 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+        <i class="ph ph-storefront text-xl"></i>
+      </div>
+    </div>
+
+    <!-- Activas -->
+    <div class="bg-white dark:bg-zinc-950/80 p-5 rounded-3xl border border-stone-200 dark:border-zinc-800 shadow-sm dark:shadow-xl flex items-center justify-between group hover:border-emerald-500/40 transition-all">
+      <div class="space-y-1">
+        <p class="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">
+          Sucursales Activas
+        </p>
+
+        <p class="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
+          {{ sucursalesActivas }}
+        </p>
+
+        <p class="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+          Operativas
+        </p>
+      </div>
+
+      <div class="w-11 h-11 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+        <i class="ph ph-check-circle text-xl"></i>
+      </div>
+    </div>
+
+    <!-- Inactivas -->
+    <div class="bg-white dark:bg-zinc-950/80 p-5 rounded-3xl border border-stone-200 dark:border-zinc-800 shadow-sm dark:shadow-xl flex items-center justify-between group hover:border-zinc-400 dark:hover:border-zinc-700 transition-all">
+      <div class="space-y-1">
+        <p class="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">
+          Inactivas
+        </p>
+
+        <p class="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
+          {{ sucursalesInactivas }}
+        </p>
+
+        <p class="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+          Suspendidas / Cerradas
+        </p>
+      </div>
+
+      <div class="w-11 h-11 rounded-2xl bg-stone-100 dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 flex items-center justify-center shrink-0">
+        <i class="ph ph-prohibit text-xl"></i>
+      </div>
+    </div>
+
+    <!-- Cobertura -->
+    <div class="bg-white dark:bg-zinc-950/80 p-5 rounded-3xl border border-stone-200 dark:border-zinc-800 shadow-sm dark:shadow-xl flex items-center justify-between group hover:border-sky-500/40 transition-all">
+      <div class="space-y-1">
+        <p class="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">
+          Cobertura Ciudades
+        </p>
+
+        <p class="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
+          {{ totalCiudadesCobertura }}
+        </p>
+
+        <p class="text-[11px] font-medium text-sky-600 dark:text-sky-400">
+          Ciudades con presencia
+        </p>
+      </div>
+
+      <div class="w-11 h-11 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
+        <i class="ph ph-navigation-arrow text-xl"></i>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========================================== -->
+  <!-- TAB 1: SUCURSALES FÍSICAS                  -->
+  <!-- ========================================== -->
+
+  <div
+    *ngIf="tabActiva === 'SUCURSALES'"
+    class="space-y-6"
+  >
+
+    <!-- Filter Toolbar -->
+    <div class="bg-white dark:bg-zinc-950/90 p-5 rounded-3xl border border-stone-200 dark:border-zinc-800 shadow-sm dark:shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 backdrop-blur-xl transition-colors">
+
+      <!-- Search -->
+      <div class="relative w-full sm:w-80">
+        <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 text-base pointer-events-none"></i>
+
+        <input
+          type="text"
+          [(ngModel)]="filtroBusqueda"
+          (input)="onBusquedaSucursalInput()"
+          placeholder="Buscar por nombre, ciudad, depto, dirección..."
+          class="w-full bg-stone-50 dark:bg-zinc-900/80 border border-stone-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs font-medium rounded-2xl pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all"
+        >
+      </div>
+
+      <!-- Selectors -->
+      <div class="flex items-center gap-3 w-full sm:w-auto justify-end flex-wrap">
+
+        <!-- Empresa Selector -->
+        <div
+          *ngIf="isGlobalAdmin && empresas.length > 0"
+          class="flex items-center gap-2"
+        >
+          <span class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase">
+            Tenant:
+          </span>
+
+          <select
+            [(ngModel)]="filtroEmpresaId"
+            (change)="aplicarFiltrosSucursales()"
+            class="bg-stone-50 dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-200 text-xs font-bold rounded-2xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all cursor-pointer"
+          >
+            <option [ngValue]="0">
+              Todos los Tenants
+            </option>
+
+            <option
+              *ngFor="let emp of empresas"
+              [ngValue]="emp.id_empresa"
+            >
+              {{ emp.nombre_empresa }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Estado Filter -->
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase">
+            Estado:
+          </span>
+
+          <select
+            [(ngModel)]="filtroEstado"
+            (change)="aplicarFiltrosSucursales()"
+            class="bg-stone-50 dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-200 text-xs font-bold rounded-2xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all cursor-pointer"
+          >
+            <option value="TODOS">Todas</option>
+            <option value="ACTIVO">Activas</option>
+            <option value="INACTIVO">Inactivas</option>
+          </select>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Sucursales Table -->
+    <div class="bg-white dark:bg-zinc-950/90 border border-stone-200 dark:border-zinc-800 rounded-3xl shadow-sm dark:shadow-2xl overflow-hidden backdrop-blur-xl transition-colors">
+
+      <div
+        *ngIf="cargando && !mostrarModalSucursal"
+        class="p-8 space-y-4"
+      >
+        <div
+          *ngFor="let i of [1,2,3]"
+          class="animate-pulse flex items-center justify-between py-4 border-b border-stone-200 dark:border-zinc-900"
+        >
+          <div class="w-48 h-4 bg-stone-200 dark:bg-zinc-900 rounded"></div>
+          <div class="w-28 h-4 bg-stone-200 dark:bg-zinc-900 rounded"></div>
+          <div class="w-20 h-4 bg-stone-200 dark:bg-zinc-900 rounded"></div>
+        </div>
+      </div>
+
+      <div
+        *ngIf="!cargando || mostrarModalSucursal"
+        class="overflow-x-auto"
+      >
+        <table class="w-full text-left border-collapse">
+
+          <thead>
+            <tr class="bg-stone-50/80 dark:bg-zinc-900/80 border-b border-stone-200 dark:border-zinc-800 text-[11px] font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-400">
+              <th class="py-4 px-6">Sucursal Física</th>
+              <th class="py-4 px-6">Empresa / Tenant</th>
+              <th class="py-4 px-6">Ciudad & Departamento</th>
+              <th class="py-4 px-6">Dirección & Teléfono</th>
+              <th class="py-4 px-6 text-center">Estado</th>
+              <th class="py-4 px-6 text-right">Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody class="divide-y divide-stone-100 dark:divide-zinc-900 text-xs">
+
+            <tr
+              *ngFor="let s of sucursalesFiltradas; trackBy: trackBySucursalId"
+              class="hover:bg-stone-50/80 dark:hover:bg-zinc-900/50 transition-colors group"
+            >
+
+              <!-- Sucursal Identificador -->
+              <td class="py-4 px-6">
+                <div class="flex items-center gap-3.5">
+
+                  <div class="w-11 h-11 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 font-black text-xs flex items-center justify-center shrink-0 shadow-inner">
+                    {{ obtenerIniciales(s.nombre) }}
+                  </div>
+
+                  <div>
+                    <p class="font-bold text-zinc-900 dark:text-white text-sm group-hover:text-amber-600 dark:group-hover:text-amber-300 transition-colors">
+                      {{ s.nombre }}
+                    </p>
+
+                    <p class="text-[10px] text-zinc-500 font-mono mt-0.5">
+                      SUCURSAL #{{ s.id_sucursal }}
+                    </p>
+                  </div>
+
+                </div>
+              </td>
+
+              <!-- Tenant -->
+              <td class="py-4 px-6">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-semibold">
+                  <i class="ph ph-buildings text-amber-600 dark:text-amber-400"></i>
+                  {{ s.empresa_nombre || 'Tenant #' + s.id_empresa }}
+                </span>
+              </td>
+
+              <!-- Ciudad -->
+              <td class="py-4 px-6">
+                <div class="flex flex-col gap-0.5">
+
+                  <span class="font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
+                    <i class="ph ph-map-pin text-amber-600 dark:text-amber-400"></i>
+                    {{ s.ciudad || 'No asignada' }}
+                  </span>
+
+                  <span class="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium">
+                    {{ s.departamento || 'Bolivia' }}
+                  </span>
+
+                </div>
+              </td>
+
+              <!-- Dirección -->
+              <td class="py-4 px-6 text-zinc-600 dark:text-zinc-300">
+                <div class="flex flex-col gap-1 text-[11px]">
+
+                  <div class="flex items-center gap-1.5 text-zinc-800 dark:text-zinc-200">
+                    <i class="ph ph-compass text-zinc-400 dark:text-zinc-500"></i>
+
+                    <span
+                      class="truncate max-w-xs"
+                      [title]="s.direccion"
+                    >
+                      {{ s.direccion || 'Sin dirección' }}
+                    </span>
+                  </div>
+
+                  <div
+                    *ngIf="s.telefono"
+                    class="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400"
+                  >
+                    <i class="ph ph-phone text-zinc-400 dark:text-zinc-500"></i>
+                    <span>{{ s.telefono }}</span>
+                  </div>
+
+                </div>
+              </td>
+
+              <!-- Estado -->
+              <td class="py-4 px-6 text-center">
+
+                <span
+                  *ngIf="s.activo"
+                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  Activa
+                </span>
+
+                <span
+                  *ngIf="!s.activo"
+                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-zinc-900 text-zinc-400 border border-zinc-800"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full bg-zinc-500"></span>
+                  Inactiva
+                </span>
+
+              </td>
+
+              <!-- Acciones Condicionadas -->
+              <td class="py-4 px-6 text-right">
+                <div class="flex items-center justify-end gap-1.5">
+
+                  <button
+                    (click)="abrirModalEditarSucursal(s)"
+                    title="Editar Sucursal"
+                    class="p-2 text-zinc-400 hover:text-amber-300 hover:bg-zinc-900 border border-transparent hover:border-zinc-800 rounded-xl transition-all cursor-pointer"
+                  >
+                    <i class="ph ph-pencil-simple text-base"></i>
+                  </button>
+
+                  <button
+                    (click)="cambiarEstadoSucursal(s)"
+                    [title]="s.activo ? 'Desactivar Sucursal' : 'Activar Sucursal'"
+                    class="p-2 text-zinc-400 hover:bg-zinc-900 border border-transparent hover:border-zinc-800 rounded-xl transition-all cursor-pointer"
+                    [ngClass]="s.activo ? 'hover:text-rose-400' : 'hover:text-emerald-400'"
+                  >
+                    <i
+                      class="ph"
+                      [ngClass]="s.activo ? 'ph-prohibit' : 'ph-check-circle'"
+                      class="text-base"
+                    ></i>
+                  </button>
+
+                </div>
+              </td>
+
+            </tr>
+
+            <tr *ngIf="sucursalesFiltradas.length === 0">
+              <td
+                colspan="6"
+                class="py-16 text-center text-zinc-500"
+              >
+                <div class="flex flex-col items-center justify-center gap-3">
+
+                  <i class="ph ph-storefront text-4xl text-zinc-700"></i>
+
+                  <p class="text-sm font-semibold">
+                    No se encontraron sucursales registradas
+                  </p>
+
+                  <p class="text-xs text-zinc-600">
+                    Comienza registrando la primera sucursal para tu empresa.
+                  </p>
+
+                </div>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========================================== -->
+  <!-- TAB 2: CATÁLOGO DE CIUDADES                -->
+  <!-- ========================================== -->
+
+  <div
+    *ngIf="tabActiva === 'CIUDADES'"
+    class="space-y-6"
+  >
+
+    <!-- Filter Toolbar -->
+    <div class="bg-white dark:bg-zinc-950/90 p-5 rounded-3xl border border-stone-200 dark:border-zinc-800 shadow-sm dark:shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 backdrop-blur-xl transition-colors">
+
+      <!-- Search -->
+      <div class="relative w-full sm:w-80">
+
+        <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 text-base pointer-events-none"></i>
+
+        <input
+          type="text"
+          [(ngModel)]="filtroCiudadBusqueda"
+          (input)="onBusquedaCiudadInput()"
+          placeholder="Buscar ciudad o departamento..."
+          class="w-full bg-stone-50 dark:bg-zinc-900/80 border border-stone-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs font-medium rounded-2xl pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all"
+        />
+
+      </div>
+
+      <!-- Departamento Selector -->
+      <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+
+        <span class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase">
+          Departamento:
+        </span>
+
+        <select
+          [(ngModel)]="filtroCiudadDepto"
+          (change)="aplicarFiltrosCiudades()"
+          class="bg-stone-50 dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-200 text-xs font-bold rounded-2xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all cursor-pointer"
+        >
+          <option value="TODOS">
+            Todos los Departamentos
+          </option>
+
+          <option
+            *ngFor="let d of departamentosBolivia"
+            [value]="d"
+          >
+            {{ d }}
+          </option>
+        </select>
+
+      </div>
+    </div>
+
+    <!-- Ciudades Table -->
+    <div class="bg-white dark:bg-zinc-950/90 border border-stone-200 dark:border-zinc-800 rounded-3xl shadow-sm dark:shadow-2xl overflow-hidden backdrop-blur-xl transition-colors">
+
+      <div class="overflow-x-auto">
+
+        <table class="w-full text-left border-collapse">
+
+          <thead>
+            <tr class="bg-stone-50/80 dark:bg-zinc-900/80 border-b border-stone-200 dark:border-zinc-800 text-[11px] font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-400">
+
+              <th class="py-4 px-6">
+                Ciudad / Municipio
+              </th>
+
+              <th class="py-4 px-6">
+                Departamento (Bolivia)
+              </th>
+
+              <th class="py-4 px-6 text-center">
+                Estado
+              </th>
+
+              <th class="py-4 px-6 text-right">
+                Acciones
+              </th>
+
+            </tr>
+          </thead>
+
+          <tbody class="divide-y divide-stone-100 dark:divide-zinc-900 text-xs">
+
+            <tr
+              *ngFor="let c of ciudadesFiltradas; trackBy: trackByCiudadId"
+              class="hover:bg-stone-50/80 dark:hover:bg-zinc-900/50 transition-colors group"
+            >
+
+              <td class="py-4 px-6">
+
+                <div class="flex items-center gap-3">
+
+                  <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold text-xs shrink-0">
+                    <i class="ph ph-buildings"></i>
+                  </div>
+
+                  <span class="font-bold text-zinc-900 dark:text-white text-sm group-hover:text-amber-600 dark:group-hover:text-amber-300 transition-colors">
+                    {{ c.nombre }}
+                  </span>
+
+                </div>
+
+              </td>
+
+              <td class="py-4 px-6">
+
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 text-amber-700 dark:text-amber-400 font-semibold text-xs">
+
+                  <i class="ph ph-map-pin"></i>
+
+                  {{ c.departamento }}
+
+                </span>
+
+              </td>
+
+              <td class="py-4 px-6 text-center">
+
+                <span
+                  *ngIf="c.estado"
+                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400"></span>
+                  Activa
+                </span>
+
+                <span
+                  *ngIf="!c.estado"
+                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-stone-100 dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border border-stone-200 dark:border-zinc-800"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500"></span>
+                  Inactiva
+                </span>
+
+              </td>
+
+              <td class="py-4 px-6 text-right">
+
+                <div class="flex items-center justify-end gap-1.5">
+
+                  <button
+                    (click)="abrirModalEditarCiudad(c)"
+                    title="Editar Ciudad"
+                    class="p-2 text-zinc-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-stone-100 dark:hover:bg-zinc-900 border border-transparent hover:border-stone-200 dark:hover:border-zinc-800 rounded-xl transition-all cursor-pointer"
+                  >
+                    <i class="ph ph-pencil-simple text-base"></i>
+                  </button>
+
+                  <button
+                    (click)="cambiarEstadoCiudad(c)"
+                    [title]="c.estado ? 'Desactivar' : 'Activar'"
+                    class="p-2 text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-900 border border-transparent hover:border-stone-200 dark:hover:border-zinc-800 rounded-xl transition-all cursor-pointer"
+                    [ngClass]="c.estado ? 'hover:text-rose-600 dark:hover:text-rose-400' : 'hover:text-emerald-600 dark:hover:text-emerald-400'"
+                  >
+                    <i
+                      class="ph"
+                      [ngClass]="c.estado ? 'ph-prohibit' : 'ph-check-circle'"
+                      class="text-base"
+                    ></i>
+                  </button>
+
+                </div>
+
+              </td>
+
+            </tr>
+
+            <tr *ngIf="ciudadesFiltradas.length === 0">
+
+              <td
+                colspan="4"
+                class="py-16 text-center text-zinc-500"
+              >
+                No se encontraron ciudades que coincidan con la búsqueda.
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========================================== -->
+  <!-- TAB 3: MAPA DE SUCURSALES                  -->
+  <!-- ========================================== -->
+
+  <div
+    *ngIf="tabActiva === 'MAPA'"
+    class="space-y-6"
+  >
+
+    <!-- Toolbar Mapa -->
+    <div class="bg-white dark:bg-zinc-950/90 p-5 rounded-3xl border border-stone-200 dark:border-zinc-800 shadow-sm dark:shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 backdrop-blur-xl">
+
+      <div>
+        <div class="flex items-center gap-2">
+
+          <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+            <i class="ph ph-map-trifold text-lg"></i>
+          </div>
+
+          <div>
+            <h2 class="text-sm font-black text-zinc-900 dark:text-white">
+              Mapa de Sucursales
+            </h2>
+
+            <p class="text-[11px] text-zinc-500 dark:text-zinc-400">
+              Ubicación geográfica de las sedes físicas.
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 flex-wrap justify-end">
+
+        <!-- Tenant Selector -->
+        <div
+          *ngIf="isGlobalAdmin && empresas.length > 0"
+          class="flex items-center gap-2"
+        >
+
+          <span class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase">
+            Tenant:
+          </span>
+
+          <select
+            [(ngModel)]="filtroEmpresaId"
+            (change)="aplicarFiltrosSucursales()"
+            class="bg-stone-50 dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-200 text-xs font-bold rounded-2xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all cursor-pointer"
+          >
+
+            <option [ngValue]="0">
+              Todos los Tenants
+            </option>
+
+            <option
+              *ngFor="let emp of empresas"
+              [ngValue]="emp.id_empresa"
+            >
+              {{ emp.nombre_empresa }}
+            </option>
+
+          </select>
+
+        </div>
+
+        <!-- Total -->
+        <div class="flex items-center gap-2 px-4 py-2 rounded-2xl bg-amber-500/10 border border-amber-500/20">
+
+          <i class="ph ph-map-pin text-amber-500"></i>
+
+          <span class="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+            {{ sucursalesParaMapa.length }}
+            {{ sucursalesParaMapa.length === 1 ? 'sucursal' : 'sucursales' }}
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Mapa -->
+    <div class="bg-white dark:bg-zinc-950/90 border border-stone-200 dark:border-zinc-800 rounded-3xl shadow-sm dark:shadow-2xl overflow-hidden backdrop-blur-xl">
+
+      <div
+        *ngIf="sucursalesParaMapa.length === 0"
+        class="h-[600px] flex flex-col items-center justify-center bg-zinc-50 dark:bg-zinc-900/50"
+      >
+
+        <div class="w-16 h-16 rounded-3xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center mb-4">
+          <i class="ph ph-map-pin-line text-3xl"></i>
+        </div>
+
+        <h3 class="text-sm font-black text-zinc-800 dark:text-zinc-200">
+          No hay sucursales para mostrar
+        </h3>
+
+        <p class="text-xs text-zinc-500 dark:text-zinc-500 mt-1 text-center max-w-md">
+          No existen sucursales registradas para el Tenant seleccionado
+          o todavía no tienen una ubicación geográfica registrada.
+        </p>
+
+      </div>
+
+      <div
+        *ngIf="sucursalesParaMapa.length > 0"
+        class="w-full"
+      >
+
+        <app-mapa-sucursal
+          [sucursales]="sucursalesParaMapa"
+          [modoVisualizacion]="true"
+        >
+        </app-mapa-sucursal>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ==================================================== -->
+<!-- MODAL: REGISTRAR / EDITAR SUCURSAL FÍSICA            -->
+<!-- ==================================================== -->
+
+<div
+  *ngIf="mostrarModalSucursal"
+  class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/85 backdrop-blur-md transition-all overflow-y-auto"
+>
+
+  <div class="bg-zinc-950 border border-zinc-800 rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden ring-1 ring-amber-500/20 my-8">
+
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center px-8 py-6 border-b border-zinc-800 bg-zinc-900/60">
+
+      <div class="space-y-1">
+
+        <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold uppercase tracking-widest">
+          {{ modoEdicionSucursal ? 'Actualización' : 'Nueva Sucursal' }}
+        </div>
+
+        <h3 class="text-lg font-black text-white">
+
+          <span *ngIf="modoEdicionSucursal">
+            Editar Sucursal
+            <span class="text-amber-400 font-mono text-sm">
+              #{{ sucursalForm.id_sucursal }}
+            </span>
+          </span>
+
+          <span *ngIf="!modoEdicionSucursal">
+            Registrar Sucursal Física
+          </span>
+
+        </h3>
+
+        <p class="text-xs text-zinc-400">
+          Vincula la sucursal a tu Tenant y establece su ubicación física para inventario y atención.
+        </p>
+
+      </div>
+
+      <button
+        (click)="cerrarModalSucursal()"
+        class="p-2 text-zinc-400 hover:text-white rounded-xl hover:bg-zinc-900 transition-colors cursor-pointer"
+      >
+        <i class="ph ph-x text-lg"></i>
+      </button>
+
+    </div>
+
+    <!-- Modal Form Body -->
+    <div class="p-8 max-h-[75vh] overflow-y-auto space-y-6">
+
+      <!-- Error Message -->
+      <div
+        *ngIf="mensajeModalError"
+        class="p-4 bg-rose-950/50 border border-rose-800/60 rounded-2xl text-xs font-semibold text-rose-300 flex items-center gap-3"
+      >
+        <i class="ph ph-warning-circle text-lg text-rose-400 shrink-0"></i>
+        <span>{{ mensajeModalError }}</span>
+      </div>
+
+      <form
+        #formSucursal="ngForm"
+        class="space-y-5 text-xs"
+      >
+
+        <!-- Empresa / Tenant -->
+        <div *ngIf="isGlobalAdmin">
+
+          <label class="block font-bold text-zinc-300 mb-1.5 flex items-center justify-between">
+            <span>Empresa / Tenant Perteneciente *</span>
+            <span class="text-[10px] font-normal text-amber-400">
+              Multi-Tenant
+            </span>
+          </label>
+
+          <select
+            name="id_empresa"
+            [(ngModel)]="sucursalForm.id_empresa"
+            required
+            class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-white focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all cursor-pointer"
+          >
+
+            <option [ngValue]="0" disabled>
+              Selecciona una empresa matriz
+            </option>
+
+            <option
+              *ngFor="let emp of empresas"
+              [ngValue]="emp.id_empresa"
+            >
+              {{ emp.nombre_empresa }} (NIT: {{ emp.nit }})
+            </option>
+
+          </select>
+
+        </div>
+
+        <!-- Nombre -->
+        <div>
+
+          <label class="block font-bold text-zinc-300 mb-1.5 flex items-center justify-between">
+            <span>Nombre de la Sucursal *</span>
+            <span class="text-[10px] font-normal text-amber-400">
+              Obligatorio
+            </span>
+          </label>
+
+          <input
+            type="text"
+            name="nombre"
+            [(ngModel)]="sucursalForm.nombre"
+            required
+            placeholder="Ej. Sucursal Central Equipetrol"
+            class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-white placeholder-zinc-600 focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all"
+          />
+
+        </div>
+
+        <!-- Ciudad / Departamento -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          <!-- Ciudad -->
+          <div class="relative">
+
+            <label class="block font-bold text-zinc-300 mb-1.5 flex items-center justify-between">
+              <span>Ciudad *</span>
+              <span class="text-[10px] font-normal text-amber-400">
+                MenuItem predictivo
+              </span>
+            </label>
+
+            <div class="relative">
+
+              <i class="ph ph-buildings absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 text-base pointer-events-none"></i>
+
+              <input
+                type="text"
+                name="ciudad"
+                [(ngModel)]="inputCiudadTexto"
+                (input)="onInputCiudad(inputCiudadTexto)"
+                (focus)="onInputCiudad(inputCiudadTexto)"
+                (blur)="cerrarMenuCiudadesConRetraso()"
+                required
+                autocomplete="off"
+                placeholder="Escribe ciudad (ej. Montero, El Alto)..."
+                class="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-10 pr-3 py-3 text-white placeholder-zinc-600 focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all"
+              />
+
+            </div>
+
+            <!-- MenuItem -->
+            <div
+              *ngIf="mostrarMenuCiudades"
+              class="absolute top-full left-0 right-0 z-30 mt-1 bg-zinc-900 border border-zinc-700 rounded-2xl shadow-2xl p-2 max-h-56 overflow-y-auto space-y-1 backdrop-blur-xl ring-1 ring-amber-500/30"
+            >
+
+              <div class="px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                Ciudades sugeridas de Bolivia:
+              </div>
+
+              <button
+                type="button"
+                *ngFor="let sug of sugerenciasCiudades"
+                (click)="seleccionarCiudadSugerida(sug)"
+                class="w-full text-left px-3 py-2 rounded-xl hover:bg-amber-500/10 hover:border-amber-500/30 border border-transparent flex items-center justify-between text-xs transition-colors group cursor-pointer"
+              >
+
+                <span class="font-bold text-white group-hover:text-amber-300">
+                  {{ sug.nombre }}
+                </span>
+
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 group-hover:bg-amber-500/20 group-hover:text-amber-300">
+                  {{ sug.departamento }}
+                </span>
+
+              </button>
+
+              <div
+                *ngIf="inputCiudadTexto.trim().length > 0"
+                class="pt-1 border-t border-zinc-800 mt-1"
+              >
+
+                <button
+                  type="button"
+                  (click)="seleccionarCiudadPersonalizada()"
+                  class="w-full text-left px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-semibold flex items-center gap-2 hover:bg-amber-500/20 transition-all cursor-pointer"
+                >
+
+                  <i class="ph ph-plus-circle text-sm"></i>
+
+                  <span>
+                    Usar ciudad:
+                    "<strong>{{ inputCiudadTexto.trim() }}</strong>"
+                  </span>
+
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Departamento -->
+          <div>
+
+            <label class="block font-bold text-zinc-300 mb-1.5 flex items-center justify-between">
+              <span>Departamento *</span>
+              <span class="text-[10px] font-normal text-amber-400">
+                Bolivia
+              </span>
+            </label>
+
+            <select
+              name="departamento"
+              [(ngModel)]="sucursalForm.departamento"
+              (change)="onDepartamentoChange()"
+              required
+              class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-white focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all cursor-pointer"
+            >
+
+              <option
+                *ngFor="let d of departamentosBolivia"
+                [value]="d"
+              >
+                {{ d }}
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+        <!-- Dirección -->
+        <div>
+
+          <label class="block font-bold text-zinc-300 mb-1.5 flex items-center justify-between">
+            <span>Dirección Física de la Sede *</span>
+            <span class="text-[10px] font-normal text-amber-400">
+              Obligatorio
+            </span>
+          </label>
+
+          <input
+            type="text"
+            name="direccion"
+            [(ngModel)]="sucursalForm.direccion"
+            required
+            placeholder="Ej. Av. San Martín #450, entre 3er y 4to anillo"
+            class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-white placeholder-zinc-600 focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all"
+          />
+
+        </div>
+
+        <!-- Ubicación Geográfica -->
+        <div class="space-y-2">
+
+          <label class="block font-bold text-zinc-300 flex items-center justify-between">
+
+            <span>
+              Ubicación de la Sucursal *
+            </span>
+
+            <span class="text-[10px] font-normal text-amber-400">
+              Selecciona en el mapa
+            </span>
+
+          </label>
+
+          <app-mapa-sucursal
+            [latitud]="sucursalForm.latitud"
+            [longitud]="sucursalForm.longitud"
+            (ubicacionSeleccionada)="seleccionarUbicacionSucursal($event)"
+          >
+          </app-mapa-sucursal>
+
+        </div>
+
+        <!-- Teléfono & Estado -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          <!-- Teléfono -->
+          <div>
+
+            <label class="block font-bold text-zinc-300 mb-1.5 flex items-center justify-between">
+              <span>Teléfono de Contacto *</span>
+              <span class="text-[10px] font-normal text-amber-400">
+                Obligatorio
+              </span>
+            </label>
+
+            <input
+              type="text"
+              name="telefono"
+              [(ngModel)]="sucursalForm.telefono"
+              required
+              placeholder="Ej. 70011223 o 3-3445566"
+              class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-white placeholder-zinc-600 focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all"
+            />
+
+          </div>
+
+          <!-- Estado -->
+          <div>
+
+            <label class="block font-bold text-zinc-300 mb-1.5">
+              Estado Operativo
+            </label>
+
+            <select
+              name="activo"
+              [(ngModel)]="sucursalForm.activo"
+              required
+              class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-white focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all cursor-pointer"
+            >
+
+              <option [ngValue]="true">
+                ACTIVA (Habilitada para inventario)
+              </option>
+
+              <option [ngValue]="false">
+                INACTIVA (Suspendida)
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+      </form>
+
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="px-8 py-5 border-t border-zinc-800 bg-zinc-900/60 flex items-center justify-end gap-3">
+
+      <button
+        type="button"
+        (click)="cerrarModalSucursal()"
+        class="px-5 py-2.5 text-xs font-bold text-zinc-300 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl transition-all cursor-pointer"
+      >
+        Cancelar
+      </button>
+
+      <button
+        type="button"
+        (click)="guardarSucursal()"
+        [disabled]="guardando"
+        class="px-6 py-2.5 text-xs font-black text-zinc-950 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 rounded-xl transition-all disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-amber-500/20 ring-1 ring-amber-400/40 cursor-pointer"
+      >
+
+        <span
+          *ngIf="guardando"
+          class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-zinc-950 border-r-transparent"
+        ></span>
+
+        <i
+          *ngIf="!guardando"
+          class="ph ph-check text-base"
+        ></i>
+
+        {{ modoEdicionSucursal ? 'Actualizar Sucursal' : 'Registrar Sucursal' }}
+
+      </button>
+
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ==================================================== -->
+<!-- MODAL: REGISTRAR / EDITAR CIUDAD                     -->
+<!-- ==================================================== -->
+
+<div
+  *ngIf="mostrarModalCiudad"
+  class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/85 backdrop-blur-md transition-all overflow-y-auto"
+>
+
+  <div class="bg-zinc-950 border border-zinc-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden ring-1 ring-amber-500/20 my-8">
+
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center px-8 py-6 border-b border-zinc-800 bg-zinc-900/60">
+
+      <div class="space-y-1">
+
+        <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold uppercase tracking-widest">
+          {{ modoEdicionCiudad ? 'Editar Ciudad' : 'Nueva Ciudad' }}
+        </div>
+
+        <h3 class="text-lg font-black text-white">
+
+          <span *ngIf="modoEdicionCiudad">
+            Editar Ciudad
+            <span class="text-amber-400 font-mono text-sm">
+              #{{ ciudadForm.id_ciudad }}
+            </span>
+          </span>
+
+          <span *ngIf="!modoEdicionCiudad">
+            Registrar Ciudad de Referencia
+          </span>
+
+        </h3>
+
+      </div>
+
+      <button
+        (click)="cerrarModalCiudad()"
+        class="p-2 text-zinc-400 hover:text-white rounded-xl hover:bg-zinc-900 transition-colors cursor-pointer"
+      >
+        <i class="ph ph-x text-lg"></i>
+      </button>
+
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-8 space-y-5">
+
+      <div
+        *ngIf="mensajeModalError"
+        class="p-4 bg-rose-950/50 border border-rose-800/60 rounded-2xl text-xs font-semibold text-rose-300 flex items-center gap-3"
+      >
+        <i class="ph ph-warning-circle text-lg text-rose-400 shrink-0"></i>
+        <span>{{ mensajeModalError }}</span>
+      </div>
+
+      <form
+        #formCiudad="ngForm"
+        class="space-y-4 text-xs"
+      >
+
+        <!-- Nombre Ciudad -->
+        <div>
+
+          <label class="block font-bold text-zinc-300 mb-1.5">
+            Nombre de la Ciudad *
+          </label>
+
+          <input
+            type="text"
+            name="nombre_ciudad"
+            [(ngModel)]="ciudadForm.nombre"
+            required
+            placeholder="Ej. Montero, Sucre, Quillacollo"
+            class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-white placeholder-zinc-600 focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all"
+          />
+
+        </div>
+
+        <!-- Departamento -->
+        <div>
+
+          <label class="block font-bold text-zinc-300 mb-1.5">
+            Departamento de Bolivia *
+          </label>
+
+          <select
+            name="depto_ciudad"
+            [(ngModel)]="ciudadForm.departamento"
+            required
+            class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-white focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all cursor-pointer"
+          >
+
+            <option
+              *ngFor="let d of departamentosBolivia"
+              [value]="d"
+            >
+              {{ d }}
+            </option>
+
+          </select>
+
+        </div>
+
+        <!-- Estado -->
+        <div>
+
+          <label class="block font-bold text-zinc-300 mb-1.5">
+            Estado
+          </label>
+
+          <select
+            name="estado_ciudad"
+            [(ngModel)]="ciudadForm.estado"
+            required
+            class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-white focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all cursor-pointer"
+          >
+
+            <option [ngValue]="true">
+              ACTIVA
+            </option>
+
+            <option [ngValue]="false">
+              INACTIVA
+            </option>
+
+          </select>
+
+        </div>
+
+      </form>
+
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="px-8 py-5 border-t border-zinc-800 bg-zinc-900/60 flex items-center justify-end gap-3">
+
+      <button
+        type="button"
+        (click)="cerrarModalCiudad()"
+        class="px-5 py-2.5 text-xs font-bold text-zinc-300 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl transition-all cursor-pointer"
+      >
+        Cancelar
+      </button>
+
+      <button
+        type="button"
+        (click)="guardarCiudad()"
+        [disabled]="formCiudad.invalid || guardando"
+        class="px-6 py-2.5 text-xs font-black text-zinc-950 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 rounded-xl transition-all disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-amber-500/20 ring-1 ring-amber-400/40 cursor-pointer"
+      >
+
+        <span
+          *ngIf="guardando"
+          class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-zinc-950 border-r-transparent"
+        ></span>
+
+        <i
+          *ngIf="!guardando"
+          class="ph ph-check text-base"
+        ></i>
+
+        {{ modoEdicionCiudad ? 'Actualizar' : 'Crear Ciudad' }}
+
+      </button>
+
+    </div>
+
+  </div>
+</div>

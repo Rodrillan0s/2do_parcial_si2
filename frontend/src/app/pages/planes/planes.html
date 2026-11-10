@@ -1,0 +1,431 @@
+<div class="space-y-8 pb-12">
+
+  <!-- Header Section -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2.5">
+        <h1 class="text-2xl font-black tracking-tight text-zinc-900 dark:text-white">Planes y Contrataciones SaaS</h1>
+        <span class="px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+          SaaS
+        </span>
+      </div>
+      <p class="text-xs font-medium text-zinc-500 dark:text-slate-400 mt-1">
+        Catálogo oficial de planes, tarifas públicas en BOB y validación de contrataciones autónomas.
+      </p>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex items-center gap-3">
+      <button (click)="cargarPlanes(); cargarContrataciones()"
+              [disabled]="cargando"
+              class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-zinc-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-xl hover:bg-stone-50 dark:hover:bg-slate-800/80 transition-all shadow-sm disabled:opacity-50 cursor-pointer">
+        <svg [ngClass]="cargando ? 'animate-spin' : ''" class="w-4 h-4 text-zinc-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        <span>Actualizar</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Notification Banner -->
+  <div *ngIf="mensajeExito"
+       class="flex items-center justify-between p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-xs font-medium transition-all animate-fadeIn">
+    <div class="flex items-center gap-2.5">
+      <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span>{{ mensajeExito }}</span>
+    </div>
+    <button (click)="mensajeExito = ''" class="text-emerald-600 hover:text-emerald-800 dark:hover:text-emerald-200">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+    </button>
+  </div>
+
+  <!-- Error Banner -->
+  <div *ngIf="mensajeError"
+       class="flex items-center justify-between p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-rose-800 dark:text-rose-300 text-xs font-medium transition-all animate-fadeIn">
+    <div class="flex items-center gap-2.5">
+      <svg class="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span>{{ mensajeError }}</span>
+    </div>
+    <button (click)="mensajeError = ''" class="text-rose-600 hover:text-rose-800 dark:hover:text-rose-200">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+    </button>
+  </div>
+
+  <!-- Plans Grid -->
+  <div *ngIf="!cargando && planes.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div *ngFor="let plan of planes"
+         class="relative overflow-hidden rounded-3xl bg-white dark:bg-slate-950 border transition-all duration-300 p-6 sm:p-8 flex flex-col justify-between group shadow-sm hover:shadow-xl"
+         [ngClass]="plan.codigo === 'PROFESIONAL'
+           ? 'border-indigo-300/70 dark:border-indigo-600/40 ring-1 ring-indigo-500/20'
+           : 'border-stone-200 dark:border-slate-800'">
+
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-black tracking-widest uppercase px-3 py-1 rounded-full"
+                  [ngClass]="plan.codigo === 'PROFESIONAL'
+                    ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-md shadow-indigo-500/20'
+                    : 'bg-stone-100 dark:bg-slate-900 text-zinc-700 dark:text-slate-300 border border-stone-200 dark:border-slate-800'">
+              {{ plan.codigo }}
+            </span>
+            <span *ngIf="plan.codigo === 'PROFESIONAL'"
+                  class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-950/70 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800">
+              Recomendado
+            </span>
+          </div>
+
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold"
+                [ngClass]="plan.activo
+                  ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40'
+                  : 'bg-stone-100 dark:bg-slate-900 text-zinc-500 dark:text-slate-400 border border-stone-200 dark:border-slate-800'">
+            <span class="w-1.5 h-1.5 rounded-full" [ngClass]="plan.activo ? 'bg-emerald-500' : 'bg-zinc-400'"></span>
+            {{ plan.activo ? 'Disponible' : 'Inactivo' }}
+          </span>
+        </div>
+
+        <div class="flex flex-wrap items-baseline justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">{{ plan.nombre }}</h2>
+            <p class="text-xs text-zinc-500 dark:text-slate-400 mt-1 leading-relaxed">
+              {{ plan.descripcion || (plan.codigo === 'BASICO'
+                ? 'Diseñado para empresas boutique y tiendas en crecimiento que operan hasta dos sucursales activas.'
+                : 'Para cadenas comerciales y empresas multitienda que requieren analítica avanzada y alta capacidad.') }}
+            </p>
+          </div>
+          <div class="text-right">
+            <div class="text-2xl font-black text-zinc-900 dark:text-white">
+              Bs. {{ plan.precio_mensual || (plan.codigo === 'PROFESIONAL' ? 399 : 199) }}
+              <span class="text-xs font-normal text-zinc-400">/mes</span>
+            </div>
+            <div class="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">
+              Bs. {{ plan.precio_anual || (plan.codigo === 'PROFESIONAL' ? 3990 : 1990) }} /año ({{ plan.moneda || 'BOB' }})
+            </div>
+          </div>
+        </div>
+
+        <div class="my-6 border-b border-stone-100 dark:border-slate-800/80"></div>
+
+        <!-- Features list -->
+        <div class="space-y-3.5">
+          <div class="flex items-start gap-3">
+            <div class="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-zinc-900 dark:text-white">
+                Hasta {{ plan.max_sucursales }} sucursales activas
+              </p>
+              <p class="text-[11px] text-zinc-500 dark:text-slate-400 mt-0.5">
+                Capacidad simultánea de tiendas físicas activas bajo la misma empresa.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-3">
+            <div class="p-1.5 rounded-lg shrink-0 mt-0.5"
+                 [ngClass]="plan.reportes_generativos
+                   ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400'
+                   : 'bg-stone-100 dark:bg-slate-900 text-zinc-400 dark:text-slate-500'">
+              <svg *ngIf="plan.reportes_generativos" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+              </svg>
+              <svg *ngIf="!plan.reportes_generativos" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-zinc-900 dark:text-white">
+                Motor Dinámico de Reportes e Inteligencia de Negocio
+              </p>
+              <p class="text-[11px] text-zinc-500 dark:text-slate-400 mt-0.5">
+                {{ plan.reportes_generativos
+                  ? 'Consultas personalizadas con lenguaje natural, exportación PDF/Excel y analítica avanzada.'
+                  : 'Incluye reportes operacionales estándar de ventas, inventario y catálogo.' }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 pt-6 border-t border-stone-100 dark:border-slate-800/80 flex items-center justify-between">
+        <span class="text-[11px] font-semibold text-zinc-400 dark:text-slate-400">
+          Contratación habilitada
+        </span>
+
+        <button *ngIf="puedeGestionar"
+                (click)="abrirModalEditar(plan)"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800/60 rounded-xl transition-all cursor-pointer">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          </svg>
+          <span>Editar Plan</span>
+        </button>
+
+        <!-- Botón Cambiar a este Plan para el Administrador de Tienda -->
+        <a *ngIf="!authService.isGlobalAdmin()"
+           [routerLink]="['/admin/suscripciones']"
+           [queryParams]="{ cambiarPlan: plan.codigo }"
+           class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md shadow-indigo-600/20 transition-all cursor-pointer">
+          <span>Elegir / Cambiar →</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- BANDEJA DE CONTRATACIONES AUTÓNOMAS SAAS (SUPERADMIN)                     -->
+  <!-- ========================================================================= -->
+  <div *ngIf="puedeGestionarContrataciones" class="rounded-3xl bg-white dark:bg-slate-950 border border-stone-200 dark:border-slate-800 p-6 sm:p-8 shadow-sm space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2.5">
+          <h2 class="text-lg font-black text-zinc-900 dark:text-white">Solicitudes de Contratación Autónoma</h2>
+          <span *ngIf="pendientesCount > 0"
+                class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
+            {{ pendientesCount }} pendientes de verificación
+          </span>
+        </div>
+        <p class="text-xs text-zinc-500 dark:text-slate-400 mt-1">
+          Revisa comprobantes de pago por QR/Transferencia o contrataciones validadas automáticamente por PayPal.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <select [(ngModel)]="filtroEstadoContratacion" (change)="cargarContrataciones()"
+                class="px-3.5 py-2 text-xs font-semibold rounded-xl bg-stone-50 dark:bg-slate-900 border border-stone-200 dark:border-slate-800 text-zinc-800 dark:text-white">
+          <option value="">Todos los estados</option>
+          <option value="PENDIENTE_VERIFICACION_PAGO">Pendientes de Verificación</option>
+          <option value="PENDIENTE_PAGO">Pendientes de Pago</option>
+          <option value="PENDIENTE_VERIFICACION_CORREO">Pendientes de Correo</option>
+          <option value="ACTIVA">Activas</option>
+          <option value="RECHAZADO">Rechazadas</option>
+        </select>
+      </div>
+    </div>
+
+    <div *ngIf="cargandoContrataciones" class="py-8 text-center text-xs text-zinc-400">
+      Cargando solicitudes de contratación...
+    </div>
+
+    <div *ngIf="!cargandoContrataciones && contrataciones.length === 0" class="py-10 text-center rounded-2xl bg-stone-50 dark:bg-slate-900/50 border border-stone-200/60 dark:border-slate-800/60">
+      <p class="text-xs font-semibold text-zinc-500 dark:text-slate-400">No hay solicitudes de contratación con el filtro seleccionado.</p>
+    </div>
+
+    <div *ngIf="!cargandoContrataciones && contrataciones.length > 0" class="overflow-x-auto">
+      <table class="w-full text-left border-collapse text-xs">
+        <thead>
+          <tr class="border-b border-stone-200 dark:border-slate-800 text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+            <th class="py-3 pr-4">Código</th>
+            <th class="py-3 px-4">Tienda / Slug</th>
+            <th class="py-3 px-4">Propietario</th>
+            <th class="py-3 px-4">Plan & Monto</th>
+            <th class="py-3 px-4">Método / Ref</th>
+            <th class="py-3 px-4">Estado</th>
+            <th class="py-3 pl-4 text-right">Acción</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-stone-100 dark:divide-slate-900">
+          <tr *ngFor="let sol of contrataciones" class="hover:bg-stone-50/70 dark:hover:bg-slate-900/40 transition-colors">
+            <td class="py-3.5 pr-4 font-mono font-bold text-indigo-600 dark:text-indigo-400">
+              {{ sol.codigo_seguimiento }}
+            </td>
+            <td class="py-3.5 px-4">
+              <div class="font-bold text-zinc-900 dark:text-white">{{ sol.nombre_empresa }}</div>
+              <div class="text-[11px] font-mono text-zinc-400">/t/{{ sol.slug }}</div>
+            </td>
+            <td class="py-3.5 px-4">
+              <div class="font-semibold text-zinc-800 dark:text-slate-200">{{ sol.nombre_propietario }}</div>
+              <div class="text-[11px] text-zinc-400">{{ sol.correo_propietario }}</div>
+            </td>
+            <td class="py-3.5 px-4">
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300">
+                {{ sol.codigo_plan }} · {{ sol.periodicidad }}
+              </span>
+              <div class="font-bold text-zinc-900 dark:text-white mt-0.5">{{ sol.moneda }} {{ sol.monto }}</div>
+            </td>
+            <td class="py-3.5 px-4">
+              <div class="font-semibold text-zinc-700 dark:text-slate-300">{{ sol.metodo_pago || 'Sin seleccionar' }}</div>
+              <div *ngIf="sol.referencia_pago" class="text-[11px] font-mono text-zinc-400 truncate max-w-[140px]">Ref: {{ sol.referencia_pago }}</div>
+              <a *ngIf="sol.comprobante_url" [href]="sol.comprobante_url" target="_blank"
+                 class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline mt-0.5">
+                <i class="ph ph-file-image"></i> Ver comprobante
+              </a>
+            </td>
+            <td class="py-3.5 px-4">
+              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                    [ngClass]="{
+                      'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300': sol.estado_contratacion === 'ACTIVA',
+                      'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300': sol.estado_contratacion === 'PENDIENTE_VERIFICACION_PAGO',
+                      'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300': sol.estado_contratacion === 'RECHAZADO',
+                      'bg-stone-100 text-zinc-600 dark:bg-slate-800 dark:text-slate-400': sol.estado_contratacion === 'PENDIENTE_PAGO' || sol.estado_contratacion === 'PENDIENTE_VERIFICACION_CORREO'
+                    }">
+                {{ sol.estado_contratacion }}
+              </span>
+            </td>
+            <td class="py-3.5 pl-4 text-right">
+              <button *ngIf="sol.estado_contratacion === 'PENDIENTE_VERIFICACION_PAGO' || sol.estado_contratacion === 'PENDIENTE_PAGO'"
+                      (click)="abrirRevisionSolicitud(sol)"
+                      class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition cursor-pointer">
+                Revisar / Activar
+              </button>
+              <span *ngIf="sol.estado_contratacion === 'ACTIVA'" class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                Empresa #{{ sol.id_empresa }} activa
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal Revisión de Solicitud de Contratación -->
+  <div *ngIf="solicitudEnRevision"
+       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 dark:bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+    <div class="w-full max-w-lg rounded-3xl bg-white dark:bg-slate-950 border border-stone-200 dark:border-slate-800 shadow-2xl overflow-hidden">
+      <div class="p-6 border-b border-stone-100 dark:border-slate-800 flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-black text-zinc-900 dark:text-white">Validar Contratación {{ solicitudEnRevision.codigo_seguimiento }}</h3>
+          <p class="text-xs text-zinc-500 mt-0.5">{{ solicitudEnRevision.nombre_empresa }} (/t/{{ solicitudEnRevision.slug }})</p>
+        </div>
+        <button (click)="cerrarRevisionSolicitud()" class="p-2 text-zinc-400 hover:text-zinc-600 rounded-xl">✕</button>
+      </div>
+
+      <div class="p-6 space-y-4 text-xs">
+        <div class="grid grid-cols-2 gap-3 p-4 rounded-2xl bg-stone-50 dark:bg-slate-900 border border-stone-200 dark:border-slate-800">
+          <div>
+            <span class="text-zinc-400 block">Propietario</span>
+            <strong class="text-zinc-900 dark:text-white">{{ solicitudEnRevision.nombre_propietario }}</strong>
+            <span class="block text-[11px] text-zinc-500">{{ solicitudEnRevision.correo_propietario }}</span>
+          </div>
+          <div>
+            <span class="text-zinc-400 block">Plan y Monto</span>
+            <strong class="text-indigo-600 dark:text-indigo-400">{{ solicitudEnRevision.codigo_plan }} ({{ solicitudEnRevision.periodicidad }})</strong>
+            <span class="block font-bold text-zinc-900 dark:text-white">{{ solicitudEnRevision.moneda }} {{ solicitudEnRevision.monto }}</span>
+          </div>
+          <div>
+            <span class="text-zinc-400 block">Método de Pago</span>
+            <strong class="text-zinc-900 dark:text-white">{{ solicitudEnRevision.metodo_pago || 'QR_TRANSFERENCIA' }}</strong>
+          </div>
+          <div>
+            <span class="text-zinc-400 block">Referencia</span>
+            <strong class="font-mono text-zinc-900 dark:text-white">{{ solicitudEnRevision.referencia_pago || 'Sin referencia' }}</strong>
+          </div>
+        </div>
+
+        <div *ngIf="solicitudEnRevision.comprobante_url" class="space-y-2">
+          <span class="font-bold text-zinc-700 dark:text-slate-300 block">Comprobante Adjunto</span>
+          <a [href]="solicitudEnRevision.comprobante_url" target="_blank" class="block rounded-2xl overflow-hidden border border-stone-200 dark:border-slate-800 max-h-56 bg-stone-100 dark:bg-slate-900">
+            <img [src]="solicitudEnRevision.comprobante_url" alt="Comprobante de pago" class="w-full h-52 object-contain" />
+          </a>
+        </div>
+
+        <div>
+          <label class="block font-bold text-zinc-700 dark:text-slate-300 mb-1.5">Notas de verificación administrativa</label>
+          <textarea [(ngModel)]="notasRevision" rows="2" placeholder="Ej. Comprobante verificado en extracto bancario..."
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-stone-50 dark:bg-slate-900 border border-stone-200 dark:border-slate-800 text-zinc-900 dark:text-white"></textarea>
+        </div>
+      </div>
+
+      <div class="p-6 border-t border-stone-100 dark:border-slate-800 bg-stone-50/50 dark:bg-slate-900/30 flex items-center justify-between gap-3">
+        <button (click)="resolverContratacion('RECHAZAR')"
+                [disabled]="resolviendoSolicitud"
+                class="px-4 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-xl transition cursor-pointer">
+          Rechazar Comprobante
+        </button>
+        <div class="flex items-center gap-2">
+          <button (click)="cerrarRevisionSolicitud()"
+                  class="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-slate-300 rounded-xl cursor-pointer">
+            Cancelar
+          </button>
+          <button (click)="resolverContratacion('APROBAR')"
+                  [disabled]="resolviendoSolicitud"
+                  class="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-md shadow-emerald-600/20 transition cursor-pointer">
+            {{ resolviendoSolicitud ? 'Activando...' : 'Aprobar y Activar Suscripción' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Plan Modal -->
+  <div *ngIf="mostrarModal"
+       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 dark:bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+    <div class="w-full max-w-md rounded-3xl bg-white dark:bg-slate-950 border border-stone-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-slideUp">
+
+      <div class="p-6 border-b border-stone-100 dark:border-slate-800 flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-black text-zinc-900 dark:text-white">Editar Plan {{ planEnEdicion?.codigo }}</h3>
+          <p class="text-xs text-zinc-500 dark:text-slate-400 mt-0.5">Ajuste de nombre comercial, tarifas oficiales y disponibilidad</p>
+        </div>
+        <button (click)="cerrarModal()" class="p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-slate-200 rounded-xl transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+
+      <div *ngIf="mensajeModalError" class="mx-6 mt-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs">
+        {{ mensajeModalError }}
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-1.5">Nombre Comercial</label>
+          <input type="text"
+                 [(ngModel)]="formNombre"
+                 maxlength="80"
+                 class="w-full px-3.5 py-2.5 text-xs bg-stone-50 dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-xl text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-1.5">Precio Mensual (BOB)</label>
+            <input type="number" step="0.01" [(ngModel)]="formPrecioMensual"
+                   class="w-full px-3.5 py-2.5 text-xs bg-stone-50 dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-xl text-zinc-900 dark:text-white" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-1.5">Precio Anual (BOB)</label>
+            <input type="number" step="0.01" [(ngModel)]="formPrecioAnual"
+                   class="w-full px-3.5 py-2.5 text-xs bg-stone-50 dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-xl text-zinc-900 dark:text-white" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-1.5">Descripción Comercial</label>
+          <textarea [(ngModel)]="formDescripcion" rows="2"
+                    class="w-full px-3.5 py-2.5 text-xs bg-stone-50 dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-xl text-zinc-900 dark:text-white"></textarea>
+        </div>
+
+        <div class="flex items-center justify-between pt-2">
+          <div>
+            <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300">Plan Disponible</label>
+            <p class="text-[11px] text-zinc-500 dark:text-slate-400">Habilita la contratación de este plan en /saas.</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" [(ngModel)]="formActivo" class="sr-only peer">
+            <div class="w-11 h-6 bg-stone-200 peer-focus:outline-none rounded-full peer dark:bg-slate-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-700 peer-checked:bg-indigo-600"></div>
+          </label>
+        </div>
+      </div>
+
+      <div class="p-6 border-t border-stone-100 dark:border-slate-800 bg-stone-50/50 dark:bg-slate-900/30 flex items-center justify-end gap-3">
+        <button (click)="cerrarModal()"
+                [disabled]="guardando"
+                class="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-slate-300 hover:bg-stone-200/60 dark:hover:bg-slate-800 rounded-xl transition-colors">
+          Cancelar
+        </button>
+        <button (click)="guardarPlan()"
+                [disabled]="guardando"
+                class="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 rounded-xl shadow-md shadow-indigo-600/25 transition-all disabled:opacity-50">
+          <span>{{ guardando ? 'Guardando...' : 'Guardar Cambios' }}</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>

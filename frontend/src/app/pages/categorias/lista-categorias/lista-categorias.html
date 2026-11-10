@@ -1,0 +1,643 @@
+<div class="space-y-6 animate-fade-in text-zinc-900 dark:text-zinc-100">
+
+  <!-- CABECERA PRINCIPAL -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-200 dark:border-zinc-800/80 pb-6">
+    <div>
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-600 dark:text-amber-400">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
+            Categorías de Prendas
+          </h1>
+          <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
+            Gestión de categorías jerárquicas y líneas de moda pertenecientes al Tenant actual.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botón Registrar Categoría -->
+    <div class="flex items-center gap-3">
+      <button 
+        (click)="abrirModalCrear()"
+        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-semibold shadow-lg shadow-amber-500/20 transition-all duration-200 active:scale-95 text-sm cursor-pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4"/>
+        </svg>
+        <span>Nueva Categoría</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- MENSAJES DE ALERTA -->
+  <div *ngIf="mensajeExito" class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-400 flex items-center justify-between text-sm animate-fade-in shadow-sm dark:shadow-lg dark:shadow-emerald-950/40">
+    <div class="flex items-center gap-3">
+      <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span>{{ mensajeExito }}</span>
+    </div>
+    <button (click)="mensajeExito = ''" class="text-emerald-600 dark:text-emerald-400/60 hover:text-emerald-800 dark:hover:text-emerald-300 cursor-pointer">✕</button>
+  </div>
+
+  <div *ngIf="mensajeError" class="p-4 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-400 flex items-center justify-between text-sm animate-fade-in shadow-sm dark:shadow-lg dark:shadow-rose-950/40">
+    <div class="flex items-center gap-3">
+      <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span>{{ mensajeError }}</span>
+    </div>
+    <button (click)="mensajeError = ''" class="text-rose-600 dark:text-rose-400/60 hover:text-rose-800 dark:hover:text-rose-300 cursor-pointer">✕</button>
+  </div>
+
+  <!-- TARJETAS DE MÉTRICAS -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <!-- Total Categorías -->
+    <div class="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-stone-200 dark:border-zinc-800/80 shadow-sm backdrop-blur-sm">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Total Categorías</span>
+        <span class="p-2 rounded-xl bg-stone-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+        </span>
+      </div>
+      <p class="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mt-2">{{ totalCategorias }}</p>
+      <span class="text-xs text-zinc-500">Registradas en el catálogo</span>
+    </div>
+
+    <!-- Categorías Raíz -->
+    <div class="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-stone-200 dark:border-zinc-800/80 shadow-sm backdrop-blur-sm">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-medium text-amber-700 dark:text-amber-400 uppercase tracking-wider">Categorías Raíz</span>
+        <span class="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+          </svg>
+        </span>
+      </div>
+      <p class="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-2">{{ totalRaiz }}</p>
+      <span class="text-xs text-zinc-500">Líneas principales</span>
+    </div>
+
+    <!-- Subcategorías -->
+    <div class="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-stone-200 dark:border-zinc-800/80 shadow-sm backdrop-blur-sm">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-medium text-cyan-700 dark:text-cyan-400 uppercase tracking-wider">Subcategorías</span>
+        <span class="p-2 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+          </svg>
+        </span>
+      </div>
+      <p class="text-2xl font-bold text-cyan-600 dark:text-cyan-400 mt-2">{{ totalSubcategorias }}</p>
+      <span class="text-xs text-zinc-500">Jerárquicas dependientes</span>
+    </div>
+
+    <!-- Activas -->
+    <div class="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-stone-200 dark:border-zinc-800/80 shadow-sm backdrop-blur-sm">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-medium text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Activas</span>
+        <span class="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </span>
+      </div>
+      <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-2">{{ totalActivas }}</p>
+      <span class="text-xs text-zinc-500">Disponibles para productos</span>
+    </div>
+  </div>
+
+  <!-- BARRA DE FILTROS & BÚSQUEDA -->
+  <div class="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-stone-200 dark:border-zinc-800/80 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+    <!-- Buscador -->
+    <div class="relative flex-1">
+      <input 
+        type="text" 
+        [(ngModel)]="filtroBusqueda" 
+        (input)="onBusquedaInput()"
+        placeholder="Buscar por nombre, descripción o categoría padre..."
+        class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-stone-50 dark:bg-zinc-950/80 border border-stone-200 dark:border-zinc-800 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30 transition-all">
+      <svg class="w-4 h-4 text-zinc-400 dark:text-zinc-500 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2.5">
+      <!-- Selector Empresa (SuperAdmin) -->
+      <select 
+        *ngIf="esSuperAdmin && empresas.length > 0"
+        [(ngModel)]="filtroEmpresaId"
+        (change)="cargarCategorias()"
+        class="px-3 py-2.5 rounded-xl bg-stone-50 dark:bg-zinc-950/80 border border-stone-200 dark:border-zinc-800 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500/50 cursor-pointer">
+        <option [ngValue]="0">🏢 Todos los Tenants</option>
+        <option *ngFor="let emp of empresas" [ngValue]="emp.id_empresa">
+          🏢 {{ emp.nombre_empresa }}
+        </option>
+      </select>
+
+      <!-- Filtro Jerarquía -->
+      <select 
+        [(ngModel)]="filtroJerarquia" 
+        (change)="aplicarFiltros()"
+        class="px-3 py-2.5 rounded-xl bg-stone-50 dark:bg-zinc-950/80 border border-stone-200 dark:border-zinc-800 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500/50 cursor-pointer">
+        <option value="TODOS">🌿 Toda la Estructura</option>
+        <option value="RAIZ">👑 Categorías Raíz</option>
+        <option value="SUBCATEGORIAS">↳ Subcategorías</option>
+      </select>
+
+      <!-- Filtro Estado -->
+      <select 
+        [(ngModel)]="filtroEstado" 
+        (change)="aplicarFiltros()"
+        class="px-3 py-2.5 rounded-xl bg-stone-50 dark:bg-zinc-950/80 border border-stone-200 dark:border-zinc-800 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500/50 cursor-pointer">
+        <option value="TODOS">⚡ Todos los Estados</option>
+        <option value="ACTIVOS">🟢 Solo Activas</option>
+        <option value="INACTIVOS">⚪ Solo Inactivas</option>
+      </select>
+
+      <!-- Refrescar -->
+      <button 
+        (click)="cargarCategorias()" 
+        title="Refrescar datos"
+        class="p-2.5 rounded-xl bg-stone-100 dark:bg-zinc-800/80 hover:bg-stone-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition-colors border border-stone-200 dark:border-zinc-700/50 cursor-pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- TABLA DE CATEGORÍAS -->
+  <div class="rounded-2xl bg-white dark:bg-zinc-900/60 border border-stone-200 dark:border-zinc-800/80 overflow-hidden shadow-sm dark:shadow-xl dark:shadow-zinc-950/50">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm text-zinc-700 dark:text-zinc-300">
+        <thead class="bg-stone-50/90 dark:bg-zinc-950/60 text-xs uppercase font-semibold text-zinc-600 dark:text-zinc-400 border-b border-stone-200 dark:border-zinc-800">
+          <tr>
+            <th class="px-5 py-4">Categoría / Foto</th>
+            <th class="px-5 py-4">Jerarquía</th>
+            <th class="px-5 py-4 text-center">Productos</th>
+            <th class="px-5 py-4 text-center">Subcategorías</th>
+            <th *ngIf="esSuperAdmin" class="px-5 py-4">Tenant</th>
+            <th class="px-5 py-4 text-center">Estado</th>
+            <th class="px-5 py-4 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-stone-100 dark:divide-zinc-800/60">
+
+          <!-- Loading state -->
+          <tr *ngIf="cargando">
+            <td [attr.colspan]="esSuperAdmin ? 7 : 6" class="px-5 py-12 text-center text-zinc-500 dark:text-zinc-400">
+              <div class="flex flex-col items-center justify-center gap-3">
+                <div class="w-7 h-7 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+                <span class="text-xs font-medium">Cargando categorías de prendas...</span>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Empty state -->
+          <tr *ngIf="!cargando && categoriasFiltradas.length === 0">
+            <td [attr.colspan]="esSuperAdmin ? 7 : 6" class="px-5 py-12 text-center text-zinc-500">
+              <div class="flex flex-col items-center justify-center gap-2">
+                <svg class="w-10 h-10 text-zinc-400 dark:text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+                <p class="text-sm font-medium text-zinc-700 dark:text-zinc-400">No se encontraron categorías</p>
+                <p class="text-xs text-zinc-500">Pruebe ajustando los filtros o registre una nueva categoría.</p>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Rows -->
+          <tr *ngFor="let cat of categoriasFiltradas; trackBy: trackByCategoriaId" class="hover:bg-stone-50/80 dark:hover:bg-zinc-800/30 transition-colors group">
+            <!-- Categoría & Imagen Cloudinary -->
+            <td class="px-5 py-3.5">
+              <div class="flex items-center gap-3.5">
+                <!-- Miniatura Cloudinary o Icono -->
+                <div class="relative w-11 h-11 rounded-xl bg-stone-100 dark:bg-zinc-800/80 border border-stone-200 dark:border-zinc-700/60 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                  <img 
+                    *ngIf="cat.imagen_url" 
+                    [src]="cat.imagen_url" 
+                    [alt]="cat.nombre" 
+                    loading="lazy"
+                    decoding="async"
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                  <span *ngIf="!cat.imagen_url" class="text-zinc-400 dark:text-zinc-500 font-semibold text-xs">
+                    <svg class="w-5 h-5 text-zinc-400 dark:text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </span>
+                  <!-- Badge Cloudinary -->
+                  <span *ngIf="cat.imagen_url" title="Almacenado en Cloudinary" class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-sky-500 rounded-tl-md"></span>
+                </div>
+
+                <div>
+                  <div class="font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                    {{ cat.nombre }}
+                    <span *ngIf="cat.es_raiz" class="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+                      Raíz
+                    </span>
+                  </div>
+                  <p class="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-1 max-w-xs mt-0.5">
+                    {{ cat.descripcion || 'Sin descripción detallada' }}
+                  </p>
+                </div>
+              </div>
+            </td>
+
+            <!-- Jerarquía (Padre) -->
+            <td class="px-5 py-3.5">
+              <div *ngIf="cat.id_padre" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-zinc-800/80 border border-stone-200 dark:border-zinc-700/50 text-xs text-zinc-700 dark:text-zinc-300">
+                <span class="text-amber-600 dark:text-amber-400">↳</span>
+                <span class="font-medium text-zinc-900 dark:text-zinc-200">{{ cat.nombre_padre }}</span>
+              </div>
+              <div *ngIf="!cat.id_padre" class="text-xs text-zinc-400 dark:text-zinc-500 italic">
+                Nivel principal
+              </div>
+            </td>
+
+            <!-- Productos vinculados -->
+            <td class="px-5 py-3.5 text-center">
+              <span 
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border"
+                [ngClass]="(cat.total_productos || 0) > 0 ? 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300' : 'bg-stone-100 dark:bg-zinc-800/60 border-stone-200 dark:border-zinc-700/40 text-zinc-500'">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+                {{ cat.total_productos || 0 }}
+              </span>
+            </td>
+
+            <!-- Subcategorías -->
+            <td class="px-5 py-3.5 text-center">
+              <span 
+                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border"
+                [ngClass]="(cat.total_subcategorias || 0) > 0 ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-700 dark:text-cyan-300' : 'bg-stone-100 dark:bg-zinc-800/60 border-stone-200 dark:border-zinc-700/40 text-zinc-500'">
+                {{ cat.total_subcategorias || 0 }}
+              </span>
+            </td>
+
+            <!-- Tenant (si es SuperAdmin) -->
+            <td *ngIf="esSuperAdmin" class="px-5 py-3.5">
+              <div class="text-xs text-zinc-700 dark:text-zinc-300 font-medium">
+                {{ cat.empresa_nombre || 'Tenant #' + cat.id_empresa }}
+              </div>
+            </td>
+
+            <!-- Estado (Toggle) -->
+            <td class="px-5 py-3.5 text-center">
+              <button 
+                (click)="toggleEstado(cat, $event)"
+                [title]="cat.activo ? 'Click para desactivar' : 'Click para activar'"
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold cursor-pointer transition-all duration-200 border"
+                [ngClass]="cat.activo ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20' : 'bg-stone-100 dark:bg-zinc-800 border-stone-200 dark:border-zinc-700 text-zinc-500 hover:bg-stone-200 dark:hover:bg-zinc-700/60'">
+                <span class="w-1.5 h-1.5 rounded-full" [ngClass]="cat.activo ? 'bg-emerald-500 dark:bg-emerald-400 animate-pulse' : 'bg-zinc-400 dark:bg-zinc-500'"></span>
+                {{ cat.activo ? 'Activa' : 'Inactiva' }}
+              </button>
+            </td>
+
+            <!-- Acciones -->
+            <td class="px-5 py-3.5 text-right">
+              <div class="flex items-center justify-end gap-1.5">
+                <!-- Ver Detalle -->
+                <button 
+                  (click)="abrirDetalle(cat)"
+                  title="Ver detalle completo"
+                  class="p-2 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                </button>
+
+                <!-- Editar -->
+                <button 
+                  (click)="abrirModalEditar(cat)"
+                  title="Editar categoría"
+                  class="p-2 rounded-lg text-amber-400/80 hover:text-amber-400 hover:bg-amber-500/10 transition-colors cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+
+                <!-- Eliminar / Desactivar -->
+                <button 
+                  (click)="confirmarEliminacion(cat)"
+                  title="Eliminar o desactivar categoría"
+                  class="p-2 rounded-lg text-rose-400/80 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MODAL: CREAR / EDITAR CATEGORÍA -->
+  <div *ngIf="mostrarModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-md animate-fade-in">
+    <div class="relative w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
+      
+      <!-- Encabezado Modal -->
+      <div class="px-6 py-4.5 border-b border-zinc-800 flex items-center justify-between bg-zinc-950/40">
+        <div class="flex items-center gap-3">
+          <div class="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+            </svg>
+          </div>
+          <h2 class="text-lg font-bold text-zinc-100">
+            {{ modoEdicion ? 'Editar Categoría' : 'Registrar Nueva Categoría' }}
+          </h2>
+        </div>
+        <button (click)="cerrarModal()" class="text-zinc-500 hover:text-zinc-300 p-1.5 rounded-lg hover:bg-zinc-800 transition-colors">
+          ✕
+        </button>
+      </div>
+
+      <!-- Error dentro del modal -->
+      <div *ngIf="mensajeModalError" class="mx-6 mt-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>{{ mensajeModalError }}</span>
+      </div>
+
+      <!-- Formulario -->
+      <div class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+        
+        <!-- Nombre* -->
+        <div>
+          <label class="block text-xs font-semibold text-zinc-300 mb-1.5 uppercase tracking-wider">
+            Nombre de la Categoría <span class="text-amber-400">*</span>
+          </label>
+          <input 
+            type="text" 
+            [(ngModel)]="categoriaForm.nombre" 
+            placeholder="Ej: Sastrería & Sacos, Camisas de Lino, etc."
+            class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30">
+          <p class="text-[11px] text-zinc-500 mt-1">Debe ser único dentro de su Tenant/Empresa.</p>
+        </div>
+
+        <!-- Descripción -->
+        <div>
+          <label class="block text-xs font-semibold text-zinc-300 mb-1.5 uppercase tracking-wider">
+            Descripción
+          </label>
+          <textarea 
+            [(ngModel)]="categoriaForm.descripcion" 
+            rows="3"
+            placeholder="Detalles sobre las prendas, tejidos, temporadas o cortes que componen esta categoría..."
+            class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30"></textarea>
+        </div>
+
+        <!-- Categoría Padre (Jerarquía) -->
+        <div>
+          <label class="block text-xs font-semibold text-zinc-300 mb-1.5 uppercase tracking-wider">
+            Categoría Padre (Jerárquica - Opcional)
+          </label>
+          <select 
+            [(ngModel)]="categoriaForm.id_padre"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500/50 cursor-pointer">
+            <option [ngValue]="null">👑 Ninguna (Categoría Raíz / Principal)</option>
+            <option *ngFor="let catP of getCategoriasPadreDisponibles()" [ngValue]="catP.id_categoria">
+              ↳ {{ catP.nombre }} {{ catP.es_raiz ? '(Raíz)' : '' }}
+            </option>
+          </select>
+          <p class="text-[11px] text-zinc-500 mt-1">Una categoría no puede ser su propia categoría padre ni crear ciclos dependientes.</p>
+        </div>
+
+        <!-- Subida de Imagen Cloudinary -->
+        <div>
+          <label class="block text-xs font-semibold text-zinc-300 mb-1.5 uppercase tracking-wider flex items-center justify-between">
+            <span>Imagen de Portada (Cloudinary)</span>
+            <span class="text-[11px] font-normal text-sky-400">Almacenamiento Cloudinary</span>
+          </label>
+
+          <!-- Previsualización si existe -->
+          <div *ngIf="previewImagenLocal || categoriaForm.imagen_url" class="relative mb-3 rounded-xl overflow-hidden border border-zinc-700 bg-zinc-950 p-2 flex items-center gap-4">
+            <img [src]="previewImagenLocal || categoriaForm.imagen_url" alt="Preview" class="w-16 h-16 object-cover rounded-lg border border-zinc-700">
+            <div class="flex-1 text-xs">
+              <p class="font-medium text-zinc-200">Imagen lista para guardar</p>
+              <p class="text-zinc-500 text-[11px]">Se subirá y optimizará automáticamente en Cloudinary.</p>
+            </div>
+            <button 
+              type="button"
+              (click)="eliminarImagenSeleccionada()"
+              class="px-2.5 py-1 text-xs rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 cursor-pointer transition-colors">
+              Quitar
+            </button>
+          </div>
+
+          <!-- Input File -->
+          <label class="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-zinc-700/80 hover:border-amber-500/50 rounded-xl cursor-pointer bg-zinc-950/60 hover:bg-zinc-950 transition-colors group">
+            <div class="flex flex-col items-center justify-center pt-2 pb-2 text-center">
+              <svg class="w-7 h-7 text-zinc-500 group-hover:text-amber-400 transition-colors mb-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              <p class="text-xs text-zinc-400 group-hover:text-zinc-200">
+                <span class="font-semibold text-amber-400">Haga clic para subir</span> o arrastre una imagen
+              </p>
+              <p class="text-[10px] text-zinc-500 mt-0.5">PNG, JPG, WEBP (Máx. 10 MB)</p>
+            </div>
+            <input type="file" (change)="onFileSelected($event)" accept="image/*" class="hidden" />
+          </label>
+        </div>
+
+        <!-- Tenant Selector (Solo SuperAdmin) -->
+        <div *ngIf="esSuperAdmin && empresas.length > 0">
+          <label class="block text-xs font-semibold text-zinc-300 mb-1.5 uppercase tracking-wider">
+            Tenant / Empresa Matriz
+          </label>
+          <select 
+            [(ngModel)]="categoriaForm.id_empresa"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500/50 cursor-pointer">
+            <option *ngFor="let emp of empresas" [ngValue]="emp.id_empresa">
+              🏢 {{ emp.nombre_empresa }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Estado: Activa / Inactiva -->
+        <div class="flex items-center justify-between p-3.5 rounded-xl bg-zinc-950/70 border border-zinc-800">
+          <div>
+            <span class="text-sm font-semibold text-zinc-200 block">Estado de la Categoría</span>
+            <span class="text-xs text-zinc-500">
+              Las categorías inactivas no aparecerán en el catálogo al registrar productos.
+            </span>
+          </div>
+          <button 
+            type="button"
+            (click)="categoriaForm.activo = !categoriaForm.activo"
+            class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+            [ngClass]="categoriaForm.activo ? 'bg-amber-500' : 'bg-zinc-700'">
+            <span 
+              aria-hidden="true" 
+              class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+              [ngClass]="categoriaForm.activo ? 'translate-x-5' : 'translate-x-0'"></span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Pie Modal -->
+      <div class="px-6 py-4 border-t border-zinc-800 bg-zinc-950/40 flex items-center justify-end gap-3">
+        <button 
+          (click)="cerrarModal()" 
+          [disabled]="guardando"
+          class="px-4 py-2.5 rounded-xl text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/80 transition-colors cursor-pointer">
+          Cancelar
+        </button>
+        <button 
+          (click)="guardarCategoria()" 
+          [disabled]="guardando"
+          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 text-sm font-semibold shadow-lg shadow-amber-500/20 active:scale-95 transition-all cursor-pointer disabled:opacity-50">
+          <svg *ngIf="guardando" class="w-4 h-4 animate-spin text-zinc-950" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>{{ subiendoImagen ? 'Subiendo a Cloudinary...' : (guardando ? 'Guardando...' : (modoEdicion ? 'Actualizar' : 'Registrar Categoría')) }}</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL: DETALLE DE CATEGORÍA -->
+  <div *ngIf="mostrarModalDetalle && categoriaSeleccionada" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-md animate-fade-in">
+    <div class="relative w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
+      
+      <!-- Portada -->
+      <div class="relative h-44 bg-zinc-950 overflow-hidden border-b border-zinc-800">
+        <img 
+          *ngIf="categoriaSeleccionada.imagen_url" 
+          [src]="categoriaSeleccionada.imagen_url" 
+          [alt]="categoriaSeleccionada.nombre" 
+          class="w-full h-full object-cover">
+        <div *ngIf="!categoriaSeleccionada.imagen_url" class="w-full h-full flex flex-col items-center justify-center text-zinc-600">
+          <svg class="w-12 h-12 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span class="text-xs">Sin foto de portada</span>
+        </div>
+        <button (click)="cerrarDetalle()" class="absolute top-3 right-3 p-1.5 rounded-full bg-zinc-900/80 text-zinc-300 hover:text-white backdrop-blur-sm transition-colors">
+          ✕
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <h3 class="text-xl font-bold text-zinc-100">{{ categoriaSeleccionada.nombre }}</h3>
+            <span 
+              class="px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider"
+              [ngClass]="categoriaSeleccionada.activo ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-zinc-800 text-zinc-500 border border-zinc-700'">
+              {{ categoriaSeleccionada.activo ? 'Activa' : 'Inactiva' }}
+            </span>
+          </div>
+          <p class="text-sm text-zinc-400 mt-2">
+            {{ categoriaSeleccionada.descripcion || 'Sin descripción disponible.' }}
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 pt-2">
+          <div class="p-3 rounded-xl bg-zinc-950/60 border border-zinc-800/80">
+            <span class="text-[11px] uppercase tracking-wider text-zinc-500 font-semibold block">Categoría Padre</span>
+            <span class="text-xs font-medium text-zinc-200 mt-1 block">
+              {{ categoriaSeleccionada.nombre_padre || 'Raíz (Principal)' }}
+            </span>
+          </div>
+          <div class="p-3 rounded-xl bg-zinc-950/60 border border-zinc-800/80">
+            <span class="text-[11px] uppercase tracking-wider text-zinc-500 font-semibold block">Prendas / Productos</span>
+            <span class="text-xs font-bold text-amber-400 mt-1 block">
+              {{ categoriaSeleccionada.total_productos || 0 }} productos asociados
+            </span>
+          </div>
+        </div>
+
+        <!-- Tenant info -->
+        <div class="p-3 rounded-xl bg-zinc-950/60 border border-zinc-800/80 text-xs flex items-center justify-between">
+          <span class="text-zinc-500">Tenant Matriz:</span>
+          <span class="font-medium text-zinc-300">{{ categoriaSeleccionada.empresa_nombre || 'Tenant #' + categoriaSeleccionada.id_empresa }}</span>
+        </div>
+
+        <!-- Cloudinary URL si existe -->
+        <div *ngIf="categoriaSeleccionada.imagen_url" class="text-xs">
+          <a [href]="categoriaSeleccionada.imagen_url" target="_blank" class="text-sky-400 hover:underline flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+            Ver imagen original en Cloudinary
+          </a>
+        </div>
+      </div>
+
+      <div class="px-6 py-3.5 border-t border-zinc-800 bg-zinc-950/40 flex justify-end">
+        <button (click)="cerrarDetalle()" class="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-200 transition-colors">
+          Cerrar
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIRMACIÓN DE ELIMINACIÓN / DESACTIVACIÓN -->
+  <div *ngIf="mostrarModalConfirmacion && categoriaAeliminar" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-md animate-fade-in">
+    <div class="relative w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl p-6 space-y-4 animate-scale-in">
+      
+      <div class="flex items-center gap-3.5">
+        <div class="p-3 rounded-xl" [ngClass]="(categoriaAeliminar.total_productos || 0) > 0 ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-zinc-100">
+            {{ (categoriaAeliminar.total_productos || 0) > 0 ? 'Desactivar Categoría' : 'Eliminar Categoría' }}
+          </h3>
+          <p class="text-xs text-zinc-400">Regla de integridad de catálogo</p>
+        </div>
+      </div>
+
+      <!-- Advertencia si tiene productos vinculados -->
+      <div *ngIf="(categoriaAeliminar.total_productos || 0) > 0" class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200/90 leading-relaxed">
+        <p class="font-semibold text-amber-400 mb-1">Protección de Catálogo Activa:</p>
+        La categoría <strong>"{{ categoriaAeliminar.nombre }}"</strong> cuenta con <strong>{{ categoriaAeliminar.total_productos }} producto(s)</strong> asociados. 
+        <br><br>
+        Por reglas del sistema, <strong>no se eliminará físicamente</strong> de la base de datos; en su lugar, se <strong>desactivará</strong> para que no esté disponible en nuevos registros de productos.
+      </div>
+
+      <!-- Mensaje si tiene 0 productos -->
+      <div *ngIf="(categoriaAeliminar.total_productos || 0) === 0" class="text-sm text-zinc-300">
+        ¿Está seguro de que desea eliminar permanentemente la categoría <strong>"{{ categoriaAeliminar.nombre }}"</strong>?
+        <p class="text-xs text-zinc-500 mt-1">Esta acción liberará la imagen asociada en Cloudinary y eliminará el registro.</p>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-2">
+        <button 
+          (click)="cerrarConfirmacion()"
+          [disabled]="guardando"
+          class="px-4 py-2 rounded-xl text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors">
+          Cancelar
+        </button>
+        <button 
+          (click)="ejecutarEliminacion()"
+          [disabled]="guardando"
+          class="px-4 py-2 rounded-xl text-xs font-semibold text-white transition-all cursor-pointer"
+          [ngClass]="(categoriaAeliminar.total_productos || 0) > 0 ? 'bg-amber-600 hover:bg-amber-500' : 'bg-rose-600 hover:bg-rose-500'">
+          {{ (categoriaAeliminar.total_productos || 0) > 0 ? 'Confirmar Desactivación' : 'Eliminar Definitivamente' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>

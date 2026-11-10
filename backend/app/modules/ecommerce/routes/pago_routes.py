@@ -1,10 +1,13 @@
+import json
 import logging
-from typing import Optional, Dict, Any
+from datetime import datetime, timezone
+from typing import Optional, Dict, Any, List
 from fastapi import APIRouter, Depends, HTTPException, Query, status, BackgroundTasks
 from pydantic import BaseModel, Field
 
 from app.core.config import Config
-from app.core.security import verificar_token
+from app.core.postgres import PostgreSQL
+from app.core.security import verificar_token, verificar_token_opcional
 from app.modules.ecommerce.repos import pago_repos
 from app.modules.catalogo.repos import catalogo_repos
 from app.modules.ecommerce.services import paypal_service
@@ -43,6 +46,24 @@ class ProcesarQRDTO(BaseModel):
     nit_ci: Optional[str] = Field(None, max_length=50)
     razon_social: Optional[str] = Field(None, max_length=150)
     id_empresa: Optional[int] = None
+
+class IniciarPagoDelegadoDTO(BaseModel):
+    intent_id: str = Field(..., min_length=8, description="Identificador UUID único del intento offline generado en Dispositivo A")
+    id_empresa: int = Field(..., gt=0, description="ID del Tenant")
+    id_sucursal: Optional[int] = Field(None, gt=0, description="ID de la sucursal")
+    monto_total: float = Field(..., gt=0, description="Monto total en BOB")
+    items: Optional[list] = Field(default_factory=list, description="Lista de prendas del carrito")
+    cliente_nombre: Optional[str] = Field(None, max_length=150)
+    nit_ci: Optional[str] = Field(None, max_length=50)
+    razon_social: Optional[str] = Field(None, max_length=150)
+    id_pedido: Optional[int] = Field(None, gt=0)
+    codigo_referencia: Optional[str] = Field(None, max_length=100)
+
+class CapturarPagoDelegadoDTO(BaseModel):
+    intent_id: str = Field(..., min_length=8, description="Identificador UUID del intento offline")
+    order_id: str = Field(..., min_length=5, description="ID de la orden de PayPal")
+    nit_ci: Optional[str] = Field(None, max_length=50)
+    razon_social: Optional[str] = Field(None, max_length=150)
 
 class CancelarPagoDTO(BaseModel):
     id_pedido: int = Field(..., gt=0)
@@ -359,3 +380,280 @@ def cancelar_pago_endpoint(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(ve))
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+@router.post('/paypal/delegado/iniciar', summary="Iniciar orden de PayPal delegada desde otro dispositivo")
+def iniciar_pago_delegado_endpoint(
+    body: IniciarPagoDelegadoDTO,
+    token_data: Optional[dict] = Depends(verificar_token_opcional)
+):
+    try:
+        user_id = token_data.get('nro_usuario') or token_data.get('id_usuario') if token_data else None
+        db = PostgreSQL()
+        db.create_connection()
+        schema = Config.SCHEMA or 'comercio'
+        try:
+            if not user_id:
+                row_u = db.execute_query(f"SELECT id_usuario FROM {schema}.t_usuario WHERE estado=TRUE ORDER BY id_usuario ASC LIMIT 1;", fetchone=True)
+                user_id = row_u[0] if row_u else 3
+            q_prev = f"""
+                SELECT operation_id, status, response_json 
+                FROM {schema}.t_sync_operacion 
+                WHERE operation_id = %s 
+                LIMIT 1;
+            """
+            prev = db.execute_query(q_prev, (body.intent_id,), fetchone=True)
+            if prev:
+                prev_status = prev[1]
+                prev_json = prev[2] if isinstance(prev[2], dict) else json.loads(prev[2] or "{}")
+                if prev_status in ('synced', 'completed'):
+                    return {
+                        "success": True,
+                        "message": "La intención de pago ya fue completada y capturada previamente.",
+                        "data": prev_json
+                    }
+                elif prev_status == 'pending' and prev_json.get("order_id"):
+                    return {
+                        "success": True,
+                        "message": "Orden de PayPal existente en curso.",
+                        "data": {
+                            "intent_id": body.intent_id,
+                            "order_id": prev_json.get("order_id"),
+                            "approve_url": prev_json.get("approve_url"),
+                            "monto_total": body.monto_total,
+                            "monto_usd": prev_json.get("monto_usd")
+                        }
+                    }
+
+            ref_codigo = body.codigo_referencia or f"DEL-{body.intent_id[:8].upper()}"
+            frontend_base = getattr(Config, 'FRONTEND_URL', None) or 'http://localhost:4200'
+            paypal_res = paypal_service.crear_orden_paypal(
+                id_pedido=body.id_pedido,
+                codigo_pedido=ref_codigo,
+                monto_bob=body.monto_total,
+                nombre_tienda="Aurora Store - Pago Delegado",
+                return_url=f"{frontend_base.rstrip('/')}/pago-delegado/exito?intent_id={body.intent_id}",
+                cancel_url=f"{frontend_base.rstrip('/')}/pago-delegado/cancelado?intent_id={body.intent_id}"
+            )
+
+            resp_payload = {
+                "order_id": paypal_res.get("order_id"),
+                "approve_url": paypal_res.get("approve_url"),
+                "monto_total": body.monto_total,
+                "monto_usd": paypal_res.get("monto_usd"),
+                "items": body.items,
+                "id_sucursal": body.id_sucursal,
+                "id_empresa": body.id_empresa,
+                "cliente_nombre": body.cliente_nombre,
+                "nit_ci": body.nit_ci,
+                "razon_social": body.razon_social,
+                "id_pedido": body.id_pedido,
+                "codigo_referencia": ref_codigo,
+                "estado": "ESPERANDO_APROBACION"
+            }
+
+            now = datetime.now(timezone.utc)
+            q_upsert = f"""
+                INSERT INTO {schema}.t_sync_operacion (
+                    operation_id, id_usuario, id_empresa, kind, status, http_status, response_json, created_at, updated_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s)
+                ON CONFLICT (id_usuario, id_empresa, operation_id) DO UPDATE SET
+                    status = EXCLUDED.status,
+                    http_status = EXCLUDED.http_status,
+                    response_json = EXCLUDED.response_json,
+                    updated_at = EXCLUDED.updated_at;
+            """
+            db.execute_query(
+                q_upsert,
+                (
+                    body.intent_id,
+                    user_id,
+                    body.id_empresa,
+                    "PAYPAL_OFFLINE_DELEGADO",
+                    "pending",
+                    202,
+                    json.dumps(resp_payload),
+                    now,
+                    now
+                ),
+                commit=True
+            )
+
+            return {
+                "success": True,
+                "message": "Orden de PayPal creada para pago delegado.",
+                "data": {
+                    "intent_id": body.intent_id,
+                    "order_id": paypal_res.get("order_id"),
+                    "approve_url": paypal_res.get("approve_url"),
+                    "monto_total": body.monto_total,
+                    "monto_usd": paypal_res.get("monto_usd")
+                }
+            }
+        finally:
+            db.close_connection()
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(ve))
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[PAYPAL DELEGADO INICIAR ERROR] {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+@router.post('/paypal/delegado/capturar', summary="Capturar pago de PayPal delegado desde el segundo dispositivo")
+def capturar_pago_delegado_endpoint(
+    body: CapturarPagoDelegadoDTO,
+    background_tasks: BackgroundTasks,
+    token_data: Optional[dict] = Depends(verificar_token_opcional)
+):
+    try:
+        db = PostgreSQL()
+        db.create_connection()
+        schema = Config.SCHEMA or 'comercio'
+        try:
+            q_op = f"""
+                SELECT operation_id, id_usuario, id_empresa, status, response_json 
+                FROM {schema}.t_sync_operacion 
+                WHERE operation_id = %s 
+                LIMIT 1;
+            """
+            op = db.execute_query(q_op, (body.intent_id,), fetchone=True)
+            if not op:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Intención de pago delegado no encontrada.")
+
+            curr_status = op[3]
+            resp_json = op[4] if isinstance(op[4], dict) else json.loads(op[4] or "{}")
+
+            if curr_status in ('synced', 'completed'):
+                return {
+                    "success": True,
+                    "message": "El pago ya se encuentra capturado y confirmado previamente.",
+                    "data": resp_json
+                }
+
+            captura = paypal_service.capturar_orden_paypal(body.order_id)
+            if not captura.get("success") or captura.get("status") != "COMPLETED":
+                err_msg = captura.get("message") or "El proveedor PayPal no confirmó la transacción."
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=err_msg)
+
+            capture_id = captura.get("capture_id") or f"PAYPAL-{body.order_id}"
+            now_iso = datetime.now(timezone.utc).isoformat()
+            total_monto = float(resp_json.get("monto_total") or 0.0)
+            id_pedido = resp_json.get("id_pedido")
+
+            id_venta = None
+            numero_venta = None
+
+            if id_pedido:
+                try:
+                    res_pago = pago_repos.ejecutar_confirmacion_pago(
+                        id_pedido=int(id_pedido),
+                        tipo_metodo="PAYPAL",
+                        codigo_transaccion=capture_id,
+                        monto=total_monto,
+                        id_usuario=op[1],
+                        nit_ci=body.nit_ci or resp_json.get("nit_ci"),
+                        razon_social=body.razon_social or resp_json.get("razon_social"),
+                        tipo_documento="FACTURA" if (body.nit_ci or resp_json.get("nit_ci")) else "COMPROBANTE"
+                    )
+                    id_venta = res_pago.get("id_venta")
+                    numero_venta = res_pago.get("numero_venta")
+                    if id_venta:
+                        background_tasks.add_task(_enviar_comprobante_background, id_venta)
+                except Exception as ex_pago:
+                    logger.warning(f"[PAYPAL DELEGADO PEDIDO CONFIRMATION WARNING] {ex_pago}")
+
+            result_data = {
+                "success": True,
+                "status": "COMPLETED",
+                "intent_id": body.intent_id,
+                "order_id": body.order_id,
+                "capture_id": capture_id,
+                "monto_total": total_monto,
+                "id_pedido": id_pedido,
+                "id_venta": id_venta,
+                "numero_venta": numero_venta,
+                "metodo_pago": "PayPal",
+                "fecha_pago": now_iso
+            }
+
+            now = datetime.now(timezone.utc)
+            q_upd = f"""
+                UPDATE {schema}.t_sync_operacion 
+                SET status = 'synced',
+                    http_status = 200,
+                    conflict_code = NULL,
+                    response_json = %s::jsonb,
+                    updated_at = %s
+                WHERE operation_id = %s;
+            """
+            db.execute_query(q_upd, (json.dumps(result_data), now, body.intent_id), commit=True)
+
+            return {
+                "success": True,
+                "message": "Pago con PayPal completado y capturado exitosamente.",
+                "data": result_data
+            }
+        finally:
+            db.close_connection()
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(ve))
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[PAYPAL DELEGADO CAPTURAR ERROR] {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+@router.get('/paypal/delegado/estado/{intent_id}', summary="Consultar estado de la intención de pago delegada")
+def consultar_estado_pago_delegado(
+    intent_id: str,
+    token_data: Optional[dict] = Depends(verificar_token_opcional)
+):
+    db = PostgreSQL()
+    db.create_connection()
+    schema = Config.SCHEMA or 'comercio'
+    try:
+        q = f"""
+            SELECT operation_id, status, http_status, conflict_code, response_json 
+            FROM {schema}.t_sync_operacion 
+            WHERE operation_id = %s 
+            LIMIT 1;
+        """
+        row = db.execute_query(q, (intent_id,), fetchone=True)
+        if not row:
+            return {
+                "success": False,
+                "status": "NO_ENCONTRADO",
+                "capturado": False,
+                "message": "La intención de pago delegado no fue encontrada o aún no ha sido registrada."
+            }
+
+        st = row[1]
+        data = row[4] if isinstance(row[4], dict) else json.loads(row[4] or "{}")
+
+        if st in ('synced', 'completed'):
+            return {
+                "success": True,
+                "status": "COMPLETADO",
+                "capturado": True,
+                "message": "Pago verificado y capturado exitosamente en el servidor.",
+                "data": data
+            }
+        elif st == 'pending':
+            return {
+                "success": True,
+                "status": "PENDIENTE",
+                "capturado": False,
+                "message": "Esperando aprobación y captura en el dispositivo remoto.",
+                "data": data
+            }
+        else:
+            return {
+                "success": False,
+                "status": "CONFLICTO",
+                "capturado": False,
+                "conflict_code": row[3],
+                "message": data.get("message") or "Incidencia en el procesamiento del pago delegado.",
+                "data": data
+            }
+    finally:
+        db.close_connection()

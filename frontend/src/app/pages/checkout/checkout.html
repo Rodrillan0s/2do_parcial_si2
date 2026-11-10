@@ -1,0 +1,532 @@
+<div class="min-h-screen bg-stone-50 dark:bg-zinc-950 py-8 px-4 sm:px-6 lg:px-8 transition-colors">
+  <div class="max-w-7xl mx-auto">
+    
+    <!-- Breadcrumb -->
+    <nav class="flex items-center space-x-2 text-xs text-stone-500 dark:text-zinc-400 mb-6 font-mono">
+      <a routerLink="/catalogo" class="hover:text-amber-600 dark:hover:text-amber-400 transition-colors">Catálogo</a>
+      <span>/</span>
+      <button (click)="carritoService.abrirDrawer()" class="hover:text-amber-600 dark:hover:text-amber-400 transition-colors cursor-pointer">Bolsa de Compras</button>
+      <span>/</span>
+      <span class="text-stone-900 dark:text-zinc-100 font-semibold">Checkout</span>
+    </nav>
+
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center space-x-3">
+        <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-2xl shadow-sm">
+          <i class="ph ph-shield-check"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-serif font-bold text-stone-900 dark:text-zinc-100 tracking-tight">
+            Finalizar Compra
+          </h1>
+          <p class="text-xs sm:text-sm text-stone-500 dark:text-zinc-400 mt-0.5">
+            Verifica tus prendas seleccionadas, elige la sucursal de retiro o entrega y confirma tu pedido.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Offline Protection Banner (CU09W / CU27W) -->
+    <div *ngIf="!networkStatus.isOnline()" role="status" class="mb-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs sm:text-sm flex items-start space-x-3 shadow-sm">
+      <span class="text-lg shrink-0 mt-0.5">⏳</span>
+      <div class="flex-1">
+        <strong class="font-bold block mb-0.5">Modo sin conexión detectado (CU09W / CU27W):</strong>
+        <span>Puedes revisar tu bolsa y completar tus datos de contacto, pero la confirmación definitiva del pedido y el pago electrónico requieren conexión activa en línea.</span>
+      </div>
+    </div>
+
+    <!-- Error Alert Banner -->
+    <div *ngIf="errorMensaje" class="mb-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-800 dark:text-rose-300 text-xs sm:text-sm flex items-start space-x-3 animate-fade-in shadow-sm">
+      <i class="ph ph-warning-circle text-lg text-rose-600 dark:text-rose-400 shrink-0 mt-0.5"></i>
+      <div class="flex-1">
+        <strong class="font-bold block mb-0.5">Atención en la compra:</strong>
+        <span>{{ errorMensaje }}</span>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="cargandoCarrito" class="py-16 text-center space-y-4">
+      <div class="inline-block animate-spin text-amber-500 text-3xl">
+        <i class="ph ph-spinner"></i>
+      </div>
+      <p class="text-xs text-stone-500 dark:text-zinc-400 font-mono">Cargando detalles de tu bolsa...</p>
+    </div>
+
+    <!-- Empty Cart State -->
+    <div *ngIf="!cargandoCarrito && (!carrito || carrito.items.length === 0)" 
+         class="py-16 px-6 text-center max-w-md mx-auto rounded-3xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm space-y-4">
+      <div class="w-16 h-16 rounded-full bg-stone-100 dark:bg-zinc-800 text-stone-400 dark:text-zinc-500 flex items-center justify-center text-3xl mx-auto">
+        <i class="ph ph-shopping-bag"></i>
+      </div>
+      <h2 class="text-lg font-serif font-bold text-stone-900 dark:text-zinc-100">
+        Tu bolsa de compras está vacía
+      </h2>
+      <p class="text-xs text-stone-500 dark:text-zinc-400">
+        Para continuar con el checkout, por favor explora nuestro catálogo y agrega las prendas que deseas adquirir.
+      </p>
+      <button (click)="irAlCatalogo()" 
+              class="px-6 py-2.5 rounded-full bg-stone-900 hover:bg-stone-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-stone-950 text-xs font-bold uppercase tracking-wider transition-all shadow-md">
+        Ir al Catálogo de Prendas
+      </button>
+    </div>
+
+    <!-- Checkout Main Grid -->
+    <div *ngIf="!cargandoCarrito && carrito && carrito.items.length > 0" 
+         class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- Left Column: Checkout Steps (8 cols) -->
+      <div class="lg:col-span-8 space-y-6">
+        
+        <!-- ======================================================== -->
+        <!-- PASO 1: REVISIÓN DE PRENDAS DEL CARRITO                  -->
+        <!-- ======================================================== -->
+        <section class="p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm space-y-4">
+          <div class="flex items-center justify-between border-b border-stone-100 dark:border-zinc-800/80 pb-4">
+            <div class="flex items-center space-x-3">
+              <span class="w-7 h-7 rounded-full bg-amber-500 text-stone-950 text-xs font-bold flex items-center justify-center font-mono">
+                1
+              </span>
+              <h2 class="text-base font-serif font-bold text-stone-900 dark:text-zinc-100">
+                Prendas en tu Pedido
+              </h2>
+            </div>
+            <span class="text-xs text-stone-500 dark:text-zinc-400 font-mono">
+              {{ carrito.total_items }} {{ carrito.total_items === 1 ? 'unidad' : 'unidades' }}
+            </span>
+          </div>
+
+          <!-- Items List -->
+          <div class="divide-y divide-stone-100 dark:divide-zinc-800/80">
+            <div *ngFor="let item of carrito.items" class="py-3.5 flex items-center justify-between gap-4">
+              <div class="flex items-center space-x-3.5 min-w-0">
+                <div class="w-14 h-18 sm:w-16 sm:h-20 rounded-xl overflow-hidden bg-stone-100 dark:bg-zinc-800 shrink-0 border border-stone-200 dark:border-zinc-700">
+                  <img [src]="item.imagen_url || 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=300&q=80'" 
+                       [alt]="item.producto_nombre" 
+                       class="w-full h-full object-cover object-center">
+                </div>
+                <div class="min-w-0">
+                  <h3 class="text-xs sm:text-sm font-semibold text-stone-900 dark:text-zinc-100 truncate">
+                    {{ item.producto_nombre }}
+                  </h3>
+                  <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 border border-stone-200 dark:border-zinc-700">
+                      Talla: {{ item.talla_nombre }}
+                    </span>
+                    <span class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 border border-stone-200 dark:border-zinc-700">
+                      <span class="w-2 h-2 rounded-full border border-black/20" [style.backgroundColor]="item.codigo_hex"></span>
+                      <span>{{ item.color_nombre }}</span>
+                    </span>
+                    <span *ngIf="item.sku" class="text-[9px] font-mono text-stone-400 dark:text-zinc-500">
+                      {{ item.sku }}
+                    </span>
+                  </div>
+                  <div class="text-[11px] text-stone-500 dark:text-zinc-400 mt-1">
+                    Cantidad: <strong class="text-stone-800 dark:text-zinc-200">{{ item.cantidad }}</strong> × Bs. {{ item.precio_unitario | number:'1.2-2' }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="text-right shrink-0">
+                <div class="text-xs sm:text-sm font-bold text-amber-700 dark:text-amber-400 font-mono">
+                  Bs. {{ item.subtotal | number:'1.2-2' }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-2 text-right">
+            <button (click)="carritoService.abrirDrawer()" 
+                    class="text-xs text-amber-600 dark:text-amber-400 hover:underline font-medium inline-flex items-center space-x-1">
+              <span>Modificar prendas en la bolsa</span>
+              <i class="ph ph-arrow-right"></i>
+            </button>
+          </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- PASO 2: MODALIDAD Y SUCURSAL DEL TENANT                  -->
+        <!-- ======================================================== -->
+        <section class="p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm space-y-6">
+          <div class="flex items-center space-x-3 border-b border-stone-100 dark:border-zinc-800/80 pb-4">
+            <span class="w-7 h-7 rounded-full bg-amber-500 text-stone-950 text-xs font-bold flex items-center justify-center font-mono">
+              2
+            </span>
+            <div>
+              <h2 class="text-base font-serif font-bold text-stone-900 dark:text-zinc-100">
+                Modalidad de Compra y Sucursal
+              </h2>
+              <p class="text-[11px] text-stone-500 dark:text-zinc-400">
+                Selecciona si retirarás en boutique física o prefieres entrega a domicilio.
+              </p>
+            </div>
+          </div>
+
+          <!-- Modality Selector Segmented Control -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button type="button" 
+                    (click)="seleccionarModalidad('RETIRO_SUCURSAL')" 
+                    [class.border-amber-500]="modalidadCompra === 'RETIRO_SUCURSAL'"
+                    [class.bg-amber-500/10]="modalidadCompra === 'RETIRO_SUCURSAL'"
+                    [class.dark:bg-amber-500/15]="modalidadCompra === 'RETIRO_SUCURSAL'"
+                    class="p-4 rounded-2xl border border-stone-200 dark:border-zinc-800 text-left transition-all hover:border-amber-500/50 cursor-pointer flex items-start space-x-3">
+              <div class="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-lg shrink-0 mt-0.5">
+                <i class="ph ph-storefront"></i>
+              </div>
+              <div>
+                <div class="text-xs sm:text-sm font-bold text-stone-900 dark:text-zinc-100">
+                  Retiro en Sucursal
+                </div>
+                <p class="text-[11px] text-stone-500 dark:text-zinc-400 mt-0.5">
+                  Listo para recoger en la boutique física elegida sin costo adicional.
+                </p>
+              </div>
+            </button>
+
+            <button type="button" 
+                    (click)="seleccionarModalidad('ENTREGA_DOMICILIO')" 
+                    [class.border-amber-500]="modalidadCompra === 'ENTREGA_DOMICILIO'"
+                    [class.bg-amber-500/10]="modalidadCompra === 'ENTREGA_DOMICILIO'"
+                    [class.dark:bg-amber-500/15]="modalidadCompra === 'ENTREGA_DOMICILIO'"
+                    class="p-4 rounded-2xl border border-stone-200 dark:border-zinc-800 text-left transition-all hover:border-amber-500/50 cursor-pointer flex items-start space-x-3">
+              <div class="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-lg shrink-0 mt-0.5">
+                <i class="ph ph-truck"></i>
+              </div>
+              <div>
+                <div class="text-xs sm:text-sm font-bold text-stone-900 dark:text-zinc-100">
+                  Entrega a Domicilio
+                </div>
+                <p class="text-[11px] text-stone-500 dark:text-zinc-400 mt-0.5">
+                  Envío exclusivo a tu dirección por mensajería especializada.
+                </p>
+              </div>
+            </button>
+          </div>
+
+          <!-- Sucursal Selection Grid con Búsqueda, Filtros y Control de Stock -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <label class="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-zinc-300 font-mono">
+                {{ modalidadCompra === 'RETIRO_SUCURSAL' ? 'Sucursal de Retiro:' : 'Sucursal de Origen / Despacho:' }}
+              </label>
+              <span *ngIf="modalidadCompra === 'RETIRO_SUCURSAL'" class="text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                Solo sucursales con stock completo
+              </span>
+            </div>
+
+            <div *ngIf="cargandoSucursales" class="py-4 text-center text-xs text-stone-400 dark:text-zinc-500">
+              Cargando sucursales de {{ carrito.nombre_empresa }}...
+            </div>
+
+            <div *ngIf="!cargandoSucursales && sucursales.length === 0" class="p-4 rounded-xl bg-stone-100 dark:bg-zinc-800 text-xs text-stone-500 dark:text-zinc-400 text-center">
+              No hay sucursales activas registradas para esta tienda.
+            </div>
+
+            <!-- Alerta si ninguna sucursal tiene stock completo para retiro -->
+            <div *ngIf="modalidadCompra === 'RETIRO_SUCURSAL' && !cargandoSucursales && !haySucursalConStockCompleto && sucursales.length > 0"
+                 class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs flex items-center space-x-2">
+              <span class="text-sm shrink-0">⚠️</span>
+              <span class="text-[11px] leading-tight">
+                Ninguna sucursal física cuenta con el stock completo de todas tus prendas. Te recomendamos cambiar a <strong>Entrega a Domicilio</strong>.
+              </span>
+            </div>
+
+            <!-- Buscador y Filtros por Ciudad -->
+            <div *ngIf="sucursales.length > 1" class="space-y-2">
+              <div class="relative">
+                <input type="text"
+                       [(ngModel)]="busquedaSucursal"
+                       placeholder="Buscar sucursal por nombre o dirección..."
+                       class="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-xl pl-8 pr-8 py-2 text-xs text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:border-amber-500 transition-colors shadow-2xs" />
+                <span class="absolute left-2.5 top-2 text-stone-400 text-xs">🔍</span>
+                <button *ngIf="busquedaSucursal" 
+                        (click)="busquedaSucursal = ''" 
+                        type="button" 
+                        class="absolute right-2.5 top-2 text-stone-400 hover:text-stone-600 text-xs cursor-pointer">
+                  ✕
+                </button>
+              </div>
+
+              <!-- Filtro por Ciudad Chips -->
+              <div class="flex items-center space-x-1.5 overflow-x-auto pb-1 text-xs">
+                <button *ngFor="let c of ciudadesDisponibles"
+                        type="button"
+                        (click)="filtroCiudad = c"
+                        [class.bg-amber-500]="filtroCiudad === c"
+                        [class.text-stone-950]="filtroCiudad === c"
+                        [class.font-bold]="filtroCiudad === c"
+                        [class.bg-stone-100]="filtroCiudad !== c"
+                        [class.dark:bg-zinc-800]="filtroCiudad !== c"
+                        [class.text-stone-600]="filtroCiudad !== c"
+                        [class.dark:text-zinc-400]="filtroCiudad !== c"
+                        class="px-3 py-1 rounded-full text-[11px] border border-stone-200 dark:border-zinc-700 shrink-0 transition-all cursor-pointer">
+                  {{ c }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Grid de Sucursales -->
+            <div *ngIf="!cargandoSucursales && sucursalesFiltradas.length === 0" class="p-4 rounded-xl bg-stone-100 dark:bg-zinc-800/60 text-xs text-stone-500 dark:text-zinc-400 text-center">
+              No se encontraron sucursales con los filtros aplicados.
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div *ngFor="let suc of sucursalesFiltradas" 
+                   (click)="seleccionarSucursal(suc)"
+                   [class.border-amber-500]="sucursalSeleccionadaId === suc.id_sucursal"
+                   [class.ring-2]="sucursalSeleccionadaId === suc.id_sucursal"
+                   [class.ring-amber-500/20]="sucursalSeleccionadaId === suc.id_sucursal"
+                   [class.bg-amber-500/5]="sucursalSeleccionadaId === suc.id_sucursal"
+                   [class.opacity-50]="modalidadCompra === 'RETIRO_SUCURSAL' && suc.tiene_stock_completo === false"
+                   [class.cursor-not-allowed]="modalidadCompra === 'RETIRO_SUCURSAL' && suc.tiene_stock_completo === false"
+                   class="p-4 rounded-2xl border border-stone-200 dark:border-zinc-800 transition-all hover:border-amber-500/40 cursor-pointer relative flex flex-col justify-between">
+                
+                <div>
+                  <div class="flex items-center justify-between gap-2">
+                    <h4 class="text-xs font-bold text-stone-900 dark:text-zinc-100 truncate"
+                        [class.text-stone-400]="modalidadCompra === 'RETIRO_SUCURSAL' && suc.tiene_stock_completo === false">
+                      {{ suc.nombre }}
+                    </h4>
+                    <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 border border-stone-200 dark:border-zinc-700 shrink-0">
+                      {{ suc.ciudad }}
+                    </span>
+                  </div>
+                  <p class="text-[11px] text-stone-500 dark:text-zinc-400 mt-1">
+                    {{ suc.direccion }}
+                  </p>
+                  <div class="text-[10px] text-stone-400 dark:text-zinc-500 font-mono mt-1">
+                    Horario: {{ suc.horario }}
+                  </div>
+                  <div *ngIf="suc.telefono" class="text-[10px] text-stone-400 dark:text-zinc-500 font-mono">
+                    Tel: {{ suc.telefono }}
+                  </div>
+
+                  <!-- Badge de disponibilidad -->
+                  <div class="mt-2.5 flex items-center">
+                    <span [class.bg-emerald-500/10]="suc.tiene_stock_completo !== false"
+                          [class.text-emerald-700]="suc.tiene_stock_completo !== false"
+                          [class.dark:text-emerald-400]="suc.tiene_stock_completo !== false"
+                          [class.border-emerald-500/25]="suc.tiene_stock_completo !== false"
+                          [class.bg-amber-500/15]="suc.stock_estado === 'PARCIAL'"
+                          [class.text-amber-800]="suc.stock_estado === 'PARCIAL'"
+                          [class.dark:text-amber-300]="suc.stock_estado === 'PARCIAL'"
+                          [class.border-amber-500/40]="suc.stock_estado === 'PARCIAL'"
+                          [class.bg-rose-500/10]="suc.stock_estado === 'SIN_STOCK'"
+                          [class.text-rose-700]="suc.stock_estado === 'SIN_STOCK'"
+                          [class.dark:text-rose-400]="suc.stock_estado === 'SIN_STOCK'"
+                          [class.border-rose-500/30]="suc.stock_estado === 'SIN_STOCK'"
+                          class="text-[10px] font-semibold px-2 py-0.5 rounded-full border">
+                      {{ suc.stock_label || (suc.tiene_stock_completo !== false ? '✓ Stock completo' : '✕ Agotado en esta sucursal') }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="mt-3 pt-2 border-t border-stone-100 dark:border-zinc-800/80 flex items-center justify-between">
+                  <span class="text-[10px] font-semibold" 
+                        [class.text-amber-600]="sucursalSeleccionadaId === suc.id_sucursal"
+                        [class.text-stone-400]="sucursalSeleccionadaId !== suc.id_sucursal">
+                    {{ sucursalSeleccionadaId === suc.id_sucursal ? '✓ Sucursal Seleccionada' : (modalidadCompra === 'RETIRO_SUCURSAL' && suc.tiene_stock_completo === false ? 'No disponible para retiro' : 'Hacer clic para elegir') }}
+                  </span>
+                  <div class="w-4 h-4 rounded-full border flex items-center justify-center"
+                       [class.border-amber-500]="sucursalSeleccionadaId === suc.id_sucursal"
+                       [class.bg-amber-500]="sucursalSeleccionadaId === suc.id_sucursal"
+                       [class.border-stone-300]="sucursalSeleccionadaId !== suc.id_sucursal">
+                    <i *ngIf="sucursalSeleccionadaId === suc.id_sucursal" class="ph ph-check text-stone-950 text-[10px] font-bold"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Delivery Address Fields (Only if ENTREGA_DOMICILIO) -->
+          <div *ngIf="modalidadCompra === 'ENTREGA_DOMICILIO'" class="space-y-4 pt-4 border-t border-stone-100 dark:border-zinc-800/80 animate-fade-in">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 font-mono">
+              Datos para la Entrega a Domicilio:
+            </h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-stone-700 dark:text-zinc-300 mb-1">
+                  Dirección Completa *
+                </label>
+                <input type="text" 
+                       [(ngModel)]="direccionEntrega" 
+                       placeholder="Ej: Av. San Martín #450, Edif. Torre Platinum, Piso 4"
+                       class="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-950 text-stone-900 dark:text-zinc-100 text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none">
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-stone-700 dark:text-zinc-300 mb-1">
+                  Ciudad *
+                </label>
+                <input type="text" 
+                       [(ngModel)]="ciudadEntrega" 
+                       placeholder="Ej: Santa Cruz de la Sierra"
+                       class="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-950 text-stone-900 dark:text-zinc-100 text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none">
+              </div>
+
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-medium text-stone-700 dark:text-zinc-300 mb-1">
+                  Instrucciones o Referencias de Entrega (Opcional)
+                </label>
+                <textarea [(ngModel)]="notasEntrega" 
+                          rows="2"
+                          placeholder="Ej: Entregar en recepción o llamar 15 minutos antes de llegar."
+                          class="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-950 text-stone-900 dark:text-zinc-100 text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none"></textarea>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- PASO 3: CONFIRMACIÓN DE DATOS DEL CLIENTE                -->
+        <!-- ======================================================== -->
+        <section class="p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm space-y-4">
+          <div class="flex items-center space-x-3 border-b border-stone-100 dark:border-zinc-800/80 pb-4">
+            <span class="w-7 h-7 rounded-full bg-amber-500 text-stone-950 text-xs font-bold flex items-center justify-center font-mono">
+              3
+            </span>
+            <div>
+              <h2 class="text-base font-serif font-bold text-stone-900 dark:text-zinc-100">
+                Datos de Contacto del Cliente
+              </h2>
+              <p class="text-[11px] text-stone-500 dark:text-zinc-400">
+                Precargados desde tu cuenta. Puedes actualizarlos específicamente para este pedido.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-stone-700 dark:text-zinc-300 mb-1">
+                Nombre Completo *
+              </label>
+              <input type="text" 
+                     [(ngModel)]="nombreContacto" 
+                     placeholder="Tu nombre y apellido"
+                     class="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-950 text-stone-900 dark:text-zinc-100 text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none">
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-stone-700 dark:text-zinc-300 mb-1">
+                Teléfono Celular *
+              </label>
+              <input type="text" 
+                     [(ngModel)]="telefonoContacto" 
+                     placeholder="Ej: +591 70011223"
+                     class="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-950 text-stone-900 dark:text-zinc-100 text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none">
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-medium text-stone-700 dark:text-zinc-300 mb-1">
+                Correo Electrónico (Notificaciones de Orden)
+              </label>
+              <input type="email" 
+                     [(ngModel)]="correoContacto" 
+                     placeholder="correo@ejemplo.com"
+                     class="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-950 text-stone-900 dark:text-zinc-100 text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none">
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Right Column: Sticky Order Summary (4 cols) -->
+      <div class="lg:col-span-4 lg:sticky lg:top-24 space-y-4">
+        
+        <div class="p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-xl space-y-6">
+          
+          <div class="flex items-center justify-between pb-4 border-b border-stone-100 dark:border-zinc-800">
+            <h3 class="text-sm font-serif font-bold text-stone-900 dark:text-zinc-100 uppercase tracking-wider font-mono">
+              Resumen del Pedido
+            </h3>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30">
+              {{ carrito.nombre_empresa }}
+            </span>
+          </div>
+
+          <!-- Breakdown -->
+          <div class="space-y-3 text-xs text-stone-600 dark:text-zinc-400">
+            <div class="flex justify-between">
+              <span>Subtotal ({{ carrito.total_items }} prendas)</span>
+              <span class="font-mono font-semibold text-stone-800 dark:text-zinc-200">
+                Bs. {{ carrito.subtotal | number:'1.2-2' }}
+              </span>
+            </div>
+
+            <div class="flex justify-between">
+              <span>Modalidad</span>
+              <span class="font-semibold text-stone-800 dark:text-zinc-200">
+                {{ modalidadCompra === 'RETIRO_SUCURSAL' ? 'Retiro en Sucursal' : 'Entrega a Domicilio' }}
+              </span>
+            </div>
+
+            <div class="flex justify-between">
+              <span>Sucursal</span>
+              <span class="font-semibold text-stone-800 dark:text-zinc-200 truncate max-w-[180px]" [title]="sucursalSeleccionada?.nombre || ''">
+                {{ sucursalSeleccionada?.nombre || 'No seleccionada' }}
+              </span>
+            </div>
+
+            <div class="flex justify-between">
+              <span>Costo de Envío</span>
+              <span class="text-emerald-600 dark:text-emerald-400 font-bold font-mono">
+                Gratis
+              </span>
+            </div>
+
+            <div class="flex justify-between">
+              <span>Descuento</span>
+              <span class="font-mono text-stone-400 dark:text-zinc-500">
+                Bs. 0.00
+              </span>
+            </div>
+
+            <div class="pt-4 border-t border-stone-200 dark:border-zinc-800 flex justify-between items-baseline">
+              <div>
+                <span class="text-sm font-serif font-bold text-stone-900 dark:text-zinc-100 block">Total a Pagar</span>
+                <span class="text-[10px] text-stone-400 dark:text-zinc-500">Estado inicial: Pendiente de pago</span>
+              </div>
+              <span class="text-xl sm:text-2xl font-extrabold text-amber-600 dark:text-amber-400 font-mono">
+                Bs. {{ carrito.total | number:'1.2-2' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- CTA Button -->
+          <button (click)="confirmarPedido()" 
+                  [disabled]="procesando || !formularioValido()"
+                  class="w-full py-3.5 px-6 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all shadow-xl flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  [ngClass]="formularioValido() 
+                    ? 'bg-gradient-to-r from-amber-600 via-amber-500 to-amber-400 hover:from-amber-500 hover:to-amber-300 text-stone-950 shadow-amber-500/20 active:scale-98' 
+                    : 'bg-stone-300 dark:bg-zinc-800 text-stone-500 dark:text-zinc-500'">
+            <i *ngIf="procesando" class="ph ph-spinner animate-spin text-base"></i>
+            <span *ngIf="!procesando">Confirmar Pedido</span>
+            <span *ngIf="procesando">Validando Stock y Creando Pedido...</span>
+            <i *ngIf="!procesando" class="ph ph-arrow-right text-sm"></i>
+          </button>
+
+          <!-- Guarantee Seals -->
+          <div class="pt-2 border-t border-stone-100 dark:border-zinc-800/80 space-y-2 text-[10px] text-stone-500 dark:text-zinc-400">
+            <div class="flex items-center space-x-2">
+              <i class="ph ph-check-circle text-amber-500 text-sm"></i>
+              <span>Re-validación de stock en tiempo real antes de guardar.</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <i class="ph ph-lock-key text-amber-500 text-sm"></i>
+              <span>El inventario se reserva formalmente al completar el pago (W27/W28).</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <i class="ph ph-receipt text-amber-500 text-sm"></i>
+              <span>Precios históricos garantizados registrados en el pedido.</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>

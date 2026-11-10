@@ -1,0 +1,644 @@
+<div class="pos-reservas-page">
+
+  <!-- ================= ENCABEZADO PRINCIPAL ================= -->
+  <header class="pos-header">
+    <div class="pos-title-block">
+      <div class="pos-badge-top">
+        <span class="icon-tag">🛍️</span>
+        <span>Módulo Especializado POS</span>
+      </div>
+      <h2>Atención & Cobro de Reservas</h2>
+      <p>Gestión de probador, selección de prendas reservadas y cobro en mostrador de sucursal.</p>
+    </div>
+
+    <div class="pos-status-bar">
+      <!-- Sucursal Activa -->
+      <div class="status-chip sucursal-chip" *ngIf="sucursalActiva">
+        <span class="chip-label">Sucursal:</span>
+        <strong class="chip-value">{{ sucursalActiva.nombre }}</strong>
+      </div>
+
+      <!-- Estado de Caja Registradora -->
+      <div class="status-chip caja-chip" [class.caja-abierta]="cajaAbierta" [class.caja-cerrada]="!cajaAbierta">
+        <span class="status-dot"></span>
+        <div class="caja-details">
+          <span class="chip-label">Caja Registradora:</span>
+          <strong class="chip-value">
+            {{ cajaAbierta ? (cajaInfo?.nombre_caja || 'Caja Abierta') : 'Caja Cerrada' }}
+          </strong>
+        </div>
+        <button *ngIf="!cajaAbierta" type="button" class="btn-abrir-caja" (click)="irACaja()">
+          Abrir caja
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MENSAJES DE ALERTA ================= -->
+  <div class="alerta-box success-alert" *ngIf="mensaje">
+    <span class="alert-icon">✓</span>
+    <div class="alert-content">{{ mensaje }}</div>
+    <button type="button" class="btn-close-alert" (click)="mensaje = ''">×</button>
+  </div>
+
+  <div class="alerta-box error-alert" *ngIf="error">
+    <span class="alert-icon">⚠️</span>
+    <div class="alert-content">{{ error }}</div>
+    <button type="button" class="btn-close-alert" (click)="error = ''">×</button>
+  </div>
+
+
+  <!-- ================= VISTA 1: LISTADO DE RESERVAS PENDIENTES (Si no hay seleccionada) ================= -->
+  <section class="reservas-browser" *ngIf="!reservaSeleccionada">
+
+    <!-- Barra de Búsqueda y Filtros Rápidos -->
+    <div class="toolbar-card">
+      <div class="search-input-wrapper">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          class="pos-search-input"
+          placeholder="Buscar por código (RES-...), nombre de cliente, CI o teléfono..."
+          [(ngModel)]="busqueda"
+          (keyup.enter)="onBuscar()"
+        />
+        <button *ngIf="busqueda" type="button" class="btn-clear-search" (click)="limpiarBusqueda()">×</button>
+      </div>
+
+      <div class="filter-actions">
+        <div class="filter-chips">
+          <button
+            type="button"
+            class="chip-btn"
+            [class.active]="filtroEstado === ''"
+            (click)="filtrarPorEstado('')"
+          >
+            Todas las pendientes
+          </button>
+          <button
+            type="button"
+            class="chip-btn"
+            [class.active]="filtroEstado === 'PENDIENTE'"
+            (click)="filtrarPorEstado('PENDIENTE')"
+          >
+            Pendientes
+          </button>
+          <button
+            type="button"
+            class="chip-btn"
+            [class.active]="filtroEstado === 'CONFIRMADA'"
+            (click)="filtrarPorEstado('CONFIRMADA')"
+          >
+            Confirmadas
+          </button>
+        </div>
+
+        <button
+          type="button"
+          class="btn-refresh"
+          (click)="cargarReservas()"
+          [disabled]="cargando"
+          title="Actualizar listado"
+        >
+          <span class="refresh-icon" [class.spinning]="cargando">🔄</span>
+          <span>{{ cargando ? 'Cargando...' : 'Actualizar' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Indicador de carga -->
+    <div class="loading-state" *ngIf="cargando">
+      <div class="spinner"></div>
+      <p>Cargando reservas de la sucursal...</p>
+    </div>
+
+    <!-- Estado vacío -->
+    <div class="empty-state" *ngIf="!cargando && reservas.length === 0">
+      <div class="empty-illustration">🏷️</div>
+      <h3>No hay reservas pendientes de atención</h3>
+      <p>No se encontraron reservas con prendas reservadas para esta sucursal o con el filtro seleccionado.</p>
+      <button type="button" class="btn-refresh-empty" (click)="limpiarBusqueda()">
+        Restablecer búsqueda
+      </button>
+    </div>
+
+    <!-- Grid de Tarjetas de Reservas -->
+    <div class="reservas-grid" *ngIf="!cargando && reservas.length > 0">
+      <div
+        class="reserva-card-pos"
+        *ngFor="let res of reservas"
+        [class.card-prepagada]="res.venta_pagada"
+      >
+        <!-- Encabezado de la Tarjeta -->
+        <div class="card-pos-header">
+          <div class="reserva-code-box">
+            <span class="code-label">Código Reserva</span>
+            <h4 class="code-title">{{ res.codigo_reserva }}</h4>
+          </div>
+
+          <div class="card-badges">
+            <span class="badge-payment" [class.badge-paid]="res.venta_pagada" [class.badge-pending]="!res.venta_pagada">
+              {{ res.venta_pagada ? 'PAGADA ONLINE' : 'COBRO EN MOSTRADOR' }}
+            </span>
+            <span class="badge-status">{{ res.estado }}</span>
+          </div>
+        </div>
+
+        <!-- Información del Cliente y Cita -->
+        <div class="card-pos-body">
+          <div class="client-info-row">
+            <div class="client-avatar">
+              {{ (res.cliente?.nombre?.[0] || 'C').toUpperCase() }}
+            </div>
+            <div class="client-meta">
+              <strong>{{ res.cliente?.nombre_completo || 'Cliente Registrado' }}</strong>
+              <span class="client-sub">
+                CI: {{ res.cliente?.ci || 'Sin CI' }}
+                <ng-container *ngIf="res.cliente?.telefono"> · Tel: {{ res.cliente?.telefono }}</ng-container>
+              </span>
+            </div>
+          </div>
+
+          <div class="reserva-details-grid">
+            <div class="detail-box">
+              <span class="box-label">Fecha Programada</span>
+              <strong class="box-val">{{ res.fecha_hora_visita | date:'dd/MM/yyyy HH:mm' }}</strong>
+            </div>
+
+            <div class="detail-box">
+              <span class="box-label">Prendas Reservadas</span>
+              <strong class="box-val">{{ res.cantidad_prendas }} items</strong>
+            </div>
+
+            <div class="detail-box">
+              <span class="box-label">Total Estimado</span>
+              <strong class="box-val amount-val">Bs. {{ res.total_estimado | number:'1.2-2' }}</strong>
+            </div>
+          </div>
+
+          <!-- Miniaturas de Prendas -->
+          <div class="garments-preview-strip" *ngIf="res.prendas.length">
+            <div
+              class="mini-garment-thumb"
+              *ngFor="let p of res.prendas | slice:0:4"
+              [title]="p.nombre + ' (' + (p.talla || '') + ' - ' + (p.color || '') + ')'"
+            >
+              <img *ngIf="p.imagen_url" [src]="p.imagen_url" [alt]="p.nombre" />
+              <span *ngIf="!p.imagen_url" class="mini-garment-placeholder">👗</span>
+            </div>
+            <div class="mini-garment-more" *ngIf="res.prendas.length > 4">
+              +{{ res.prendas.length - 4 }}
+            </div>
+          </div>
+
+          <p class="reserva-nota" *ngIf="res.observaciones">
+            <em>"{{ res.observaciones }}"</em>
+          </p>
+        </div>
+
+        <!-- Acción Principal -->
+        <div class="card-pos-footer">
+          <button
+            type="button"
+            class="btn-atender-pos"
+            (click)="seleccionarReserva(res)"
+          >
+            <span class="btn-icon">⚡</span>
+            <span>Iniciar Atención POS</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+
+  <!-- ================= VISTA 2: WORKSTATION POS DE ATENCIÓN DE RESERVA (Seleccionada) ================= -->
+  <section class="pos-workstation" *ngIf="reservaSeleccionada">
+
+    <!-- Barra de Navegación del Workstation -->
+    <div class="workstation-nav">
+      <button type="button" class="btn-back-list" (click)="limpiarSeleccion()">
+        <span>← Volver al Listado</span>
+      </button>
+
+      <div class="workstation-headline">
+        <span class="ws-tag">Atendiendo Reserva:</span>
+        <h3 class="ws-code">{{ reservaSeleccionada.codigo_reserva }}</h3>
+      </div>
+
+      <div class="ws-status-badge">
+        <span
+          class="badge-payment large"
+          [class.badge-paid]="reservaSeleccionada.venta_pagada"
+          [class.badge-pending]="!reservaSeleccionada.venta_pagada"
+        >
+          {{ reservaSeleccionada.venta_pagada ? 'RESERVA PAGADA ONLINE' : 'PENDIENTE DE COBRO EN MOSTRADOR' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Layout Dual del POS: Probador a la izquierda, Panel de Cobro a la derecha -->
+    <div class="workstation-grid">
+
+      <!-- COLUMNA IZQUIERDA: Probador & Selección de Prendas -->
+      <div class="probador-panel">
+
+        <!-- Tarjeta de Datos del Cliente -->
+        <div class="client-pos-banner">
+          <div class="client-avatar large">
+            {{ (reservaSeleccionada.cliente?.nombre?.[0] || 'C').toUpperCase() }}
+          </div>
+          <div class="client-banner-data">
+            <h4>{{ reservaSeleccionada.cliente?.nombre_completo || 'Cliente' }}</h4>
+            <div class="client-tags">
+              <span><strong>CI:</strong> {{ reservaSeleccionada.cliente?.ci || 'Sin CI' }}</span>
+              <span *ngIf="reservaSeleccionada.cliente?.telefono"><strong>Tel:</strong> {{ reservaSeleccionada.cliente?.telefono }}</span>
+              <span *ngIf="reservaSeleccionada.cliente?.correo"><strong>Correo:</strong> {{ reservaSeleccionada.cliente?.correo }}</span>
+              <span><strong>Visita:</strong> {{ reservaSeleccionada.fecha_hora_visita | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Instrucción del Probador -->
+        <div class="probador-toolbar">
+          <div>
+            <h4>Prueba en Probador (Fulfillment)</h4>
+            <p>El cliente prueba las prendas. Marque las prendas que <strong>lleva</strong> y las que <strong>devuelve al stock</strong>.</p>
+          </div>
+
+          <div class="probador-bulk-btns">
+            <button type="button" class="btn-bulk" (click)="marcarTodas(true)">
+              Llevar todas
+            </button>
+            <button type="button" class="btn-bulk outline" (click)="marcarTodas(false)">
+              Devolver todas
+            </button>
+          </div>
+        </div>
+
+        <!-- Tabla / Lista Interactiva de Prendas -->
+        <div class="prendas-table-card">
+          <div class="prenda-row-item" *ngFor="let p of reservaSeleccionada.prendas">
+            <!-- Imagen -->
+            <div class="prenda-thumb">
+              <img *ngIf="p.imagen_url" [src]="p.imagen_url" [alt]="p.nombre" />
+              <div *ngIf="!p.imagen_url" class="no-img">👗</div>
+            </div>
+
+            <!-- Detalles del Producto -->
+            <div class="prenda-info-col">
+              <span class="prenda-code">{{ p.codigo_producto }} · SKU: {{ p.sku }}</span>
+              <strong class="prenda-name">{{ p.nombre }}</strong>
+              <div class="prenda-specs">
+                <span class="spec-tag" *ngIf="p.talla">Talla: <strong>{{ p.talla }}</strong></span>
+                <span class="spec-tag color-spec" *ngIf="p.color">
+                  Color:
+                  <span class="color-dot" [style.background-color]="p.codigo_hex || '#ccc'"></span>
+                  <strong>{{ p.color }}</strong>
+                </span>
+                <span class="spec-tag">Cant: <strong>{{ p.cantidad }}</strong></span>
+              </div>
+            </div>
+
+            <!-- Precios -->
+            <div class="prenda-pricing-col">
+              <span class="unit-price">Bs. {{ p.precio | number:'1.2-2' }} c/u</span>
+              <strong class="row-subtotal">Bs. {{ (p.precio * p.cantidad) | number:'1.2-2' }}</strong>
+            </div>
+
+            <!-- Selector Probador (Aceptar / Devolver) -->
+            <div class="prenda-action-col">
+              <button
+                type="button"
+                class="btn-toggle-fit"
+                [class.is-accepted]="p.aceptado"
+                [class.is-rejected]="!p.aceptado"
+                (click)="togglePrendaAceptada(p)"
+              >
+                <span class="toggle-icon">{{ p.aceptado ? '✅' : '↩️' }}</span>
+                <span class="toggle-text">{{ p.aceptado ? 'Lleva prenda' : 'Devuelve a stock' }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- COLUMNA DERECHA: Resumen de Cobro y Facturación POS -->
+      <div class="checkout-pos-panel">
+
+        <div class="summary-card">
+          <h3 class="summary-title">Resumen de Atención</h3>
+
+          <!-- Desglose de prendas -->
+          <div class="summary-fit-breakdown">
+            <div class="fit-chip accepted">
+              <span class="count">{{ prendasAceptadas.length }}</span>
+              <span class="label">Para llevar</span>
+            </div>
+            <div class="fit-chip returned">
+              <span class="count">{{ prendasDevueltas.length }}</span>
+              <span class="label">A devolver a stock</span>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Totales -->
+          <div class="summary-line">
+            <span>Subtotal prendas:</span>
+            <strong>Bs. {{ subtotalCobrar | number:'1.2-2' }}</strong>
+          </div>
+
+          <div class="summary-line" *ngIf="!reservaSeleccionada.venta_pagada">
+            <span>Descuento aplicado:</span>
+            <div class="input-descuento-wrap">
+              <span>Bs.</span>
+              <input
+                type="number"
+                min="0"
+                [max]="subtotalCobrar"
+                class="input-descuento"
+                [(ngModel)]="descuento"
+                (ngModelChange)="calcularCambio()"
+              />
+            </div>
+          </div>
+
+          <div class="summary-line total-highlight">
+            <span>Total a Cobrar:</span>
+            <span class="grand-total">Bs. {{ totalCobrar | number:'1.2-2' }}</span>
+          </div>
+
+          <!-- Si la reserva ya fue PAGADA previamente -->
+          <div class="alert-prepagada" *ngIf="reservaSeleccionada.venta_pagada">
+            <div class="prepagada-header">
+              <span class="prepagada-icon">💳</span>
+              <strong>Abono Confirmado en Línea</strong>
+            </div>
+            <p>Esta reserva fue pagada por el cliente mediante la plataforma web. No requiere cobro en mostrador.</p>
+            <div class="prepagada-meta">
+              <span>Venta: <strong>{{ reservaSeleccionada.venta?.numero_venta || 'Prepagada' }}</strong></span>
+              <span>Total: <strong>Bs. {{ reservaSeleccionada.venta?.total | number:'1.2-2' }}</strong></span>
+            </div>
+
+            <button
+              type="button"
+              class="btn-confirm-delivery"
+              (click)="confirmarEntregaPrepagada()"
+              [disabled]="procesando"
+            >
+              {{ procesando ? 'Entregando prendas...' : 'Confirmar Entrega y Finalizar' }}
+            </button>
+          </div>
+
+          <!-- Si la reserva está PENDIENTE DE PAGO (Cobro en Mostrador) -->
+          <div class="pending-payment-flow" *ngIf="!reservaSeleccionada.venta_pagada">
+
+            <!-- Alerta si caja cerrada -->
+            <div class="caja-warning-box" *ngIf="!cajaAbierta">
+              <span class="warning-icon">⚠️</span>
+              <div>
+                <strong>Caja registradora cerrada</strong>
+                <p>Para realizar cobros presenciales debe abrir su turno de caja.</p>
+              </div>
+              <button type="button" class="btn-abrir-inline" (click)="irACaja()">Abrir</button>
+            </div>
+
+            <!-- Botón para Cobro en Mostrador -->
+            <button
+              type="button"
+              class="btn-cobrar-pos"
+              (click)="abrirModalCobro()"
+              [disabled]="procesando || !cajaAbierta || prendasAceptadas.length === 0"
+            >
+              <span class="btn-icon">💰</span>
+              <span>Cobrar en Mostrador (Bs. {{ totalCobrar | number:'1.2-2' }})</span>
+            </button>
+
+            <!-- Opción si cliente devolvió todo -->
+            <button
+              *ngIf="prendasAceptadas.length === 0"
+              type="button"
+              class="btn-devolver-todo"
+              (click)="procesarCierreSinCompra()"
+              [disabled]="procesando"
+            >
+              <span>↩️ Devolver todo al stock (Sin compra)</span>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- ================= MODAL DE COBRO POS (Cobro en Mostrador) ================= -->
+  <div class="pos-modal-backdrop" *ngIf="mostrarModalCobro">
+    <div class="pos-modal-card">
+
+      <div class="pos-modal-header">
+        <div>
+          <h3>Cobro en Mostrador - POS</h3>
+          <p>Reserva: <strong>{{ reservaSeleccionada?.codigo_reserva }}</strong> · Cliente: <strong>{{ reservaSeleccionada?.cliente?.nombre_completo }}</strong></p>
+        </div>
+        <button type="button" class="btn-modal-close" (click)="cerrarModalCobro()">×</button>
+      </div>
+
+      <div class="pos-modal-body">
+
+        <!-- Gran Total Display -->
+        <div class="modal-total-banner">
+          <span class="label">Monto Total a Cobrar:</span>
+          <span class="amount">Bs. {{ totalCobrar | number:'1.2-2' }}</span>
+        </div>
+
+        <!-- Selector de Métodos de Pago -->
+        <div class="metodos-pago-tabs">
+          <button
+            type="button"
+            class="tab-metodo"
+            [class.active]="metodoPagoSeleccionado === 3"
+            (click)="seleccionarMetodoPago(3)"
+          >
+            <span class="icon">💵</span>
+            <span>Efectivo</span>
+          </button>
+
+          <button
+            type="button"
+            class="tab-metodo"
+            [class.active]="metodoPagoSeleccionado === 1"
+            (click)="seleccionarMetodoPago(1)"
+          >
+            <span class="icon">💳</span>
+            <span>Tarjeta POS</span>
+          </button>
+
+          <button
+            type="button"
+            class="tab-metodo"
+            [class.active]="metodoPagoSeleccionado === 4"
+            (click)="seleccionarMetodoPago(4)"
+          >
+            <span class="icon">📱</span>
+            <span>QR Simple</span>
+          </button>
+        </div>
+
+        <!-- Detalle para EFECTIVO -->
+        <div class="pago-efectivo-box" *ngIf="metodoPagoSeleccionado === 3">
+          <div class="form-row-pos">
+            <label>Monto en Efectivo Recibido (Bs.):</label>
+            <div class="input-money-wrapper">
+              <span class="prefix">Bs.</span>
+              <input
+                type="number"
+                step="0.50"
+                min="0"
+                class="input-recibido"
+                [(ngModel)]="montoRecibido"
+                (ngModelChange)="calcularCambio()"
+                placeholder="0.00"
+              />
+            </div>
+          </div>
+
+          <!-- Billetes Rápidos -->
+          <div class="quick-cash-chips">
+            <button type="button" class="btn-quick-cash" (click)="setMontoExacto()">Exacto</button>
+            <button type="button" class="btn-quick-cash" (click)="agregarEfectivo(20)">+20</button>
+            <button type="button" class="btn-quick-cash" (click)="agregarEfectivo(50)">+50</button>
+            <button type="button" class="btn-quick-cash" (click)="agregarEfectivo(100)">+100</button>
+            <button type="button" class="btn-quick-cash" (click)="agregarEfectivo(200)">+200</button>
+          </div>
+
+          <!-- Indicador de Cambio -->
+          <div class="cambio-banner" [class.cambio-listo]="montoRecibido >= totalCobrar" [class.cambio-insuficiente]="montoRecibido < totalCobrar">
+            <span class="cambio-label">
+              {{ montoRecibido >= totalCobrar ? 'Cambio a Entregar:' : 'Falta Abonar:' }}
+            </span>
+            <strong class="cambio-amount">
+              Bs. {{ (montoRecibido >= totalCobrar ? cambio : (totalCobrar - montoRecibido)) | number:'1.2-2' }}
+            </strong>
+          </div>
+        </div>
+
+        <!-- Detalle para TARJETA o QR -->
+        <div class="pago-referencia-box" *ngIf="metodoPagoSeleccionado !== 3">
+          <div class="form-row-pos">
+            <label>{{ metodoPagoSeleccionado === 1 ? 'Código de Autorización / Voucher POS:' : 'Número de Transacción / Referencia QR:' }}</label>
+            <input
+              type="text"
+              class="pos-modal-input"
+              [(ngModel)]="referenciaTransaccion"
+              placeholder="Ej: POS-AUTH-987654"
+            />
+          </div>
+        </div>
+
+        <!-- Datos para Facturación / Comprobante -->
+        <div class="facturacion-section">
+          <h5>Datos de Facturación / Comprobante</h5>
+          <div class="facturacion-grid">
+            <div class="field-item">
+              <label>NIT / CI:</label>
+              <input type="text" class="pos-modal-input" [(ngModel)]="datosFacturacion.nit_ci" />
+            </div>
+
+            <div class="field-item">
+              <label>Razón Social / Nombre:</label>
+              <input type="text" class="pos-modal-input" [(ngModel)]="datosFacturacion.razon_social" />
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="pos-modal-footer">
+        <button type="button" class="btn-cancel-modal" (click)="cerrarModalCobro()">
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          class="btn-finish-payment"
+          (click)="confirmarCobroPos()"
+          [disabled]="procesando || (metodoPagoSeleccionado === 3 && montoRecibido < totalCobrar)"
+        >
+          <span *ngIf="!procesando">Finalizar Venta & Entregar Prendas</span>
+          <span *ngIf="procesando">Procesando Venta...</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ================= MODAL DE ÉXITO / COMPROBANTE ================= -->
+  <div class="pos-modal-backdrop" *ngIf="mostrarModalExito">
+    <div class="pos-modal-card success-card">
+
+      <div class="success-icon-badge">✓</div>
+
+      <h3>¡Atención y Venta Completada!</h3>
+      <p class="success-subtitle">
+        La reserva <strong>{{ resultadoExito?.codigo_reserva }}</strong> ha sido marcada como <strong>ATENDIDA</strong> y el inventario ha sido actualizado.
+      </p>
+
+      <div class="success-summary-box">
+        <div class="summary-col" *ngIf="resultadoExito?.numero_venta">
+          <span>N° de Venta:</span>
+          <strong>{{ resultadoExito?.numero_venta }}</strong>
+        </div>
+
+        <div class="summary-col" *ngIf="resultadoExito?.total">
+          <span>Total Cobrado:</span>
+          <strong>Bs. {{ resultadoExito?.total | number:'1.2-2' }}</strong>
+        </div>
+
+        <div class="summary-col" *ngIf="resultadoExito?.cambio">
+          <span>Cambio Devuelto:</span>
+          <strong>Bs. {{ resultadoExito?.cambio | number:'1.2-2' }}</strong>
+        </div>
+
+        <div class="summary-col">
+          <span>Prendas Entregadas:</span>
+          <strong>{{ resultadoExito?.items_adquiridos || resultadoExito?.items_entregados || 0 }} prendas</strong>
+        </div>
+
+        <div class="summary-col" *ngIf="resultadoExito?.items_devueltos">
+          <span>Devueltas a Stock:</span>
+          <strong>{{ resultadoExito?.items_devueltos }} prendas</strong>
+        </div>
+      </div>
+
+      <div class="success-actions">
+        <button
+          type="button"
+          class="btn-ticket-pdf"
+          (click)="descargarTicket(resultadoExito?.id_venta)"
+          [disabled]="descargandoPdf || !resultadoExito?.id_venta"
+        >
+          <span class="btn-icon">🖨️</span>
+          <span>{{ descargandoPdf ? 'Generando PDF...' : 'Descargar Ticket / Comprobante PDF' }}</span>
+        </button>
+
+        <button
+          type="button"
+          class="btn-next-reserva"
+          (click)="cerrarModalExito()"
+        >
+          <span>Atender Siguiente Reserva</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>

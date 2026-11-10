@@ -1,0 +1,44 @@
+<div class="mapa-container">
+
+  <div class="mapa-header">
+    <div>
+      <h3>Ubicación de la sucursal</h3>
+      <p>Haz clic en el mapa para seleccionar la ubicación.</p>
+    </div>
+  </div>
+
+  <div #mapa class="mapa"></div>
+
+  <div
+    class="coordenadas"
+    *ngIf="
+      latitud !== null &&
+      latitud !== undefined &&
+      longitud !== null &&
+      longitud !== undefined
+    "
+  >
+    <div>
+      <span>Latitud</span>
+      <strong>{{ latitud | number:'1.7-7' }}</strong>
+    </div>
+
+    <div>
+      <span>Longitud</span>
+      <strong>{{ longitud | number:'1.7-7' }}</strong>
+    </div>
+  </div>
+
+  <div
+    class="sin-ubicacion"
+    *ngIf="
+      latitud === null ||
+      latitud === undefined ||
+      longitud === null ||
+      longitud === undefined
+    "
+  >
+    Selecciona un punto en el mapa para establecer la ubicación.
+  </div>
+
+</div>

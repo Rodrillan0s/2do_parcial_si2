@@ -1,0 +1,687 @@
+<div class="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-indigo-500 selection:text-white">
+
+  <!-- ======================================================================= -->
+  <!-- HEADER DEL SITIO COMERCIAL DE AURORASTORE (IDENTIDAD DE PLATAFORMA)     -->
+  <!-- ======================================================================= -->
+  <header class="sticky top-0 z-40 backdrop-blur-xl bg-slate-950/85 border-b border-slate-800/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3 cursor-pointer" (click)="irAVista('inicio')">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-black text-base shadow-lg shadow-indigo-500/20">
+          A
+        </div>
+        <div>
+          <span class="text-lg font-black tracking-tight text-white">AuroraStore</span>
+          <span class="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+            SaaS Cloud
+          </span>
+        </div>
+      </div>
+
+      <nav class="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-300">
+        <button type="button" (click)="irAVista('inicio')"
+                [class.text-white]="vistaActual === 'inicio'"
+                class="hover:text-white transition-colors cursor-pointer">
+          Plataforma
+        </button>
+        <button type="button" (click)="irAVista('planes')"
+                [class.text-white]="vistaActual === 'planes'"
+                class="hover:text-white transition-colors cursor-pointer">
+          Planes y Precios
+        </button>
+        <button type="button" (click)="irAVista('registro')"
+                [class.text-white]="vistaActual === 'registro'"
+                class="hover:text-white transition-colors cursor-pointer">
+          Contratar Ahora
+        </button>
+        <a routerLink="/explorar" [queryParams]="{ empresa: 1 }"
+           class="text-slate-400 hover:text-indigo-300 transition-colors flex items-center gap-1">
+          <span>Ver Tienda Demo</span>
+          <i class="ph ph-arrow-up-right"></i>
+        </a>
+      </nav>
+
+      <div class="flex items-center gap-2.5">
+        <ng-container *ngIf="authService.currentUser(); else guestOwnerBtns">
+          <a routerLink="/admin"
+             class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-sm">
+            Ir a mi Panel Admin →
+          </a>
+        </ng-container>
+        <ng-template #guestOwnerBtns>
+          <button type="button" (click)="abrirLoginPropietario()"
+                  class="px-3.5 py-2 rounded-xl border border-slate-700 hover:border-slate-500 text-xs font-semibold text-slate-200 transition-colors cursor-pointer">
+            Acceso Propietarios
+          </button>
+          <button type="button" (click)="irAVista('planes')"
+                  class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-md shadow-indigo-600/20 cursor-pointer">
+            Comenzar Contratación
+          </button>
+        </ng-template>
+      </div>
+    </div>
+  </header>
+
+  <!-- Alertas Globales -->
+  <div *ngIf="mensajeError || mensajeExito" class="max-w-5xl mx-auto px-4 pt-6">
+    <div *ngIf="mensajeError"
+         class="p-4 rounded-2xl bg-rose-950/60 border border-rose-800 text-rose-200 text-xs font-medium flex items-center justify-between gap-3">
+      <span>⚠️ {{ mensajeError }}</span>
+      <button (click)="mensajeError = ''" class="text-rose-400 hover:text-white cursor-pointer">✕</button>
+    </div>
+    <div *ngIf="mensajeExito"
+         class="p-4 rounded-2xl bg-emerald-950/60 border border-emerald-800 text-emerald-200 text-xs font-medium flex items-center justify-between gap-3">
+      <span>✓ {{ mensajeExito }}</span>
+      <button (click)="mensajeExito = ''" class="text-emerald-400 hover:text-white cursor-pointer">✕</button>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- PANTALLA A: INICIO DEL SITIO COMERCIAL DE AURORASTORE                   -->
+  <!-- ======================================================================= -->
+  <main *ngIf="vistaActual === 'inicio'" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-20">
+    
+    <!-- Hero Principal -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+      <div class="lg:col-span-7 space-y-6">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
+          <span>Plataforma SaaS Multitenant para Tiendas de Prendas</span>
+        </div>
+
+        <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white leading-[1.08]">
+          Lanza y escala tu tienda de ropa con <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400">identidad propia</span>.
+        </h1>
+
+        <p class="text-sm sm:text-base text-slate-300 max-w-2xl leading-relaxed">
+          Una sola plataforma para marcas de moda femenina, masculina, unisex, infantil o bebés. Personaliza tu storefront, controla inventario multi-sucursal en tiempo real, opera con punto de venta (POS) y activa tu suscripción en minutos.
+        </p>
+
+        <div class="flex flex-wrap items-center gap-3 pt-2">
+          <button type="button" (click)="irAVista('planes')"
+                  class="px-7 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold shadow-lg shadow-indigo-600/25 transition-all cursor-pointer">
+            Consultar Planes y Contratar →
+          </button>
+          <button type="button" (click)="abrirLoginPropietario()"
+                  class="px-6 py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-sm font-semibold transition-all cursor-pointer">
+            Ya soy propietario (Iniciar Sesión)
+          </button>
+        </div>
+
+        <!-- Consulta de estado de contratación existente -->
+        <div class="pt-4 max-w-md">
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">
+            ¿Ya iniciaste tu contratación? Consulta el estado:
+          </label>
+          <div class="flex gap-2">
+            <input type="text"
+                   [(ngModel)]="codigoConsultaInput"
+                   (keyup.enter)="consultarPorCodigo()"
+                   placeholder="Ej: AUR-2611-A1B2C3"
+                   class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500" />
+            <button type="button"
+                    (click)="consultarPorCodigo()"
+                    class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white transition-colors cursor-pointer">
+              Consultar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tarjeta Visual de Capacidades Multi-Público -->
+      <div class="lg:col-span-5 rounded-3xl bg-slate-900/90 border border-slate-800 p-6 sm:p-8 space-y-6 shadow-2xl">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+          <div>
+            <span class="text-[10px] font-mono uppercase tracking-widest text-indigo-400 font-bold">Adaptable a tu Rubro</span>
+            <h3 class="text-lg font-bold text-white">Storefront 100% Configurable</h3>
+          </div>
+          <span class="px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-300 text-[10px] font-bold border border-emerald-500/30">
+            Multitenant Real
+          </span>
+        </div>
+
+        <div class="space-y-3 text-xs text-slate-300">
+          <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 flex items-start gap-3">
+            <span class="text-indigo-400 font-bold text-base">01</span>
+            <div>
+              <div class="font-bold text-white">Cualquier Público Objetivo</div>
+              <p class="text-slate-400 mt-0.5">Configura tu tienda para Mujer, Hombre, Unisex, Niños, Niñas, Bebés o combinaciones mixtas sin categorías fijas.</p>
+            </div>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 flex items-start gap-3">
+            <span class="text-indigo-400 font-bold text-base">02</span>
+            <div>
+              <div class="font-bold text-white">Identidad Visual Controlada</div>
+              <p class="text-slate-400 mt-0.5">Personaliza logotipo, colores primario y secundario, tipografía, banners, colecciones y orden de secciones.</p>
+            </div>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 flex items-start gap-3">
+            <span class="text-indigo-400 font-bold text-base">03</span>
+            <div>
+              <div class="font-bold text-white">Inventario por Sucursal, POS y Reportes</div>
+              <p class="text-slate-400 mt-0.5">Stock en tiempo real por sucursal, reservas en tienda, devoluciones y motor generativo de reportes.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tiendas activas en la plataforma -->
+        <div *ngIf="tenantContext.tenantsDisponibles().length > 0" class="pt-2 border-t border-slate-800 space-y-2">
+          <div class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Explorar Storefronts Activos en AuroraStore:</div>
+          <div class="flex flex-wrap gap-2">
+            <a *ngFor="let t of tenantContext.tenantsDisponibles()"
+               [routerLink]="['/t', t.slug || 'shopping-bolivia']"
+               class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500/40 text-xs font-semibold text-white transition-all flex items-center gap-1.5">
+              <span>{{ t.configuracion_storefront?.nombre_comercial || t.nombre_empresa }}</span>
+              <i class="ph ph-arrow-up-right text-xs"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección de Planes Integrada en Inicio -->
+    <div class="pt-6 border-t border-slate-800/80">
+      <ng-container *ngTemplateOutlet="planesSectionTpl"></ng-container>
+    </div>
+
+  </main>
+
+  <!-- ======================================================================= -->
+  <!-- PANTALLA B: PLANES Y COMPARACIÓN                                        -->
+  <!-- ======================================================================= -->
+  <main *ngIf="vistaActual === 'planes'" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <ng-container *ngTemplateOutlet="planesSectionTpl"></ng-container>
+  </main>
+
+  <ng-template #planesSectionTpl>
+    <div class="space-y-8">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <span class="text-xs font-mono uppercase tracking-widest text-indigo-400 font-bold">Planes Oficiales AuroraStore</span>
+          <h2 class="text-3xl font-black text-white mt-1">Elige el plan para tu empresa</h2>
+          <p class="text-xs text-slate-400 mt-1">Precios transparentes en Bolivianos (BOB). Sin cargos ocultos ni cobros automáticos no autorizados.</p>
+        </div>
+
+        <!-- Selector de Periodicidad -->
+        <div class="inline-flex p-1 rounded-2xl bg-slate-900 border border-slate-800 self-start">
+          <button type="button"
+                  (click)="periodicidadSeleccionada = 'MENSUAL'"
+                  [ngClass]="periodicidadSeleccionada === 'MENSUAL' ? 'bg-indigo-600 text-white font-bold shadow-sm' : 'text-slate-400 hover:text-white'"
+                  class="px-4 py-2 rounded-xl text-xs transition-all cursor-pointer">
+            Mensual
+          </button>
+          <button type="button"
+                  (click)="periodicidadSeleccionada = 'ANUAL'"
+                  [ngClass]="periodicidadSeleccionada === 'ANUAL' ? 'bg-indigo-600 text-white font-bold shadow-sm' : 'text-slate-400 hover:text-white'"
+                  class="px-4 py-2 rounded-xl text-xs transition-all cursor-pointer flex items-center gap-1.5">
+            <span>Anual</span>
+            <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px]">2 meses libres</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tarjetas de Planes -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div *ngFor="let plan of planes"
+             class="rounded-3xl p-6 sm:p-8 border flex flex-col justify-between transition-all"
+             [ngClass]="plan.codigo === 'PROFESIONAL'
+               ? 'bg-slate-900/95 border-indigo-500/60 ring-1 ring-indigo-500/30 shadow-xl shadow-indigo-950/50'
+               : 'bg-slate-900/60 border-slate-800'">
+          <div class="space-y-5">
+            <div class="flex items-center justify-between">
+              <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider"
+                    [ngClass]="plan.codigo === 'PROFESIONAL' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300'">
+                Plan {{ plan.nombre }}
+              </span>
+              <span *ngIf="plan.codigo === 'PROFESIONAL'"
+                    class="text-[11px] font-bold text-indigo-300 bg-indigo-500/15 px-2.5 py-0.5 rounded-full border border-indigo-500/30">
+                Recomendado Multi-Sucursal
+              </span>
+            </div>
+
+            <div>
+              <div class="flex items-baseline gap-1.5">
+                <span class="text-sm font-bold text-slate-400">{{ plan.moneda || 'BOB' }}</span>
+                <span class="text-4xl font-black text-white">Bs. {{ obtenerPrecioPlan(plan) | number:'1.0-0' }}</span>
+                <span class="text-xs text-slate-400">/ {{ periodicidadSeleccionada === 'ANUAL' ? 'año' : 'mes' }}</span>
+              </div>
+              <p class="text-xs text-slate-400 mt-2 leading-relaxed">{{ plan.descripcion }}</p>
+            </div>
+
+            <div class="pt-4 border-t border-slate-800 space-y-2.5 text-xs">
+              <div class="flex items-center gap-2.5 text-white font-semibold">
+                <span class="text-emerald-400">✓</span>
+                <span>Hasta {{ plan.max_sucursales }} sucursales físicas activas</span>
+              </div>
+              <div class="flex items-center gap-2.5" [ngClass]="plan.reportes_generativos ? 'text-white font-semibold' : 'text-slate-500'">
+                <span>{{ plan.reportes_generativos ? '✓' : '—' }}</span>
+                <span>{{ plan.reportes_generativos ? 'Motor Dinámico y Generativo de Reportes incluido' : 'Reportes operativos estándar (sin motor generativo)' }}</span>
+              </div>
+              <div *ngFor="let ben of plan.beneficios" class="flex items-start gap-2.5 text-slate-300">
+                <span class="text-emerald-400 mt-0.5">✓</span>
+                <span>{{ ben }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-8">
+            <button type="button"
+                    (click)="irAVista('registro', plan.codigo)"
+                    class="w-full py-3.5 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
+                    [ngClass]="plan.codigo === 'PROFESIONAL'
+                      ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/25'
+                      : 'bg-white hover:bg-slate-200 text-slate-950'">
+              Seleccionar Plan {{ plan.nombre }} y Continuar →
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- ======================================================================= -->
+  <!-- PANTALLA C: REGISTRO AUTÓNOMO DEL PROPIETARIO Y EMPRESA                 -->
+  <!-- ======================================================================= -->
+  <main *ngIf="vistaActual === 'registro'" class="max-w-3xl mx-auto px-4 sm:px-6 py-12">
+    <div class="rounded-3xl bg-slate-900 border border-slate-800 p-6 sm:p-10 space-y-8 shadow-2xl">
+      
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+        <div>
+          <span class="text-[11px] font-mono uppercase tracking-widest text-indigo-400 font-bold">
+            Paso {{ pasoRegistro }} de 2 — Registro Autónomo
+          </span>
+          <h1 class="text-2xl font-black text-white mt-1">
+            {{ pasoRegistro === 1 ? 'Datos del Propietario' : 'Datos de tu Tienda y Plan' }}
+          </h1>
+        </div>
+        <div *ngIf="planObjetoSeleccionado as plan" class="px-3.5 py-2 rounded-2xl bg-slate-950 border border-slate-800 text-right">
+          <div class="text-[10px] text-slate-400 uppercase font-bold">Plan elegido ({{ periodicidadSeleccionada }})</div>
+          <div class="text-xs font-bold text-indigo-300">{{ plan.nombre }} · Bs. {{ obtenerPrecioPlan(plan) }}</div>
+        </div>
+      </div>
+
+      <!-- PASO 1: Datos de la cuenta del propietario -->
+      <div *ngIf="pasoRegistro === 1" class="space-y-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1.5">Nombre *</label>
+            <input type="text" [(ngModel)]="regNombre" placeholder="Ej: Carlos"
+                   class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1.5">Apellido *</label>
+            <input type="text" [(ngModel)]="regApellido" placeholder="Ej: Mendoza"
+                   class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1.5">Correo electrónico (se verificará titularidad) *</label>
+            <input type="email" [(ngModel)]="regCorreo" placeholder="propietario@mitienda.bo"
+                   class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1.5">Teléfono / WhatsApp</label>
+            <input type="text" [(ngModel)]="regTelefono" placeholder="+591 70000000"
+                   class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1.5">Contraseña (mín. 8 caracteres y 1 símbolo) *</label>
+            <input type="password" [(ngModel)]="regPassword" placeholder="••••••••"
+                   class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1.5">Confirmar contraseña *</label>
+            <input type="password" [(ngModel)]="regConfirmPassword" placeholder="••••••••"
+                   class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" />
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+          <button type="button" (click)="irAVista('planes')"
+                  class="px-4 py-2.5 rounded-xl border border-slate-700 text-xs font-semibold text-slate-300 hover:text-white cursor-pointer">
+            ← Volver a Planes
+          </button>
+          <button type="button" (click)="avanzarAPaso2()"
+                  class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold cursor-pointer">
+            Continuar a Datos de Tienda →
+          </button>
+        </div>
+      </div>
+
+      <!-- PASO 2: Datos de la empresa, slug y públicos objetivo -->
+      <div *ngIf="pasoRegistro === 2" class="space-y-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1.5">Nombre comercial de la tienda *</label>
+            <input type="text"
+                   [ngModel]="regNombreComercial"
+                   (ngModelChange)="onNombreComercialChange($event)"
+                   placeholder="Ej: Urban Kids Bolivia"
+                   class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1.5">Identificador único (Slug / URL de tienda) *</label>
+            <div class="flex items-center bg-slate-950 border border-slate-800 rounded-xl px-3 py-2">
+              <span class="text-xs text-slate-500 select-none">/t/</span>
+              <input type="text"
+                     [ngModel]="regSlug"
+                     (ngModelChange)="onSlugInput($event)"
+                     placeholder="urban-kids-bolivia"
+                     class="flex-1 bg-transparent text-xs text-white focus:outline-none" />
+            </div>
+            <div class="mt-1 text-[11px]"
+                 [ngClass]="slugDisponible === true ? 'text-emerald-400' : (slugDisponible === false ? 'text-rose-400' : 'text-slate-400')">
+              <span *ngIf="slugVerificando">Verificando disponibilidad...</span>
+              <span *ngIf="!slugVerificando && slugMensaje">{{ slugDisponible ? '✓ ' : '' }}{{ slugMensaje }}</span>
+              <button *ngIf="slugSugerencia" type="button" (click)="usarSlugSugerido()"
+                      class="ml-2 underline text-indigo-400 hover:text-indigo-300 cursor-pointer">
+                Usar "{{ slugSugerencia }}"
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1.5">NIT (Opcional)</label>
+            <input type="text" [(ngModel)]="regNit" placeholder="Ej: 1020304050"
+                   class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1.5">Ciudad principal</label>
+            <select [(ngModel)]="regCiudad"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">
+              <option *ngFor="let c of ciudadesBolivia" [value]="c">{{ c }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1.5">Plan y Periodicidad</label>
+            <div class="grid grid-cols-2 gap-1.5">
+              <select [(ngModel)]="planSeleccionado"
+                      class="bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-2.5 text-xs text-white">
+                <option *ngFor="let p of planes" [value]="p.codigo">{{ p.nombre }}</option>
+              </select>
+              <select [(ngModel)]="periodicidadSeleccionada"
+                      class="bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-2.5 text-xs text-white">
+                <option value="MENSUAL">Mensual</option>
+                <option value="ANUAL">Anual</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selección de Públicos Objetivo de la Tienda -->
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-2">
+            ¿A qué públicos objetivo se dirige tu tienda? (Puedes cambiarlo luego en tu panel)
+          </label>
+          <div class="flex flex-wrap gap-2">
+            <button *ngFor="let pub of publicosOpciones"
+                    type="button"
+                    (click)="togglePublicoRegistro(pub)"
+                    class="px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer"
+                    [ngClass]="regPublicos.includes(pub)
+                      ? 'bg-indigo-600 text-white border-indigo-500'
+                      : 'bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-700'">
+              {{ regPublicos.includes(pub) ? '✓ ' : '' }}{{ pub }}
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+          <button type="button" (click)="pasoRegistro = 1"
+                  class="px-4 py-2.5 rounded-xl border border-slate-700 text-xs font-semibold text-slate-300 hover:text-white cursor-pointer">
+            ← Atrás
+          </button>
+          <button type="button"
+                  [disabled]="procesando"
+                  (click)="enviarRegistroContratacion()"
+                  class="px-7 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-bold shadow-lg shadow-indigo-600/25 cursor-pointer">
+            {{ procesando ? 'Registrando solicitud...' : 'Crear Cuenta e Iniciar Contratación →' }}
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ======================================================================= -->
+  <!-- PANTALLAS D, E & F: VERIFICACIÓN DE CORREO, RESUMEN, PAGO Y ESTADO      -->
+  <!-- ======================================================================= -->
+  <main *ngIf="vistaActual === 'contratacion' && contratacionActual as sol" class="max-w-4xl mx-auto px-4 sm:px-6 py-12 space-y-8">
+    
+    <!-- Encabezado de Estado y Código de Seguimiento -->
+    <div class="rounded-3xl bg-slate-900 border border-slate-800 p-6 sm:p-8 space-y-6 shadow-xl">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+        <div>
+          <span class="text-[11px] font-mono uppercase tracking-widest text-indigo-400 font-bold">
+            Código de seguimiento: {{ sol.codigo_seguimiento }}
+          </span>
+          <h1 class="text-2xl sm:text-3xl font-black text-white mt-1">
+            Contratación de {{ sol.nombre_empresa }}
+          </h1>
+          <p class="text-xs text-slate-400 mt-1">
+            Propietario: {{ sol.nombre_propietario }} ({{ sol.correo_propietario }}) · URL tienda: <span class="text-indigo-300 font-mono">/t/{{ sol.slug }}</span>
+          </p>
+        </div>
+
+        <div class="flex flex-col items-start sm:items-end gap-2">
+          <span class="px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border"
+                [ngClass]="{
+                  'bg-amber-500/15 text-amber-300 border-amber-500/30': sol.estado_contratacion === 'PENDIENTE_VERIFICACION_CORREO' || sol.estado_contratacion === 'PENDIENTE_PAGO' || sol.estado_contratacion === 'PENDIENTE_VERIFICACION_PAGO',
+                  'bg-emerald-500/15 text-emerald-300 border-emerald-500/30': sol.estado_contratacion === 'ACTIVA',
+                  'bg-rose-500/15 text-rose-300 border-rose-500/30': sol.estado_contratacion === 'RECHAZADO' || sol.estado_contratacion === 'CANCELADA'
+                }">
+            {{ sol.estado_contratacion }}
+          </span>
+          <button type="button"
+                  (click)="cargarEstadoContratacion(sol.codigo_seguimiento)"
+                  class="text-[11px] text-indigo-400 hover:text-indigo-300 underline cursor-pointer">
+            ↻ Actualizar estado
+          </button>
+        </div>
+      </div>
+
+      <!-- Resumen de Contratación (Pantalla D) -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-2xl bg-slate-950 border border-slate-800 text-xs">
+        <div>
+          <span class="text-slate-500 block">Plan seleccionado</span>
+          <strong class="text-white text-sm">{{ sol.nombre_plan }} ({{ sol.codigo_plan }})</strong>
+        </div>
+        <div>
+          <span class="text-slate-500 block">Periodicidad</span>
+          <strong class="text-white text-sm">{{ sol.periodicidad }}</strong>
+        </div>
+        <div>
+          <span class="text-slate-500 block">Capacidad operativa</span>
+          <strong class="text-white text-sm">Hasta {{ sol.max_sucursales || (sol.codigo_plan === 'PROFESIONAL' ? 10 : 2) }} sucursales</strong>
+        </div>
+        <div>
+          <span class="text-slate-500 block">Total a pagar</span>
+          <strong class="text-indigo-400 text-base font-black">{{ sol.moneda }} Bs. {{ sol.monto | number:'1.2-2' }}</strong>
+        </div>
+      </div>
+
+      <!-- ETAPA 1: Verificación de Correo Electrónico -->
+      <div *ngIf="!sol.correo_verificado" class="p-6 rounded-2xl bg-indigo-950/30 border border-indigo-500/40 space-y-4">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-base font-bold text-white">1. Verifica la titularidad de tu correo electrónico</h3>
+            <p class="text-xs text-slate-300 mt-1">
+              Enviamos un enlace y token criptográfico de un solo uso a <strong>{{ sol.correo_propietario }}</strong>. Ingresa el token aquí para desbloquear el pago de tu suscripción:
+            </p>
+          </div>
+          <button type="button"
+                  [disabled]="procesando"
+                  (click)="reenviarCorreoVerificacion()"
+                  class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 shrink-0 cursor-pointer">
+            Reenviar correo
+          </button>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3">
+          <input type="text"
+                 [(ngModel)]="tokenVerificacionInput"
+                 placeholder="Pega aquí el token de verificación recibido..."
+                 class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-indigo-500" />
+          <button type="button"
+                  [disabled]="procesando"
+                  (click)="verificarCorreoConToken()"
+                  class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shrink-0 cursor-pointer">
+            {{ procesando ? 'Verificando...' : 'Confirmar Correo Electrónico →' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- ETAPA 2: Selección de Método de Pago y Confirmación (Pantalla E) -->
+      <div *ngIf="sol.correo_verificado && (sol.estado_contratacion === 'PENDIENTE_PAGO' || sol.estado_contratacion === 'RECHAZADO')"
+           class="space-y-6 pt-2">
+        
+        <div *ngIf="sol.estado_contratacion === 'RECHAZADO'"
+             class="p-4 rounded-2xl bg-rose-950/50 border border-rose-800 text-xs text-rose-200">
+          <strong>Observación de revisión previa:</strong> {{ sol.observaciones_revision || 'El comprobante anterior fue observado. Puedes enviar uno nuevo o pagar con pasarela.' }}
+        </div>
+
+        <div>
+          <h3 class="text-lg font-bold text-white">2. Selecciona el método de pago para activar tu tienda</h3>
+          <p class="text-xs text-slate-400 mt-1">
+            La activación de la empresa y suscripción se realiza tras la confirmación real del pago.
+          </p>
+        </div>
+
+        <!-- Tabs de Método de Pago -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button type="button"
+                  (click)="metodoPagoElegido = 'QR_TRANSFERENCIA'"
+                  class="p-4 rounded-2xl border text-left transition-all cursor-pointer"
+                  [ngClass]="metodoPagoElegido === 'QR_TRANSFERENCIA'
+                    ? 'bg-indigo-600/15 border-indigo-500 text-white'
+                    : 'bg-slate-950 border-slate-800 text-slate-400'">
+            <div class="text-xs font-bold text-white">Transferencia Bancaria / QR Simple</div>
+            <div class="text-[11px] text-slate-400 mt-1">Adjunta tu comprobante para verificación por personal autorizado de AuroraStore.</div>
+          </button>
+
+          <button type="button"
+                  (click)="metodoPagoElegido = 'PAYPAL'"
+                  class="p-4 rounded-2xl border text-left transition-all cursor-pointer"
+                  [ngClass]="metodoPagoElegido === 'PAYPAL'
+                    ? 'bg-indigo-600/15 border-indigo-500 text-white'
+                    : 'bg-slate-950 border-slate-800 text-slate-400'">
+            <div class="text-xs font-bold text-white">Pasarela PayPal (Activación Inmediata)</div>
+            <div class="text-[11px] text-slate-400 mt-1">Confirmación server-to-server automática contra PayPal REST API.</div>
+          </button>
+        </div>
+
+        <!-- Opción 1: Transferencia / QR con Comprobante -->
+        <div *ngIf="metodoPagoElegido === 'QR_TRANSFERENCIA'"
+             class="p-6 rounded-2xl bg-slate-950 border border-slate-800 space-y-5">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2 text-xs text-slate-300">
+              <div class="font-bold text-white text-sm">Datos para Transferencia / QR Bolivia</div>
+              <p><strong>Banco:</strong> Banco Nacional de Bolivia (BNB)</p>
+              <p><strong>Cuenta Corriente (BOB):</strong> 150-0293847-01</p>
+              <p><strong>Titular:</strong> AURORASTORE CLOUD S.R.L. (NIT: 384920029)</p>
+              <p><strong>Monto exacto:</strong> Bs. {{ sol.monto | number:'1.2-2' }}</p>
+              <p><strong>Glosa sugerida:</strong> {{ sol.codigo_seguimiento }}</p>
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-300 mb-1.5">Número de referencia / comprobante bancario *</label>
+                <input type="text"
+                       [(ngModel)]="referenciaPagoInput"
+                       placeholder="Ej: Nro. Transacción 8493021"
+                       class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-300 mb-1.5">Adjuntar imagen del comprobante *</label>
+                <input type="file"
+                       accept="image/*"
+                       (change)="onArchivoSeleccionado($event)"
+                       class="w-full text-xs text-slate-300 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer" />
+              </div>
+              <button type="button"
+                      [disabled]="procesando"
+                      (click)="enviarComprobanteTransferencia()"
+                      class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-bold uppercase tracking-wider cursor-pointer">
+                {{ procesando ? 'Subiendo comprobante...' : 'Enviar Comprobante para Verificación →' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Opción 2: Pasarela PayPal Server-to-Server -->
+        <div *ngIf="metodoPagoElegido === 'PAYPAL'"
+             class="p-6 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
+          <div class="text-xs text-slate-300 space-y-1">
+            <div class="font-bold text-white text-sm">Pago con Pasarela PayPal (Validación en Servidor)</div>
+            <p>El servidor creará una orden oficial en PayPal y validará la captura antes de activar tu empresa y suscripción.</p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <button type="button"
+                    [disabled]="procesando"
+                    (click)="iniciarPagoPayPal()"
+                    class="px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black uppercase tracking-wider cursor-pointer">
+              1. Generar Orden y Abrir PayPal
+            </button>
+
+            <button *ngIf="paypalOrderIdCreado || sol.paypal_order_id"
+                    type="button"
+                    [disabled]="procesando"
+                    (click)="confirmarCapturaPayPal()"
+                    class="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider cursor-pointer">
+              2. Confirmar Pago en Servidor y Activar Tienda →
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ETAPA 3: Pendiente de Verificación de Comprobante (Pantalla F) -->
+      <div *ngIf="sol.estado_contratacion === 'PENDIENTE_VERIFICACION_PAGO'"
+           class="p-6 rounded-2xl bg-amber-950/30 border border-amber-500/40 space-y-4">
+        <div class="flex items-start justify-between gap-4">
+          <div class="space-y-1">
+            <h3 class="text-base font-bold text-amber-300">Comprobante recibido — En verificación por personal autorizado</h3>
+            <p class="text-xs text-slate-300">
+              Recibimos tu comprobante (Referencia: <strong>{{ sol.referencia_pago }}</strong>). Nuestro equipo verificará la transferencia y activará tu tienda y suscripción.
+            </p>
+          </div>
+          <a *ngIf="sol.comprobante_url" [href]="sol.comprobante_url" target="_blank"
+             class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white shrink-0">
+            Ver comprobante adjunto ↗
+          </a>
+        </div>
+      </div>
+
+      <!-- ETAPA 4: Contratación Activa -> Acceso al Asistente de Configuración Inicial (Pantalla G) -->
+      <div *ngIf="sol.estado_contratacion === 'ACTIVA'"
+           class="p-6 rounded-2xl bg-emerald-950/40 border border-emerald-500/50 space-y-5">
+        <div class="space-y-1">
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">✓ Suscripción y Empresa Activas</span>
+          <h3 class="text-xl font-black text-white">¡Tu tienda {{ sol.nombre_empresa }} está lista para operar!</h3>
+          <p class="text-xs text-slate-300">
+            Inicia sesión con tu cuenta de propietario (<strong>{{ sol.correo_propietario }}</strong>) para abrir el asistente de configuración inicial de tu storefront, crear tu primera sucursal y cargar tu catálogo.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap gap-3">
+          <a routerLink="/admin/mi-tienda"
+             class="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-emerald-600/25">
+            Ir al Asistente de Configuración de mi Tienda →
+          </a>
+          <a [routerLink]="['/t', sol.slug]"
+             class="px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold">
+            Ver mi Storefront Público (/t/{{ sol.slug }}) ↗
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+</div>

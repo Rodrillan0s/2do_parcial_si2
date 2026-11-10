@@ -1,0 +1,481 @@
+<div class="min-h-screen bg-stone-50 dark:bg-zinc-950 py-10 px-4 sm:px-6 lg:px-8 transition-colors">
+  <div class="max-w-4xl mx-auto space-y-8">
+
+    <!-- HEADER DE PAGO -->
+    <div class="flex items-center justify-between border-b border-stone-200 dark:border-zinc-800 pb-5">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 flex items-center justify-center text-2xl shadow-xs">
+          <i class="ph ph-shield-check"></i>
+        </div>
+        <div>
+          <span class="text-[11px] font-bold font-mono tracking-widest uppercase text-amber-600 dark:text-amber-400">
+            AURORA Store · Pasarela Transaccional
+          </span>
+          <h1 class="text-2xl font-serif font-bold text-stone-900 dark:text-zinc-100 mt-0.5">
+            Pago Electrónico Seguro
+          </h1>
+        </div>
+      </div>
+      <button (click)="irAMisPedidos()"
+              class="text-xs font-semibold text-stone-500 hover:text-stone-900 dark:text-zinc-400 dark:hover:text-white flex items-center gap-1.5 transition-colors">
+        <i class="ph ph-arrow-left"></i>
+        <span>Volver a Mis Pedidos</span>
+      </button>
+    </div>
+
+    <!-- CARGANDO DETALLES -->
+    <div *ngIf="cargando" class="py-24 text-center space-y-4">
+      <div class="inline-block animate-spin text-amber-500 text-3xl">
+        <i class="ph ph-spinner"></i>
+      </div>
+      <p class="text-xs text-stone-500 dark:text-zinc-400 font-mono">Cargando detalles de la orden para el pago...</p>
+    </div>
+
+    <!-- ERROR DE CARGA O PEDIDO YA PAGADO -->
+    <div *ngIf="!cargando && errorCarga" class="p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm text-center space-y-4">
+      <div class="w-14 h-14 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-3xl mx-auto">
+        <i class="ph ph-info"></i>
+      </div>
+      <h2 class="text-lg font-serif font-bold text-stone-900 dark:text-zinc-100">{{ errorCarga }}</h2>
+      <div class="flex items-center justify-center gap-3 pt-2">
+        <button (click)="irAMisPedidos()" class="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 text-xs font-bold uppercase tracking-wider transition-all">
+          Consultar Mis Pedidos
+        </button>
+        <button (click)="irAlCatalogo()" class="px-6 py-2.5 rounded-xl border border-stone-300 dark:border-zinc-700 text-stone-800 dark:text-zinc-200 text-xs font-semibold transition-all">
+          Ir al Catálogo
+        </button>
+      </div>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL DE PAGO -->
+    <div *ngIf="!cargando && !errorCarga && pedido" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+      <!-- ============================================== -->
+      <!-- COLUMNA IZQUIERDA: FORMULARIOS DE PAGO (W27) -->
+      <!-- ============================================== -->
+      <div class="lg:col-span-7 space-y-6">
+
+        <!-- 1. ESTADO: SELECCIONANDO / FORMULARIO -->
+        <div *ngIf="estadoPago === 'SELECCIONANDO'" class="p-6 sm:p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm space-y-6 animate-fade-in">
+          
+          <div>
+            <h2 class="text-base font-serif font-bold text-stone-900 dark:text-zinc-100">
+              Selecciona el Método de Pago
+            </h2>
+            <p class="text-xs text-stone-500 dark:text-zinc-400 mt-0.5">
+              Transacciones encriptadas de extremo a extremo y resolución atómica en servidor.
+            </p>
+          </div>
+
+          <!-- SELECTOR DE MÉTODO: ÚNICAMENTE TARJETA Y PAYPAL (SIN SANDBOX) -->
+          <div class="grid grid-cols-2 gap-3">
+            <!-- Opción Tarjeta -->
+            <button type="button"
+                    (click)="seleccionarMetodo('TARJETA')"
+                    class="p-4 rounded-2xl border text-left transition-all relative flex flex-col justify-between h-24"
+                    [ngClass]="metodoSeleccionado === 'TARJETA' ? 'border-amber-500 bg-amber-500/5 ring-2 ring-amber-500/20' : 'border-stone-200 dark:border-zinc-800 hover:border-stone-300 dark:hover:border-zinc-700'">
+              <div class="flex items-center justify-between">
+                <i class="ph ph-credit-card text-2xl text-amber-500"></i>
+                <span *ngIf="metodoSeleccionado === 'TARJETA'" class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+              </div>
+              <div>
+                <div class="text-xs font-bold text-stone-900 dark:text-zinc-100">Tarjeta</div>
+                <div class="text-[10px] text-stone-500 dark:text-zinc-400">Débito y Crédito</div>
+              </div>
+            </button>
+
+            <!-- Opción PayPal -->
+            <button type="button"
+                    (click)="seleccionarMetodo('PAYPAL')"
+                    class="p-4 rounded-2xl border text-left transition-all relative flex flex-col justify-between h-24"
+                    [ngClass]="metodoSeleccionado === 'PAYPAL' ? 'border-blue-500 bg-blue-500/5 ring-2 ring-blue-500/20' : 'border-stone-200 dark:border-zinc-800 hover:border-stone-300 dark:hover:border-zinc-700'">
+              <div class="flex items-center justify-between">
+                <i class="ph ph-paypal-logo text-2xl text-blue-500"></i>
+                <span *ngIf="metodoSeleccionado === 'PAYPAL'" class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+              </div>
+              <div>
+                <div class="text-xs font-bold text-stone-900 dark:text-zinc-100">PayPal</div>
+                <div class="text-[10px] text-stone-500 dark:text-zinc-400">Cuenta PayPal oficial</div>
+              </div>
+            </button>
+          </div>
+
+          <!-- FORMULARIO TARJETA -->
+          <div *ngIf="metodoSeleccionado === 'TARJETA'" class="space-y-4 pt-2 border-t border-stone-100 dark:border-zinc-800/80 animate-fade-in">
+            <!-- Titular -->
+            <div>
+              <label class="block text-xs font-bold text-stone-700 dark:text-zinc-300 mb-1">
+                Nombre del Titular <span class="text-rose-500">*</span>
+              </label>
+              <input type="text"
+                     [(ngModel)]="titularTarjeta"
+                     placeholder="Como figura en la tarjeta"
+                     class="w-full px-3.5 py-2.5 rounded-xl bg-stone-50 dark:bg-zinc-800/80 border border-stone-300 dark:border-zinc-700 text-xs font-medium text-stone-900 dark:text-zinc-100 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+            </div>
+
+            <!-- Número de Tarjeta -->
+            <div>
+              <label class="block text-xs font-bold text-stone-700 dark:text-zinc-300 mb-1">
+                Número de Tarjeta <span class="text-rose-500">*</span>
+              </label>
+              <div class="relative">
+                <input type="text"
+                       [value]="numeroTarjeta"
+                       (input)="formatearNumeroTarjeta($event)"
+                       placeholder="4000 1234 5678 9010"
+                       maxlength="19"
+                       class="w-full pl-3.5 pr-10 py-2.5 rounded-xl bg-stone-50 dark:bg-zinc-800/80 border border-stone-300 dark:border-zinc-700 text-xs font-mono font-bold text-stone-900 dark:text-zinc-100 tracking-wider focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                <i class="ph ph-credit-card absolute right-3 top-3 text-stone-400"></i>
+              </div>
+              <span class="text-[10px] text-stone-400 dark:text-zinc-500 mt-1 block">
+                No almacenamos números de tarjeta en nuestros servidores (Cumplimiento PCI DSS).
+              </span>
+            </div>
+
+            <!-- Expiración y CVV -->
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <label class="block text-xs font-bold text-stone-700 dark:text-zinc-300 mb-1">Mes</label>
+                <input type="text"
+                       [(ngModel)]="mesExpiracion"
+                       placeholder="MM"
+                       maxlength="2"
+                       class="w-full px-3 py-2.5 rounded-xl bg-stone-50 dark:bg-zinc-800/80 border border-stone-300 dark:border-zinc-700 text-xs font-mono text-center text-stone-900 dark:text-zinc-100 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-stone-700 dark:text-zinc-300 mb-1">Año</label>
+                <input type="text"
+                       [(ngModel)]="anioExpiracion"
+                       placeholder="AA"
+                       maxlength="4"
+                       class="w-full px-3 py-2.5 rounded-xl bg-stone-50 dark:bg-zinc-800/80 border border-stone-300 dark:border-zinc-700 text-xs font-mono text-center text-stone-900 dark:text-zinc-100 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-stone-700 dark:text-zinc-300 mb-1">CVV</label>
+                <input type="password"
+                       [(ngModel)]="cvvTarjeta"
+                       placeholder="•••"
+                       maxlength="4"
+                       class="w-full px-3 py-2.5 rounded-xl bg-stone-50 dark:bg-zinc-800/80 border border-stone-300 dark:border-zinc-700 text-xs font-mono text-center text-stone-900 dark:text-zinc-100 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+              </div>
+            </div>
+
+            <!-- Checkbox de Facturación Electrónica -->
+            <div class="pt-3 border-t border-stone-100 dark:border-zinc-800/80 space-y-3">
+              <label class="flex items-center gap-2.5 cursor-pointer select-none">
+                <input type="checkbox"
+                       [(ngModel)]="deseaFactura"
+                       class="w-4 h-4 rounded text-amber-500 focus:ring-amber-500 dark:bg-zinc-800 dark:border-zinc-700">
+                <span class="text-xs font-bold text-stone-800 dark:text-zinc-200">
+                  Deseo Factura Electrónica con datos fiscales
+                </span>
+              </label>
+
+              <div *ngIf="deseaFactura" class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-2xl bg-stone-50 dark:bg-zinc-800/40 border border-stone-200 dark:border-zinc-700/80 animate-fade-in">
+                <div>
+                  <label class="block text-[11px] font-bold text-stone-600 dark:text-zinc-400 mb-1">NIT / CI <span class="text-rose-500">*</span></label>
+                  <input type="text"
+                         [(ngModel)]="nitCi"
+                         placeholder="Ej: 8492019"
+                         class="w-full px-3 py-2 rounded-lg bg-white dark:bg-zinc-800 border border-stone-300 dark:border-zinc-700 text-xs font-mono text-stone-900 dark:text-zinc-100 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-stone-600 dark:text-zinc-400 mb-1">Razón Social <span class="text-rose-500">*</span></label>
+                  <input type="text"
+                         [(ngModel)]="razonSocial"
+                         placeholder="Nombre o Empresa"
+                         class="w-full px-3 py-2 rounded-lg bg-white dark:bg-zinc-800 border border-stone-300 dark:border-zinc-700 text-xs text-stone-900 dark:text-zinc-100 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                </div>
+              </div>
+            </div>
+
+            <!-- Botón Pagar con Tarjeta -->
+            <div class="pt-4">
+              <button type="button"
+                      (click)="pagarConTarjeta()"
+                      [disabled]="!formularioTarjetaValido() || procesando"
+                      class="w-full py-3.5 px-6 rounded-2xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs uppercase tracking-wider transition-all shadow-md shadow-amber-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                <i class="ph ph-lock-key text-base"></i>
+                <span>Confirmar Pago de Bs. {{ pedido.total | number:'1.2-2' }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- SECCIÓN PAYPAL -->
+          <div *ngIf="metodoSeleccionado === 'PAYPAL'" class="space-y-4 pt-2 border-t border-stone-100 dark:border-zinc-800/80 animate-fade-in">
+            <div class="p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/50 text-xs text-blue-900 dark:text-blue-300 space-y-2">
+              <div class="flex items-center gap-2 font-bold">
+                <i class="ph ph-info text-base text-blue-500"></i>
+                <span>Pago Internacional Seguro con PayPal</span>
+              </div>
+              <p class="text-[11px] leading-relaxed text-blue-800/80 dark:text-blue-300/80">
+                Haz clic en el botón oficial de PayPal a continuación para autorizar el cobro equivalente de <strong>Bs. {{ pedido.total | number:'1.2-2' }}</strong>. Al completar la autorización, la ventana se cerrará automáticamente y confirmaremos tu compra al instante.
+              </p>
+            </div>
+
+            <!-- Checkbox de Facturación para PayPal -->
+            <div class="space-y-3">
+              <label class="flex items-center gap-2.5 cursor-pointer select-none">
+                <input type="checkbox"
+                       [(ngModel)]="deseaFactura"
+                       class="w-4 h-4 rounded text-blue-500 focus:ring-blue-500 dark:bg-zinc-800 dark:border-zinc-700">
+                <span class="text-xs font-bold text-stone-800 dark:text-zinc-200">
+                  Deseo Factura Electrónica con datos fiscales
+                </span>
+              </label>
+
+              <div *ngIf="deseaFactura" class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-2xl bg-stone-50 dark:bg-zinc-800/40 border border-stone-200 dark:border-zinc-700/80 animate-fade-in">
+                <div>
+                  <label class="block text-[11px] font-bold text-stone-600 dark:text-zinc-400 mb-1">NIT / CI <span class="text-rose-500">*</span></label>
+                  <input type="text"
+                         [(ngModel)]="nitCi"
+                         placeholder="Ej: 8492019"
+                         class="w-full px-3 py-2 rounded-lg bg-white dark:bg-zinc-800 border border-stone-300 dark:border-zinc-700 text-xs font-mono text-stone-900 dark:text-zinc-100 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-stone-600 dark:text-zinc-400 mb-1">Razón Social <span class="text-rose-500">*</span></label>
+                  <input type="text"
+                         [(ngModel)]="razonSocial"
+                         placeholder="Nombre o Empresa"
+                         class="w-full px-3 py-2 rounded-lg bg-white dark:bg-zinc-800 border border-stone-300 dark:border-zinc-700 text-xs text-stone-900 dark:text-zinc-100 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+              </div>
+            </div>
+
+            <!-- Contenedor Oficial PayPal Buttons SDK -->
+            <div class="pt-2 space-y-3">
+              <div *ngIf="cargandoSdkPayPal" class="py-4 flex items-center justify-center space-x-2 text-stone-500 dark:text-zinc-400">
+                <div class="w-5 h-5 border-2 border-[#0070BA] border-t-transparent rounded-full animate-spin"></div>
+                <span class="text-xs font-mono">Iniciando pasarela oficial de PayPal...</span>
+              </div>
+
+              <!-- El SDK inyecta el botón oficial aquí -->
+              <div id="paypal-button-container" class="min-h-[48px] relative z-0"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 2. ESTADO: PROCESANDO (BLOQUEO CONTRA DOBLE CLIC) -->
+        <div *ngIf="estadoPago === 'PROCESANDO'" class="p-12 rounded-3xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm text-center space-y-5 animate-fade-in">
+          <div class="inline-block animate-spin text-amber-500 text-4xl">
+            <i class="ph ph-spinner"></i>
+          </div>
+          <div>
+            <h2 class="text-lg font-serif font-bold text-stone-900 dark:text-zinc-100">
+              Procesando pago seguro...
+            </h2>
+            <p class="text-xs text-stone-500 dark:text-zinc-400 mt-1 max-w-sm mx-auto">
+              Verificando autorización y asegurando stock en servidor PostgreSQL. Por favor no recargues la página.
+            </p>
+          </div>
+        </div>
+
+        <!-- 3. ESTADO: APROBADO (W29 EMISIÓN DE COMPROBANTE Y CONFIRMACIÓN) -->
+        <div *ngIf="estadoPago === 'APROBADO' && resultadoPago" class="p-6 sm:p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-emerald-300 dark:border-emerald-800/80 shadow-md space-y-6 animate-scale-up">
+          
+          <!-- Banner Superior Éxito -->
+          <div class="text-center space-y-2">
+            <div class="w-16 h-16 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-3xl mx-auto shadow-sm">
+              <i class="ph ph-check-circle"></i>
+            </div>
+            <span class="text-[11px] font-bold font-mono tracking-widest uppercase text-emerald-600 dark:text-emerald-400">
+              ✦ Transacción Aprobada
+            </span>
+            <h2 class="text-2xl font-serif font-bold text-stone-900 dark:text-zinc-100">
+              ¡Pago procesado con éxito!
+            </h2>
+            <p class="text-xs text-stone-500 dark:text-zinc-400">
+              La venta ha sido registrada formalmente y el inventario ha sido actualizado.
+            </p>
+          </div>
+
+          <!-- Ficha de la Venta Emitida (W29) -->
+          <div class="p-5 rounded-2xl bg-stone-50 dark:bg-zinc-800/60 border border-stone-200 dark:border-zinc-700/80 space-y-3 text-xs">
+            <div class="flex items-center justify-between pb-2 border-b border-stone-200/60 dark:border-zinc-700/60">
+              <span class="text-stone-400 dark:text-zinc-500">Documento emitido:</span>
+              <span class="font-bold text-indigo-600 dark:text-indigo-400 uppercase font-mono">
+                {{ resultadoPago.tipo_documento === 'FACTURA' ? 'Factura Electrónica' : 'Comprobante de Venta' }}
+              </span>
+            </div>
+            <div class="flex items-center justify-between pb-2 border-b border-stone-200/60 dark:border-zinc-700/60">
+              <span class="text-stone-400 dark:text-zinc-500">N° de Venta:</span>
+              <strong class="font-mono text-stone-900 dark:text-zinc-100">{{ resultadoPago.numero_venta }}</strong>
+            </div>
+            <div class="flex items-center justify-between pb-2 border-b border-stone-200/60 dark:border-zinc-700/60">
+              <span class="text-stone-400 dark:text-zinc-500">Método de Pago:</span>
+              <strong class="text-stone-800 dark:text-zinc-200">{{ resultadoPago.metodo_pago }}</strong>
+            </div>
+            <div class="flex items-center justify-between pb-2 border-b border-stone-200/60 dark:border-zinc-700/60">
+              <span class="text-stone-400 dark:text-zinc-500">Código Transacción:</span>
+              <span class="font-mono text-[11px] text-stone-600 dark:text-zinc-400">{{ resultadoPago.codigo_transaccion }}</span>
+            </div>
+            <div class="flex items-center justify-between pt-1">
+              <span class="text-stone-800 dark:text-zinc-200 font-bold uppercase">Total Pagado:</span>
+              <span class="text-base font-extrabold text-emerald-600 dark:text-emerald-400 font-mono">
+                Bs. {{ resultadoPago.total | number:'1.2-2' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- MÓDULO DE DESCARGA PDF Y ENVÍO POR CORREO (W29) -->
+          <div class="space-y-3 pt-2">
+            <!-- Botón de Descarga Directa del PDF -->
+            <button type="button"
+                    (click)="descargarComprobante()"
+                    [disabled]="descargandoPdf"
+                    class="w-full py-3 px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md shadow-indigo-600/20 flex items-center justify-center gap-2">
+              <i *ngIf="!descargandoPdf" class="ph ph-file-pdf text-base"></i>
+              <i *ngIf="descargandoPdf" class="ph ph-spinner animate-spin text-base"></i>
+              <span>{{ descargandoPdf ? 'Generando archivo PDF...' : 'Descargar Comprobante PDF' }}</span>
+            </button>
+
+            <!-- Aviso y Reenvío de Correo -->
+            <div class="p-3.5 rounded-xl bg-stone-100 dark:bg-zinc-800/80 border border-stone-200 dark:border-zinc-700 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
+              <div class="flex items-center gap-2 text-stone-600 dark:text-zinc-300">
+                <i class="ph ph-envelope-simple text-base text-amber-500"></i>
+                <span>Comprobante enviado a: <strong>{{ pedido.correo_contacto }}</strong></span>
+              </div>
+              <button (click)="reenviarCorreo()"
+                      [disabled]="reenviandoCorreo"
+                      class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-bold text-[11px] underline">
+                {{ reenviandoCorreo ? 'Reenviando...' : 'Reenviar al Correo' }}
+              </button>
+            </div>
+            <div *ngIf="correoReenvioMensaje" class="text-center text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+              {{ correoReenvioMensaje }}
+            </div>
+          </div>
+
+          <!-- Botones de Navegación Final -->
+          <div class="flex items-center justify-center gap-3 pt-2">
+            <button (click)="irAMisPedidos()"
+                    class="px-6 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-stone-950 font-bold text-xs uppercase tracking-wider transition-all">
+              Ver en Mis Pedidos
+            </button>
+            <button (click)="irAlCatalogo()"
+                    class="px-6 py-2.5 rounded-xl border border-stone-300 dark:border-zinc-700 text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800 font-semibold text-xs transition-all">
+              Seguir Comprando
+            </button>
+          </div>
+
+        </div>
+
+        <!-- 4. ESTADO: RECHAZADO -->
+        <div *ngIf="estadoPago === 'RECHAZADO'" class="p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-rose-300 dark:border-rose-900/60 shadow-sm text-center space-y-4 animate-shake">
+          <div class="w-14 h-14 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 flex items-center justify-center text-3xl mx-auto">
+            <i class="ph ph-x-circle"></i>
+          </div>
+          <div>
+            <h2 class="text-lg font-serif font-bold text-stone-900 dark:text-zinc-100">
+              El pago no pudo ser procesado
+            </h2>
+            <p class="text-xs text-rose-600 dark:text-rose-400 mt-1 max-w-md mx-auto font-medium">
+              {{ mensajeError || 'La pasarela o entidad bancaria no autorizó la operación.' }}
+            </p>
+          </div>
+          <div class="flex items-center justify-center gap-3 pt-2">
+            <button (click)="reintentar()"
+                    class="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs uppercase tracking-wider transition-all shadow-sm">
+              Intentar Nuevamente
+            </button>
+            <button (click)="cancelarPago()"
+                    class="px-5 py-2.5 rounded-xl border border-stone-300 dark:border-zinc-700 text-stone-600 dark:text-zinc-400 text-xs font-semibold">
+              Cancelar
+            </button>
+          </div>
+        </div>
+
+        <!-- 5. ESTADO: CANCELADO -->
+        <div *ngIf="estadoPago === 'CANCELADO'" class="p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm text-center space-y-4 animate-fade-in">
+          <div class="w-14 h-14 rounded-full bg-stone-100 dark:bg-zinc-800 text-stone-500 flex items-center justify-center text-3xl mx-auto">
+            <i class="ph ph-prohibit"></i>
+          </div>
+          <h2 class="text-lg font-serif font-bold text-stone-900 dark:text-zinc-100">
+            Operación de Pago Cancelada
+          </h2>
+          <p class="text-xs text-stone-500 dark:text-zinc-400 max-w-md mx-auto">
+            Tu pedido continúa reservado en estado <strong>PENDIENTE_PAGO</strong>. Podrás pagarlo en cualquier momento desde tu historial.
+          </p>
+          <div class="flex items-center justify-center gap-3 pt-2">
+            <button (click)="reintentar()" class="px-5 py-2.5 rounded-xl bg-amber-500 text-stone-950 font-bold text-xs uppercase tracking-wider">
+              Reanudar Pago
+            </button>
+            <button (click)="irAMisPedidos()" class="px-5 py-2.5 rounded-xl border border-stone-300 dark:border-zinc-700 text-stone-800 dark:text-zinc-200 text-xs font-semibold">
+              Mis Pedidos
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ============================================== -->
+      <!-- COLUMNA DERECHA: RESUMEN DEL PEDIDO           -->
+      <!-- ============================================== -->
+      <div class="lg:col-span-5 space-y-4">
+        <div class="p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm space-y-5">
+          
+          <div class="border-b border-stone-100 dark:border-zinc-800 pb-3">
+            <span class="text-[10px] font-bold font-mono uppercase tracking-widest text-amber-600 dark:text-amber-400">
+              Resumen de Compra
+            </span>
+            <div class="flex items-center justify-between mt-1">
+              <span class="text-xs font-mono text-stone-500 dark:text-zinc-400">Código:</span>
+              <strong class="text-xs font-mono text-stone-900 dark:text-zinc-100">{{ pedido.codigo_pedido }}</strong>
+            </div>
+            <div class="flex items-center justify-between mt-0.5">
+              <span class="text-xs text-stone-500 dark:text-zinc-400">Sucursal:</span>
+              <span class="text-xs font-semibold text-stone-800 dark:text-zinc-200">{{ pedido.sucursal_nombre }}</span>
+            </div>
+          </div>
+
+          <!-- Lista de Prendas -->
+          <div class="space-y-3 max-h-64 overflow-y-auto pr-1">
+            <div *ngFor="let itm of pedido.items" class="flex items-center justify-between text-xs py-1.5 border-b border-stone-100 dark:border-zinc-800/60 last:border-0">
+              <div class="min-w-0 pr-2">
+                <div class="font-bold text-stone-900 dark:text-zinc-100 truncate">{{ itm.producto_nombre }}</div>
+                <div class="text-[10px] text-stone-400 dark:text-zinc-500 font-mono">
+                  {{ itm.talla }} · {{ itm.color }} · Cant: {{ itm.cantidad }}
+                </div>
+              </div>
+              <div class="font-bold font-mono text-stone-900 dark:text-zinc-100 shrink-0">
+                Bs. {{ itm.subtotal | number:'1.2-2' }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Desglose de Totales -->
+          <div class="pt-3 border-t border-stone-100 dark:border-zinc-800 space-y-2 text-xs">
+            <div class="flex items-center justify-between text-stone-500 dark:text-zinc-400">
+              <span>Subtotal:</span>
+              <span class="font-mono">Bs. {{ pedido.subtotal | number:'1.2-2' }}</span>
+            </div>
+            <div *ngIf="pedido.descuento > 0" class="flex items-center justify-between text-emerald-600 dark:text-emerald-400">
+              <span>Descuento:</span>
+              <span class="font-mono">- Bs. {{ pedido.descuento | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex items-center justify-between text-stone-500 dark:text-zinc-400">
+              <span>Costo de Envío:</span>
+              <span class="font-mono font-semibold text-emerald-600">GRATIS</span>
+            </div>
+            <div class="flex items-baseline justify-between pt-3 border-t border-stone-100 dark:border-zinc-800">
+              <span class="text-xs uppercase font-serif font-bold text-stone-900 dark:text-zinc-100">Total a Pagar:</span>
+              <span class="text-2xl font-extrabold text-amber-600 dark:text-amber-400 font-mono">
+                Bs. {{ pedido.total | number:'1.2-2' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Medidas de Seguridad -->
+          <div class="pt-2 border-t border-stone-100 dark:border-zinc-800 flex items-center gap-2 text-[10px] text-stone-400 dark:text-zinc-500">
+            <i class="ph ph-shield-check text-base text-emerald-500"></i>
+            <span>Garantía de compra segura AURORA y comprobante fiscal automático.</span>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>

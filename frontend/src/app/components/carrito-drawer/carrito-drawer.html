@@ -1,0 +1,286 @@
+<!-- Shopping Cart Slide-over Drawer -->
+<div *ngIf="carritoService.drawerAbierto$ | async" 
+     class="fixed inset-0 z-[999] overflow-hidden" 
+     aria-labelledby="slide-over-title" 
+     role="dialog" 
+     aria-modal="true">
+  
+  <!-- Backdrop Blur Overlay -->
+  <div (click)="cerrar()" 
+       class="fixed inset-0 bg-stone-900/60 dark:bg-black/70 backdrop-blur-sm transition-opacity animate-fade-in">
+  </div>
+
+  <div class="fixed inset-y-0 right-0 max-w-full flex pl-10">
+    <div class="w-screen max-w-md sm:max-w-lg bg-stone-50 dark:bg-zinc-950 border-l border-stone-200 dark:border-zinc-800 shadow-2xl flex flex-col transform transition-transform duration-300 ease-out animate-slide-left">
+      
+      <!-- Drawer Header -->
+      <div class="px-6 py-5 border-b border-stone-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+            <i class="ph ph-shopping-bag text-xl"></i>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h2 id="slide-over-title" class="text-base font-bold text-stone-900 dark:text-zinc-100 font-serif tracking-tight">
+                Bolsa de Compras
+              </h2>
+              <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30">
+                {{ (carritoService.totalItems$ | async) || 0 }} {{ (carritoService.totalItems$ | async) === 1 ? 'prenda' : 'prendas' }}
+              </span>
+            </div>
+            <div *ngIf="carritoService.carrito$ | async as carrito" class="text-[11px] text-stone-500 dark:text-zinc-400 flex items-center space-x-1 mt-0.5">
+              <i class="ph ph-storefront text-xs text-amber-600 dark:text-amber-400"></i>
+              <span>Tienda: <strong class="text-stone-700 dark:text-zinc-200">{{ carrito.nombre_empresa }}</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <button (click)="cerrar()" 
+                class="w-9 h-9 rounded-full bg-stone-100 dark:bg-zinc-800 hover:bg-stone-200 dark:hover:bg-zinc-700 text-stone-500 dark:text-zinc-400 hover:text-stone-800 dark:hover:text-zinc-100 flex items-center justify-center transition-colors"
+                title="Cerrar bolsa">
+          <i class="ph ph-x text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Feedback Banners -->
+      <div *ngIf="mensajeFeedback" class="mx-5 mt-4 p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-xs flex items-center space-x-2 animate-fade-in">
+        <i class="ph ph-check-circle text-base text-emerald-600 dark:text-emerald-400 shrink-0"></i>
+        <span>{{ mensajeFeedback }}</span>
+      </div>
+
+      <div *ngIf="errorFeedback" class="mx-5 mt-4 p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-800 dark:text-rose-300 text-xs flex items-center space-x-2 animate-fade-in">
+        <i class="ph ph-warning-circle text-base text-rose-600 dark:text-rose-400 shrink-0"></i>
+        <span>{{ errorFeedback }}</span>
+      </div>
+
+      <!-- Non-authenticated State -->
+      <div *ngIf="!authService.estaAutenticado()" class="flex-1 flex flex-col items-center justify-center p-8 text-center">
+        <div class="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-3xl mb-4">
+          <i class="ph ph-lock-key"></i>
+        </div>
+        <h3 class="text-lg font-serif font-bold text-stone-900 dark:text-zinc-100 mb-2">
+          Inicia Sesión en tu Cuenta
+        </h3>
+        <p class="text-xs text-stone-500 dark:text-zinc-400 max-w-xs leading-relaxed mb-6">
+          Para guardar tu bolsa de compras, sincronizar tus prendas y disfrutar de una experiencia exclusiva, accede con tu cuenta.
+        </p>
+        <button (click)="iniciarSesion()" 
+                class="px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-stone-950 text-xs font-bold uppercase tracking-wider shadow-lg shadow-amber-500/20 transition-all active:scale-95">
+          Iniciar Sesión / Registrarse
+        </button>
+      </div>
+
+      <!-- Authenticated Drawer Body -->
+      <ng-container *ngIf="authService.estaAutenticado()">
+
+        <!-- Loading State -->
+        <div *ngIf="carritoService.cargando$ | async" class="p-6 space-y-4">
+          <div *ngFor="let n of [1, 2]" class="animate-pulse flex space-x-4 p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800">
+            <div class="rounded-xl bg-stone-200 dark:bg-zinc-800 h-20 w-16"></div>
+            <div class="flex-1 space-y-2 py-1">
+              <div class="h-4 bg-stone-200 dark:bg-zinc-800 rounded w-3/4"></div>
+              <div class="h-3 bg-stone-200 dark:bg-zinc-800 rounded w-1/2"></div>
+              <div class="h-4 bg-stone-200 dark:bg-zinc-800 rounded w-1/4"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cart Data Content -->
+        <ng-container *ngIf="carritoService.carrito$ | async as carrito">
+          
+          <!-- Empty State -->
+          <div *ngIf="carrito.items.length === 0 && !(carritoService.cargando$ | async)" 
+               class="flex-1 flex flex-col items-center justify-center p-8 text-center">
+            <div class="w-20 h-20 rounded-full bg-stone-200/60 dark:bg-zinc-900 border border-stone-300 dark:border-zinc-800 text-stone-400 dark:text-zinc-600 flex items-center justify-center text-4xl mb-4">
+              <i class="ph ph-shopping-bag-open"></i>
+            </div>
+            <h3 class="text-lg font-serif font-bold text-stone-800 dark:text-zinc-200 mb-1">
+              Tu bolsa está vacía
+            </h3>
+            <p class="text-xs text-stone-500 dark:text-zinc-400 max-w-xs leading-relaxed mb-6">
+              Aún no has agregado ninguna prenda de la colección vigente de {{ carrito.nombre_empresa }}.
+            </p>
+            <button (click)="irAlCatalogo()" 
+                    class="px-6 py-2.5 rounded-full bg-stone-900 hover:bg-stone-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-stone-950 text-xs font-bold uppercase tracking-wider transition-all active:scale-95 shadow-md">
+              Explorar Catálogo
+            </button>
+          </div>
+
+          <!-- Items List (Scrollable) -->
+          <div *ngIf="carrito.items.length > 0" class="flex-1 overflow-y-auto px-5 py-4 space-y-3.5 custom-scrollbar">
+            
+            <div *ngFor="let item of carrito.items" 
+                 [class.border-rose-400]="!item.disponible"
+                 [class.bg-rose-500/5]="!item.disponible"
+                 class="relative p-3.5 rounded-2xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 transition-all hover:border-amber-500/40 group shadow-sm">
+              
+              <div class="flex items-start space-x-3.5">
+                <!-- Thumbnail Image -->
+                <div class="w-18 h-22 sm:w-20 sm:h-24 rounded-xl overflow-hidden bg-stone-100 dark:bg-zinc-800 shrink-0 border border-stone-200 dark:border-zinc-700/80">
+                  <img [src]="item.imagen_url || 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=400&q=80'" 
+                       [alt]="item.producto_nombre" 
+                       class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300">
+                </div>
+
+                <!-- Product Details -->
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-start justify-between gap-2">
+                    <h4 class="text-xs sm:text-sm font-semibold text-stone-900 dark:text-zinc-100 truncate" [title]="item.producto_nombre">
+                      {{ item.producto_nombre }}
+                    </h4>
+                    <!-- Delete Button -->
+                    <button (click)="eliminarItem(item)" 
+                            [disabled]="detalleEnOperacion === item.id_detalle_carrito"
+                            class="text-stone-400 hover:text-rose-500 dark:text-zinc-500 dark:hover:text-rose-400 p-1 transition-colors" 
+                            title="Quitar prenda">
+                      <i class="ph ph-trash text-base"></i>
+                    </button>
+                  </div>
+
+                  <!-- Variant Spec Chips -->
+                  <div class="flex flex-wrap items-center gap-1.5 mt-1.5">
+                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 border border-stone-200 dark:border-zinc-700">
+                      Talla: {{ item.talla_nombre }}
+                    </span>
+                    <span class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 border border-stone-200 dark:border-zinc-700">
+                      <span class="w-2.5 h-2.5 rounded-full border border-black/20" [style.backgroundColor]="item.codigo_hex"></span>
+                      <span>{{ item.color_nombre }}</span>
+                    </span>
+                    <span *ngIf="item.sku" class="text-[9px] font-mono text-stone-400 dark:text-zinc-500">
+                      {{ item.sku }}
+                    </span>
+                    <span *ngIf="item.pendiente_sincronizacion" class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+                      ⏳ En cola offline
+                    </span>
+                  </div>
+
+                  <!-- Stock Warning Banner -->
+                  <div *ngIf="item.advertencia_stock" class="mt-2 p-1.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-[10px] flex items-center space-x-1.5">
+                    <i class="ph ph-warning-circle text-xs shrink-0"></i>
+                    <span class="font-medium">{{ item.advertencia_stock }}</span>
+                  </div>
+
+                  <!-- Price & Quantity Controls Row -->
+                  <div class="flex items-center justify-between mt-3 pt-2 border-t border-stone-100 dark:border-zinc-800/80">
+                    
+                    <!-- Stepper -->
+                    <div class="flex items-center border border-stone-300 dark:border-zinc-700 rounded-lg overflow-hidden bg-stone-50 dark:bg-zinc-950">
+                      <button (click)="decrementarCantidad(item)" 
+                              [disabled]="detalleEnOperacion === item.id_detalle_carrito"
+                              class="w-7 h-7 flex items-center justify-center text-stone-600 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50">
+                        <i class="ph ph-minus text-xs"></i>
+                      </button>
+                      <span class="w-8 text-center text-xs font-bold text-stone-800 dark:text-zinc-100">
+                        {{ item.cantidad }}
+                      </span>
+                      <button (click)="incrementarCantidad(item)" 
+                              [disabled]="detalleEnOperacion === item.id_detalle_carrito || item.cantidad >= item.stock_disponible"
+                              class="w-7 h-7 flex items-center justify-center text-stone-600 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                        <i class="ph ph-plus text-xs"></i>
+                      </button>
+                    </div>
+
+                    <!-- Line Subtotal -->
+                    <div class="text-right">
+                      <div class="text-[10px] text-stone-400 dark:text-zinc-500 font-mono">
+                        {{ item.cantidad }} × Bs. {{ item.precio_unitario | number:'1.2-2' }}
+                      </div>
+                      <div class="text-xs sm:text-sm font-bold text-amber-700 dark:text-amber-400 font-mono">
+                        Bs. {{ item.subtotal | number:'1.2-2' }}
+                      </div>
+                    </div>
+
+                  </div>
+
+                  <!-- Opción Inteligente: Cita en probador sin alterar bolsa (W10 / W11) -->
+                  <div class="mt-2.5 pt-2 border-t border-dashed border-stone-200 dark:border-zinc-800 flex items-center justify-between text-[11px]">
+                    <span class="text-stone-500 dark:text-zinc-400 flex items-center gap-1">
+                      <span>👗</span>
+                      <span>¿Dudas con la talla?</span>
+                    </span>
+                    <button (click)="agendarCitaParaPrenda(item)" 
+                            type="button"
+                            class="text-amber-600 dark:text-amber-400 hover:text-amber-700 font-semibold hover:underline inline-flex items-center gap-1 cursor-pointer"
+                            title="Agenda una cita gratuita en boutique para probártela sin alterar tu bolsa">
+                      <span>Probar en tienda</span>
+                      <span>→</span>
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Drawer Footer -->
+          <div *ngIf="carrito.items.length > 0" class="p-5 border-t border-stone-200 dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md space-y-4">
+            
+            <!-- Summary Breakdown -->
+            <div class="space-y-1.5 text-xs text-stone-600 dark:text-zinc-400">
+              <div class="flex justify-between">
+                <span>Subtotal ({{ carrito.total_items }} prendas)</span>
+                <span class="font-mono text-stone-800 dark:text-zinc-200">Bs. {{ carrito.subtotal | number:'1.2-2' }}</span>
+              </div>
+              <div class="flex justify-between text-[11px] text-stone-400 dark:text-zinc-500">
+                <span>Tenant / Tienda</span>
+                <span class="font-medium text-amber-600 dark:text-amber-400">{{ carrito.nombre_empresa }}</span>
+              </div>
+              <div class="flex justify-between text-[11px] text-stone-400 dark:text-zinc-500">
+                <span>Entrega y sucursal</span>
+                <span>Calculado en checkout</span>
+              </div>
+              <div class="pt-2 border-t border-stone-200 dark:border-zinc-800 flex justify-between items-baseline text-stone-900 dark:text-zinc-100">
+                <span class="text-sm font-bold font-serif">Total Estimado</span>
+                <span class="text-base sm:text-lg font-extrabold text-amber-600 dark:text-amber-400 font-mono">
+                  Bs. {{ carrito.total | number:'1.2-2' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Confirmation Prompt for Vaciar -->
+            <div *ngIf="mostrarConfirmacionVaciar" class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 animate-fade-in text-xs space-y-2">
+              <p class="text-stone-800 dark:text-zinc-200 font-semibold">¿Deseas vaciar todas las prendas de tu bolsa?</p>
+              <div class="flex justify-end space-x-2">
+                <button (click)="cancelarVaciar()" class="px-3 py-1 rounded-lg bg-stone-200 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 font-medium text-[11px]">
+                  Cancelar
+                </button>
+                <button (click)="ejecutarVaciar()" class="px-3 py-1 rounded-lg bg-rose-500 hover:bg-rose-600 text-white font-bold text-[11px]">
+                  Sí, vaciar
+                </button>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center space-x-2">
+              <button (click)="confirmarVaciar()" 
+                      [disabled]="mostrarConfirmacionVaciar"
+                      class="px-3.5 py-3 rounded-xl border border-stone-300 dark:border-zinc-700 text-stone-600 dark:text-zinc-400 hover:text-rose-500 hover:border-rose-400 dark:hover:text-rose-400 text-xs font-semibold transition-all shadow-sm"
+                      title="Vaciar bolsa de compras">
+                <i class="ph ph-trash text-base"></i>
+              </button>
+
+              <button (click)="continuarCompra(carrito)" 
+                      [disabled]="!carrito.puede_continuar_compra"
+                      class="flex-1 py-3 px-5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-lg flex items-center justify-center space-x-2"
+                      [ngClass]="carrito.puede_continuar_compra 
+                        ? 'bg-gradient-to-r from-amber-600 via-amber-500 to-amber-400 hover:from-amber-500 hover:to-amber-300 text-stone-950 shadow-amber-500/20 active:scale-98' 
+                        : 'bg-stone-300 dark:bg-zinc-800 text-stone-500 dark:text-zinc-500 cursor-not-allowed'">
+                <span>Continuar Compra</span>
+                <i class="ph ph-arrow-right text-sm"></i>
+              </button>
+            </div>
+
+            <div *ngIf="!carrito.puede_continuar_compra" class="text-center text-[10px] text-rose-500 dark:text-rose-400 font-medium">
+              * Ajusta las prendas agotadas o con stock insuficiente para proceder.
+            </div>
+
+          </div>
+
+        </ng-container>
+
+      </ng-container>
+
+    </div>
+  </div>
+</div>

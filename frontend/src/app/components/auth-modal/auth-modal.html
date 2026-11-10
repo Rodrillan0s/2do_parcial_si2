@@ -1,0 +1,417 @@
+<!-- Glass Backdrop Overlay with Ambient Soft Warm Glow -->
+<div *ngIf="authService.isAuthModalOpen()"
+  class="fixed inset-0 z-[1000] flex items-center justify-center p-4 sm:p-6 backdrop-blur-2xl bg-zinc-950/75 animate-fade-in overflow-y-auto">
+
+  <!-- Radial Gold Ambient Glow Behind Modal -->
+  <div class="absolute w-[500px] h-[500px] rounded-full bg-amber-500/10 blur-[120px] pointer-events-none z-0"></div>
+
+  <!-- Close Backdrop Click Handler -->
+  <div (click)="closeModal()" class="absolute inset-0 z-0"></div>
+
+  <!-- Double-Bezel Soft Luxury Container -->
+  <div
+    class="relative z-10 w-full max-w-md rounded-[2.5rem] bg-zinc-950/90 border border-white/10 p-2.5 shadow-[0_30px_70px_rgba(0,0,0,0.85)] animate-slide-up my-auto max-h-[92vh] overflow-y-auto">
+
+    <div class="rounded-[calc(2.5rem-0.625rem)] bg-zinc-900/60 border border-white/5 p-6 sm:p-8 space-y-6 relative">
+
+      <!-- Close Button -->
+      <button (click)="closeModal()" aria-label="Cerrar modal"
+        class="absolute top-5 right-5 w-8 h-8 rounded-full bg-zinc-800/80 border border-white/10 text-zinc-400 hover:text-white hover:border-amber-400/40 flex items-center justify-center transition-all cursor-pointer shadow-sm">
+        <i class="ph ph-x text-base"></i>
+      </button>
+
+      <!-- Modal Header -->
+      <div class="text-center space-y-2">
+        <div
+          class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[10px] uppercase tracking-[0.2em] font-medium backdrop-blur-md">
+          <i class="ph ph-shield-check text-sm"></i>
+          <span>{{ authService.authModalTab() === 'login' ? 'INICIO DE SESIÓN' : (authService.authModalTab() === 'register' ? 'CREAR CUENTA' : (authService.authModalTab() === 'forgot' ? 'RECUPERACIÓN' : 'VERIFICACIÓN')) }}</span>
+        </div>
+        <h3 class="text-2xl font-editorial font-bold text-white tracking-tight">
+          AURORA <span class="text-amber-400/90 font-light italic">Store</span>
+        </h3>
+      </div>
+
+      <!-- Tab Switcher Bar (SOLO MOSTRAR 2 PESTAÑAS: INICIAR SESIÓN Y CREAR CUENTA) -->
+      <div *ngIf="authService.authModalTab() === 'login' || authService.authModalTab() === 'register'"
+        class="flex items-center p-1 rounded-2xl bg-zinc-950/80 border border-white/10 text-xs font-medium backdrop-blur-xl">
+        <button (click)="switchTab('login')" [class.bg-gradient-to-r]="authService.authModalTab() === 'login'"
+          [class.from-amber-500/20]="authService.authModalTab() === 'login'"
+          [class.to-amber-600/10]="authService.authModalTab() === 'login'"
+          [class.border-amber-500/30]="authService.authModalTab() === 'login'"
+          [class.text-amber-300]="authService.authModalTab() === 'login'"
+          [class.text-zinc-400]="authService.authModalTab() !== 'login'"
+          class="flex-1 py-2.5 rounded-xl border border-transparent transition-all flex items-center justify-center font-semibold cursor-pointer">
+          Iniciar Sesión
+        </button>
+
+        <button (click)="switchTab('register')" [class.bg-gradient-to-r]="authService.authModalTab() === 'register'"
+          [class.from-amber-500/20]="authService.authModalTab() === 'register'"
+          [class.to-amber-600/10]="authService.authModalTab() === 'register'"
+          [class.border-amber-500/30]="authService.authModalTab() === 'register'"
+          [class.text-amber-300]="authService.authModalTab() === 'register'"
+          [class.text-zinc-400]="authService.authModalTab() !== 'register'"
+          class="flex-1 py-2.5 rounded-xl border border-transparent transition-all flex items-center justify-center font-semibold cursor-pointer">
+          Crear Cuenta
+        </button>
+      </div>
+
+      <!-- Header Volver cuando estamos en 'forgot' -->
+      <div *ngIf="authService.authModalTab() === 'forgot'"
+        class="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <button (click)="switchTab('login')"
+          class="inline-flex items-center gap-1.5 text-xs text-amber-400 hover:text-amber-300 transition-colors font-medium cursor-pointer">
+          <i class="ph ph-arrow-left text-sm"></i>
+          <span>Volver al Inicio de Sesión</span>
+        </button>
+        <span class="text-[10px] uppercase font-mono text-zinc-500">Recuperación</span>
+      </div>
+
+      <!-- Feedback Alert Messages -->
+      <div *ngIf="errorMessage"
+        class="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/25 text-rose-300 text-xs flex items-start gap-2.5 animate-fade-in">
+        <i class="ph ph-warning-circle text-lg text-rose-400 shrink-0 mt-0.5"></i>
+        <div class="leading-relaxed">{{ errorMessage }}</div>
+      </div>
+
+      <div *ngIf="successMessage"
+        class="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 text-xs flex items-start gap-2.5 animate-fade-in">
+        <i class="ph ph-check-circle text-lg text-emerald-400 shrink-0 mt-0.5"></i>
+        <div class="leading-relaxed">{{ successMessage }}</div>
+      </div>
+
+      <!-- TAB 1: INICIAR SESIÓN -->
+      <form *ngIf="authService.authModalTab() === 'login'" (ngSubmit)="onLogin()" class="space-y-4">
+
+        <!-- Input: Correo o Username -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] uppercase tracking-wider font-semibold text-zinc-300">Correo Electrónico o
+            Usuario</label>
+          <div class="relative flex items-center">
+            <input type="text" [(ngModel)]="loginData.login_identifier" name="login_identifier"
+              placeholder="ej: usuario_demo o correo@ejemplo.com"
+              class="w-full bg-zinc-950/80 border border-zinc-800 rounded-2xl px-4 py-3 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/30 pl-10 transition-all" />
+            <i class="ph ph-user text-zinc-400 text-base absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+          </div>
+        </div>
+
+        <!-- Input: Password con ¿Olvidaste tu contraseña? -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="text-[11px] uppercase tracking-wider font-semibold text-zinc-300">Contraseña</label>
+
+            <!-- ENLACE DE ¿OLVIDASTE TU CONTRASEÑA? QUE TRANSICIONA A RECUPERAR -->
+            <button type="button" (click)="switchTab('forgot')"
+              class="text-[11px] text-amber-400 hover:text-amber-300 hover:underline transition-colors font-medium cursor-pointer">
+              ¿Olvidaste tu contraseña?
+            </button>
+          </div>
+          <div class="relative flex items-center">
+            <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="loginData.password" name="password"
+              placeholder="••••••••"
+              class="w-full bg-zinc-950/80 border border-zinc-800 rounded-2xl px-4 py-3 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/30 pl-10 pr-10 transition-all" />
+            <i class="ph ph-lock text-zinc-400 text-base absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+            <button type="button" (click)="showPassword = !showPassword"
+              class="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors cursor-pointer flex items-center justify-center p-1">
+              <i [class]="showPassword ? 'ph ph-eye-slash' : 'ph ph-eye'" class="text-base"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" [disabled]="isLoading"
+          class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:opacity-60 disabled:cursor-not-allowed text-black font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-amber-500/20 active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer">
+          <ng-container *ngIf="!isLoading">
+            <span>Acceder</span>
+            <i class="ph ph-arrow-right text-base"></i>
+          </ng-container>
+          <ng-container *ngIf="isLoading">
+            <svg class="animate-spin h-4 w-4 text-black shrink-0" viewBox="0 0 24 24" fill="none">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            <span>Accediendo...</span>
+          </ng-container>
+        </button>
+
+      </form>
+
+      <!-- TAB 2: REGISTRO -->
+      <form *ngIf="authService.authModalTab() === 'register'" (ngSubmit)="onRegister()" class="space-y-3.5">
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="text-[10px] uppercase tracking-wider font-semibold text-zinc-300">Nombre</label>
+            <input type="text" [(ngModel)]="registerData.nombre" name="nombre" placeholder="ej: Juan"
+              class="w-full bg-zinc-950/80 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500/60" />
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] uppercase tracking-wider font-semibold text-zinc-300">Apellido</label>
+            <input type="text" [(ngModel)]="registerData.apellido" name="apellido" placeholder="ej: Pérez"
+              class="w-full bg-zinc-950/80 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500/60" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="text-[10px] uppercase tracking-wider font-semibold text-zinc-300">Correo Electrónico</label>
+            <input type="email" [(ngModel)]="registerData.correo" name="correo" placeholder="correo@ejemplo.com"
+              class="w-full bg-zinc-950/80 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500/60" />
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] uppercase tracking-wider font-semibold text-zinc-300">Nombre de Usuario</label>
+            <input type="text" [(ngModel)]="registerData.nombre_usuario" name="nombre_usuario"
+              placeholder="usuario_demo"
+              class="w-full bg-zinc-950/80 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500/60" />
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-[10px] uppercase tracking-wider font-semibold text-zinc-300">Teléfono (Opcional)</label>
+          <input type="tel" [(ngModel)]="registerData.telefono" name="telefono" placeholder="+591 70000000"
+            class="w-full bg-zinc-950/80 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500/60" />
+        </div>
+
+        <!-- Password Inputs -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="text-[10px] uppercase tracking-wider font-semibold text-zinc-300">Contraseña</label>
+            <input type="password" [(ngModel)]="registerData.password" name="password" placeholder="••••••••"
+              class="w-full bg-zinc-950/80 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500/60" />
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] uppercase tracking-wider font-semibold text-zinc-300">Confirmar contraseña</label>
+            <input type="password" [(ngModel)]="registerData.confirm_password" name="confirm_password"
+              placeholder="••••••••"
+              class="w-full bg-zinc-950/80 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500/60" />
+          </div>
+        </div>
+
+        <!-- Live Password Strength Policy Rules -->
+        <div class="p-3 rounded-2xl bg-zinc-950/60 border border-zinc-800/80 text-[11px] space-y-1.5">
+          <div class="text-zinc-400 font-medium">Requisitos de contraseña:</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px]">
+            <span [class.text-emerald-400]="hasMinLength" [class.text-zinc-500]="!hasMinLength"
+              class="flex items-center gap-1.5">
+              <i [class]="hasMinLength ? 'ph ph-check-circle text-emerald-400' : 'ph ph-circle text-zinc-500'"></i>
+              <span>Mínimo 8 caracteres</span>
+            </span>
+            <span [class.text-emerald-400]="hasSpecialChar" [class.text-zinc-500]="!hasSpecialChar"
+              class="flex items-center gap-1.5">
+              <i [class]="hasSpecialChar ? 'ph ph-check-circle text-emerald-400' : 'ph ph-circle text-zinc-500'"></i>
+              <span>Al menos un símbolo</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Terms Acceptance Checkbox -->
+        <label class="flex items-center gap-2.5 cursor-pointer pt-1">
+          <input type="checkbox" [(ngModel)]="registerData.aceptar_terminos" name="aceptar_terminos"
+            class="rounded bg-zinc-900 border-zinc-700 text-amber-500 focus:ring-0 shrink-0" />
+          <span class="text-[11px] text-zinc-400 leading-normal">
+            Acepto los <a href="#" class="text-amber-400 underline">Términos de Servicio</a> y condiciones de la tienda.
+          </span>
+        </label>
+
+        <!-- Submit Button -->
+        <button type="submit" [disabled]="isLoading"
+          class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:opacity-60 disabled:cursor-not-allowed text-black font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-amber-500/20 active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer">
+          <ng-container *ngIf="!isLoading">
+            <span>Crear Cuenta</span>
+            <i class="ph ph-arrow-right text-base"></i>
+          </ng-container>
+          <ng-container *ngIf="isLoading">
+            <svg class="animate-spin h-4 w-4 text-black shrink-0" viewBox="0 0 24 24" fill="none">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            <span>Creando Cuenta...</span>
+          </ng-container>
+        </button>
+
+      </form>
+
+      <!-- VISTA CONTEXTUAL: RECUPERACIÓN DE CONTRASEÑA -->
+      <div *ngIf="authService.authModalTab() === 'forgot'" class="space-y-4">
+
+        <!-- Step 1: Request Code -->
+        <form *ngIf="forgotStep === 'request'" (ngSubmit)="onRequestForgot($event)" class="space-y-4">
+          <div class="text-center space-y-1">
+            <h4 class="text-base font-editorial font-bold text-white">¿Olvidaste tu contraseña?</h4>
+            <p class="text-xs text-zinc-400 leading-relaxed">
+              Ingresa el correo o usuario asociado a tu cuenta y sigue las instrucciones de recuperación.
+            </p>
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="text-[11px] uppercase tracking-wider font-semibold text-zinc-300">Correo Electrónico</label>
+            <input type="text" [(ngModel)]="forgotData.correo" name="correo"
+              placeholder="ej: correo@ejemplo.com o mi_usuario"
+              class="w-full bg-zinc-950/80 border border-zinc-800 rounded-2xl px-4 py-3 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500/60" />
+          </div>
+
+          <button type="submit" [disabled]="isLoading"
+            class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:opacity-60 disabled:cursor-not-allowed text-black font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 cursor-pointer">
+            <ng-container *ngIf="!isLoading">
+              <span>Siguiente paso</span>
+              <i class="ph ph-arrow-right text-base"></i>
+            </ng-container>
+            <ng-container *ngIf="isLoading">
+              <svg class="animate-spin h-4 w-4 text-black shrink-0" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              <span>Enviando Correo...</span>
+            </ng-container>
+          </button>
+        </form>
+
+        <!-- Step 2: Enter Code Only -->
+        <form *ngIf="forgotStep === 'verify_code'" (ngSubmit)="onVerifyCode($event)" class="space-y-4">
+          <div class="text-center space-y-1">
+            <h4 class="text-base font-editorial font-bold text-white">Paso 1: Código de Verificación</h4>
+            <p class="text-xs text-zinc-400 leading-relaxed">
+              Ingresa el código de 6 dígitos que fue enviado a tu correo.
+            </p>
+          </div>
+
+          <div class="space-y-1.5">
+            <input type="text" [(ngModel)]="resetData.codigo_recuperacion" name="codigo_recuperacion" maxlength="6"
+              class="w-full bg-zinc-950/80 border border-zinc-800 rounded-2xl px-4 py-3 text-base text-white font-mono tracking-widest text-center focus:outline-none focus:border-amber-500/60" />
+          </div>
+
+          <button type="submit" [disabled]="isLoading"
+            class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:opacity-60 disabled:cursor-not-allowed text-black font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 cursor-pointer">
+            <ng-container *ngIf="!isLoading">
+              <span>Verificar Código</span>
+              <i class="ph ph-check text-base"></i>
+            </ng-container>
+            <ng-container *ngIf="isLoading">
+              <svg class="animate-spin h-4 w-4 text-black shrink-0" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              <span>Verificando Código...</span>
+            </ng-container>
+          </button>
+
+          <div class="text-center pt-1">
+            <button type="button" (click)="forgotStep = 'request'"
+              class="text-[11px] text-zinc-400 hover:text-amber-400 transition-colors font-medium cursor-pointer">
+              ← ¿No recibiste el código? Reenviar
+            </button>
+          </div>
+        </form>
+
+        <!-- Step 3: Set New Password & Validations -->
+        <form *ngIf="forgotStep === 'new_password'" (ngSubmit)="onResetPassword($event)" class="space-y-4">
+          <div class="text-center space-y-1">
+            <h4 class="text-base font-editorial font-bold text-white">Paso 2: Nueva Contraseña</h4>
+            <p class="text-xs text-zinc-400 leading-relaxed">
+              Establece tu nueva contraseña.
+            </p>
+          </div>
+
+          <div class="space-y-3">
+            <div class="space-y-1.5">
+              <label class="text-[11px] uppercase tracking-wider font-semibold text-zinc-300">Nueva Contraseña</label>
+              <input type="password" [(ngModel)]="resetData.new_password" name="new_password" placeholder="••••••••"
+                class="w-full bg-zinc-950/80 border border-zinc-800 rounded-2xl px-4 py-3 text-xs text-white focus:outline-none focus:border-amber-500/60" />
+            </div>
+
+            <div class="space-y-1.5">
+              <label class="text-[11px] uppercase tracking-wider font-semibold text-zinc-300">Confirmar Nueva
+                Contraseña</label>
+              <input type="password" [(ngModel)]="resetData.confirm_password" name="confirm_password"
+                placeholder="••••••••"
+                class="w-full bg-zinc-950/80 border border-zinc-800 rounded-2xl px-4 py-3 text-xs text-white focus:outline-none focus:border-amber-500/60" />
+            </div>
+
+            <!-- Badges de requisitos de contraseña -->
+            <div class="p-3 rounded-xl bg-zinc-950 border border-zinc-800/80 text-[11px] space-y-1.5">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px]">
+                <div [class.text-emerald-400]="newPasswordMinLength" [class.text-zinc-500]="!newPasswordMinLength"
+                  class="flex items-center gap-1.5">
+                  <i
+                    [class]="newPasswordMinLength ? 'ph ph-check-circle text-emerald-400' : 'ph ph-circle text-zinc-500'"></i>
+                  <span>Mínimo 8 caracteres</span>
+                </div>
+                <div [class.text-emerald-400]="newPasswordSpecialChar" [class.text-zinc-500]="!newPasswordSpecialChar"
+                  class="flex items-center gap-1.5">
+                  <i
+                    [class]="newPasswordSpecialChar ? 'ph ph-check-circle text-emerald-400' : 'ph ph-circle text-zinc-500'"></i>
+                  <span>Al menos un símbolo</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" [disabled]="isLoading || !isNewPasswordValid"
+            class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer">
+            <ng-container *ngIf="!isLoading">
+              <span>Restablecer y Guardar Contraseña</span>
+            </ng-container>
+            <ng-container *ngIf="isLoading">
+              <svg class="animate-spin h-4 w-4 text-black shrink-0" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              <span>Guardando Contraseña...</span>
+            </ng-container>
+          </button>
+        </form>
+
+        <div class="pt-2 text-center">
+          <button (click)="switchTab('login')" class="text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer">
+            Cancelar y volver al inicio de sesión
+          </button>
+        </div>
+
+      </div>
+
+      <!-- VISTA CONTEXTUAL: VERIFICACIÓN DE DISPOSITIVO EXÓTICO -->
+      <div *ngIf="authService.authModalTab() === 'verify'" class="space-y-4">
+        <div class="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs space-y-1">
+          <div class="font-bold flex items-center gap-1.5">
+            <i class="ph ph-device-mobile-camera text-base"></i>
+            <span>Nuevo Dispositivo Detectado</span>
+          </div>
+          <p class="text-zinc-300 leading-relaxed">Estás iniciando sesión desde un navegador o dispositivo no
+            reconocido. Se requiere autorización.</p>
+
+          <div *ngIf="verifyData.codigo_verificacion" class="mt-2 pt-2 border-t border-amber-500/20">
+            <span class="text-[10px] text-zinc-400 uppercase">Código Emitido (Prueba):</span>
+            <div
+              class="font-mono text-xl font-bold text-white tracking-widest text-center bg-zinc-950/80 p-2 rounded-xl mt-1">
+              {{ verifyData.codigo_verificacion }}
+            </div>
+          </div>
+        </div>
+
+        <form (ngSubmit)="onVerifyDevice()" class="space-y-4">
+          <div class="space-y-1.5">
+            <label class="text-[11px] uppercase tracking-wider font-semibold text-zinc-300">Código de 6 Dígitos</label>
+            <input type="text" [(ngModel)]="verifyData.codigo_verificacion" name="codigo_verificacion"
+              placeholder="123456"
+              class="w-full bg-zinc-950/80 border border-zinc-800 rounded-2xl px-4 py-3 text-sm font-mono tracking-widest text-center text-white focus:outline-none focus:border-amber-500/60" />
+          </div>
+
+          <button type="submit" [disabled]="isLoading"
+            class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:opacity-60 disabled:cursor-not-allowed text-black font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 cursor-pointer">
+            <ng-container *ngIf="!isLoading">
+              <span>Verificar y Autorizar Dispositivo</span>
+            </ng-container>
+            <ng-container *ngIf="isLoading">
+              <svg class="animate-spin h-4 w-4 text-black shrink-0" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              <span>Verificando...</span>
+            </ng-container>
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>

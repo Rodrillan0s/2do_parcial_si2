@@ -1,0 +1,328 @@
+<div class="space-y-6 pb-12">
+
+  <!-- Encabezado Neutral del Panel Administrativo -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2.5">
+        <h1 class="text-2xl font-black tracking-tight text-zinc-900 dark:text-white">
+          Configuración de Mi Tienda & Storefront
+        </h1>
+        <span class="px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+          Multitenant
+        </span>
+      </div>
+      <p class="text-xs font-medium text-zinc-500 dark:text-slate-400 mt-1">
+        Personaliza la identidad visual, públicos objetivo, banner y orden de secciones de tu tienda pública sin alterar el panel administrativo.
+      </p>
+    </div>
+
+    <div *ngIf="datos" class="flex items-center gap-2.5">
+      <a [routerLink]="['/t', datos.slug]" target="_blank"
+         class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-zinc-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-xl hover:bg-stone-50 transition-all shadow-sm">
+        <span>Ver Storefront Público (/t/{{ datos.slug }})</span>
+        <span>↗</span>
+      </a>
+      <button type="button"
+              [disabled]="guardando"
+              (click)="guardarConfiguracion()"
+              class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-all shadow-sm disabled:opacity-50 cursor-pointer">
+        <span>{{ guardando ? 'Guardando...' : 'Guardar Cambios' }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Alertas -->
+  <div *ngIf="mensajeExito"
+       class="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-xs font-medium flex items-center justify-between">
+    <span>✓ {{ mensajeExito }}</span>
+    <button (click)="mensajeExito = ''" class="text-emerald-600 cursor-pointer">✕</button>
+  </div>
+  <div *ngIf="mensajeError"
+       class="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-rose-800 dark:text-rose-300 text-xs font-medium flex items-center justify-between">
+    <span>⚠️ {{ mensajeError }}</span>
+    <button (click)="mensajeError = ''" class="text-rose-600 cursor-pointer">✕</button>
+  </div>
+
+  <!-- Asistente de Configuración Inicial (Onboarding Checklist - Pantalla G) -->
+  <div *ngIf="datos?.progreso_onboarding as prog"
+       class="p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-950 border border-stone-200 dark:border-slate-800 shadow-xs space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <div>
+        <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+          Asistente de Puesta en Marcha
+        </span>
+        <h2 class="text-base font-bold text-zinc-900 dark:text-white">
+          Estado de configuración inicial de {{ datos?.nombre_empresa }}
+        </h2>
+      </div>
+      <button *ngIf="!prog.onboarding_completado"
+              type="button"
+              (click)="guardarConfiguracion(true)"
+              class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold self-start cursor-pointer">
+        Marcar configuración inicial como completada ✓
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+      <div class="p-3.5 rounded-2xl border"
+           [ngClass]="prog.identidad_configurada ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/50' : 'bg-stone-50 dark:bg-slate-900 border-stone-200 dark:border-slate-800'">
+        <div class="font-bold text-zinc-900 dark:text-white flex items-center justify-between">
+          <span>1. Identidad Visual</span>
+          <span>{{ prog.identidad_configurada ? '✓' : 'Pendiente' }}</span>
+        </div>
+        <p class="text-[11px] text-zinc-500 dark:text-slate-400 mt-1">Nombre comercial, colores y tipografía.</p>
+      </div>
+
+      <div class="p-3.5 rounded-2xl border"
+           [ngClass]="prog.publicos_definidos ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/50' : 'bg-stone-50 dark:bg-slate-900 border-stone-200 dark:border-slate-800'">
+        <div class="font-bold text-zinc-900 dark:text-white flex items-center justify-between">
+          <span>2. Públicos Objetivo</span>
+          <span>{{ publicosHabilitados.length }} activo(s)</span>
+        </div>
+        <p class="text-[11px] text-zinc-500 dark:text-slate-400 mt-1">Mujer, Hombre, Unisex, Infantil o Bebés.</p>
+      </div>
+
+      <div class="p-3.5 rounded-2xl border"
+           [ngClass]="prog.tiene_sucursal_activa ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/50' : 'bg-stone-50 dark:bg-slate-900 border-stone-200 dark:border-slate-800'">
+        <div class="font-bold text-zinc-900 dark:text-white flex items-center justify-between">
+          <span>3. Primera Sucursal</span>
+          <span>{{ prog.sucursales_activas }} activa(s)</span>
+        </div>
+        <a routerLink="/admin/sucursales" class="text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold hover:underline mt-1 inline-block">
+          Gestionar sucursales →
+        </a>
+      </div>
+
+      <div class="p-3.5 rounded-2xl border"
+           [ngClass]="prog.tiene_productos_activos ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-slate-800/50' : 'bg-stone-50 dark:bg-slate-900 border-stone-200 dark:border-slate-800'">
+        <div class="font-bold text-zinc-900 dark:text-white flex items-center justify-between">
+          <span>4. Catálogo de Prendas</span>
+          <span>{{ prog.productos_activos }} activo(s)</span>
+        </div>
+        <a routerLink="/admin/productos" class="text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold hover:underline mt-1 inline-block">
+          Cargar productos →
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulario de Configuración Controlada del Storefront -->
+  <div *ngIf="datos" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    
+    <!-- Columna Izquierda: Identidad, Tema, Banner y Públicos -->
+    <div class="lg:col-span-7 space-y-6">
+      
+      <!-- 1. Identidad Comercial y Slug -->
+      <div class="p-6 rounded-3xl bg-white dark:bg-slate-950 border border-stone-200 dark:border-slate-800 space-y-4">
+        <h3 class="text-sm font-bold text-zinc-900 dark:text-white border-b border-stone-100 dark:border-slate-800 pb-3">
+          1. Identidad Comercial y Dirección de Tienda
+        </h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-1">Nombre comercial visible</label>
+            <input type="text" [(ngModel)]="nombreComercial"
+                   class="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-stone-50 dark:bg-slate-900 text-xs text-zinc-900 dark:text-white" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-1">Identificador URL (Slug)</label>
+            <input type="text" [(ngModel)]="slug"
+                   class="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-stone-50 dark:bg-slate-900 text-xs text-zinc-900 dark:text-white font-mono" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-1">Eslogan o mensaje superior</label>
+            <input type="text" [(ngModel)]="eslogan"
+                   class="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-stone-50 dark:bg-slate-900 text-xs text-zinc-900 dark:text-white" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-1">URL del Logotipo (opcional)</label>
+            <input type="text" [(ngModel)]="logo" placeholder="https://..."
+                   class="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-stone-50 dark:bg-slate-900 text-xs text-zinc-900 dark:text-white" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Colores, Tipografía y Estilo de Tarjetas (Opciones Controladas) -->
+      <div class="p-6 rounded-3xl bg-white dark:bg-slate-950 border border-stone-200 dark:border-slate-800 space-y-4">
+        <h3 class="text-sm font-bold text-zinc-900 dark:text-white border-b border-stone-100 dark:border-slate-800 pb-3">
+          2. Paleta de Colores, Tipografía y Tarjetas
+        </h3>
+
+        <div>
+          <span class="block text-[11px] font-semibold text-zinc-500 dark:text-slate-400 mb-2">Paletas recomendadas:</span>
+          <div class="flex flex-wrap gap-2">
+            <button *ngFor="let pal of paletasPreset"
+                    type="button"
+                    (click)="aplicarPaleta(pal.primario, pal.secundario)"
+                    class="px-3 py-1.5 rounded-xl border border-stone-200 dark:border-slate-800 text-xs font-medium text-zinc-700 dark:text-slate-300 hover:bg-stone-50 dark:hover:bg-slate-900 flex items-center gap-2 cursor-pointer">
+              <span class="w-3 h-3 rounded-full" [style.backgroundColor]="pal.primario"></span>
+              <span class="w-3 h-3 rounded-full" [style.backgroundColor]="pal.secundario"></span>
+              <span>{{ pal.nombre }}</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
+          <div>
+            <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-1">Color Primario</label>
+            <div class="flex items-center gap-2">
+              <input type="color" [(ngModel)]="colorPrimario" class="w-8 h-8 rounded cursor-pointer border-0" />
+              <input type="text" [(ngModel)]="colorPrimario" class="w-full px-2 py-1.5 rounded-lg border border-stone-200 dark:border-slate-800 bg-stone-50 dark:bg-slate-900 text-xs font-mono" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-1">Color Secundario</label>
+            <div class="flex items-center gap-2">
+              <input type="color" [(ngModel)]="colorSecundario" class="w-8 h-8 rounded cursor-pointer border-0" />
+              <input type="text" [(ngModel)]="colorSecundario" class="w-full px-2 py-1.5 rounded-lg border border-stone-200 dark:border-slate-800 bg-stone-50 dark:bg-slate-900 text-xs font-mono" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-1">Tipografía</label>
+            <select [(ngModel)]="tipografia"
+                    class="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-stone-50 dark:bg-slate-900 text-xs text-zinc-900 dark:text-white">
+              <option value="editorial">Editorial (Serif)</option>
+              <option value="moderna">Moderna (Sans)</option>
+              <option value="clasica">Clásica</option>
+              <option value="minimal">Minimalista</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-1">Estilo de Tarjetas</label>
+            <select [(ngModel)]="estiloTarjetas"
+                    class="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-stone-50 dark:bg-slate-900 text-xs text-zinc-900 dark:text-white">
+              <option value="editorial">Editorial</option>
+              <option value="minimal">Minimal</option>
+              <option value="borde_suave">Borde Suave</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Vista Previa en Vivo de Contraste y Legibilidad -->
+        <div class="p-3.5 rounded-2xl bg-stone-50 dark:bg-slate-900/60 border border-stone-200/80 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div class="flex items-center gap-3">
+            <span class="text-[11px] font-bold text-zinc-500 dark:text-slate-400">Previsualización de contraste:</span>
+            <!-- Botón CTA simulado -->
+            <button type="button"
+                    class="px-4 py-1.5 rounded-full text-xs font-bold shadow-xs transition-all"
+                    [style.backgroundColor]="colorSecundario"
+                    [style.color]="colorTextoSobreSecundario">
+              Botón CTA
+            </button>
+            <!-- Badge primario simulado -->
+            <span class="px-3 py-1 rounded-full text-[11px] font-mono uppercase tracking-wider font-bold shadow-xs border border-white/20"
+                  [style.backgroundColor]="colorPrimario"
+                  [style.color]="colorTextoSobrePrimario">
+              Cabecera Tienda
+            </span>
+          </div>
+          <span class="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+            <span>●</span> Contraste dinámico garantizado
+          </span>
+        </div>
+      </div>
+
+      <!-- 3. Banner Principal -->
+      <div class="p-6 rounded-3xl bg-white dark:bg-slate-950 border border-stone-200 dark:border-slate-800 space-y-4">
+        <h3 class="text-sm font-bold text-zinc-900 dark:text-white border-b border-stone-100 dark:border-slate-800 pb-3">
+          3. Banner Principal de Inicio
+        </h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-1">Título del Banner</label>
+            <input type="text" [(ngModel)]="bannerTitulo"
+                   class="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-stone-50 dark:bg-slate-900 text-xs text-zinc-900 dark:text-white" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-1">Texto del Botón (CTA)</label>
+            <input type="text" [(ngModel)]="bannerCtaTexto"
+                   class="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-stone-50 dark:bg-slate-900 text-xs text-zinc-900 dark:text-white" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-1">Subtítulo descriptivo</label>
+          <input type="text" [(ngModel)]="bannerSubtitulo"
+                 class="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-stone-50 dark:bg-slate-900 text-xs text-zinc-900 dark:text-white" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-1">URL de Imagen de Fondo del Banner (opcional)</label>
+          <input type="text" [(ngModel)]="bannerImagenUrl" placeholder="https://images.unsplash.com/..."
+                 class="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-stone-50 dark:bg-slate-900 text-xs text-zinc-900 dark:text-white" />
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Columna Derecha: Públicos Objetivo, Colecciones y Orden de Secciones -->
+    <div class="lg:col-span-5 space-y-6">
+      
+      <!-- 4. Públicos Objetivo de la Tienda -->
+      <div class="p-6 rounded-3xl bg-white dark:bg-slate-950 border border-stone-200 dark:border-slate-800 space-y-4">
+        <h3 class="text-sm font-bold text-zinc-900 dark:text-white border-b border-stone-100 dark:border-slate-800 pb-3">
+          4. Públicos Objetivo Habilitados
+        </h3>
+        <p class="text-xs text-zinc-500 dark:text-slate-400">
+          Selecciona los públicos que atiende tu tienda. El menú dinámico mostrará únicamente aquellos que estén habilitados y tengan prendas activas.
+        </p>
+
+        <div class="flex flex-wrap gap-2">
+          <button *ngFor="let pub of opcionesPublicos"
+                  type="button"
+                  (click)="togglePublico(pub)"
+                  class="px-3.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer"
+                  [ngClass]="publicosHabilitados.includes(pub)
+                    ? 'bg-indigo-600 text-white border-indigo-600'
+                    : 'bg-stone-50 dark:bg-slate-900 text-zinc-700 dark:text-slate-300 border-stone-200 dark:border-slate-800'">
+            {{ publicosHabilitados.includes(pub) ? '✓ ' : '' }}{{ pub }}
+          </button>
+        </div>
+
+        <div class="pt-2">
+          <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-1">
+            Colecciones destacadas (separadas por coma)
+          </label>
+          <input type="text"
+                 [(ngModel)]="coleccionesTexto"
+                 placeholder="Ej: Novedades, Temporada Escolar, Ofertas"
+                 class="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-stone-50 dark:bg-slate-900 text-xs text-zinc-900 dark:text-white" />
+        </div>
+      </div>
+
+      <!-- 5. Secciones Visibles y Orden de Presentación -->
+      <div class="p-6 rounded-3xl bg-white dark:bg-slate-950 border border-stone-200 dark:border-slate-800 space-y-4">
+        <h3 class="text-sm font-bold text-zinc-900 dark:text-white border-b border-stone-100 dark:border-slate-800 pb-3">
+          5. Secciones Visibles y Orden en Inicio
+        </h3>
+
+        <div class="space-y-2">
+          <div *ngFor="let sec of secciones; let i = index"
+               class="p-3 rounded-2xl bg-stone-50 dark:bg-slate-900 border border-stone-200 dark:border-slate-800 flex items-center justify-between gap-3">
+            <label class="flex items-center gap-2.5 text-xs font-semibold text-zinc-800 dark:text-slate-200 cursor-pointer">
+              <input type="checkbox" [(ngModel)]="sec.visible" class="rounded text-indigo-600" />
+              <span>{{ i + 1 }}. {{ nombresSeccion[sec.codigo] || sec.codigo }}</span>
+            </label>
+            <div class="flex items-center gap-1">
+              <button type="button" (click)="moverSeccion(i, -1)" [disabled]="i === 0"
+                      class="px-2 py-1 rounded bg-white dark:bg-slate-800 border border-stone-200 dark:border-slate-700 text-xs disabled:opacity-40 cursor-pointer">
+                ↑
+              </button>
+              <button type="button" (click)="moverSeccion(i, 1)" [disabled]="i === secciones.length - 1"
+                      class="px-2 py-1 rounded bg-white dark:bg-slate-800 border border-stone-200 dark:border-slate-700 text-xs disabled:opacity-40 cursor-pointer">
+                ↓
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

@@ -1,0 +1,341 @@
+<div class="min-h-screen bg-stone-50 dark:bg-zinc-950 py-10 px-4 sm:px-6 lg:px-8 transition-colors">
+  <div class="max-w-4xl mx-auto">
+    
+    <!-- Loading State -->
+    <div *ngIf="cargando" class="py-20 text-center space-y-4">
+      <div class="inline-block animate-spin text-amber-500 text-3xl">
+        <i class="ph ph-spinner"></i>
+      </div>
+      <p class="text-xs text-stone-500 dark:text-zinc-400 font-mono">Recuperando detalles del pedido...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="!cargando && errorMensaje" class="py-16 px-6 text-center rounded-3xl bg-white dark:bg-zinc-900 border border-rose-300 dark:border-rose-900/50 shadow-sm space-y-4">
+      <div class="w-16 h-16 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 flex items-center justify-center text-3xl mx-auto">
+        <i class="ph ph-warning"></i>
+      </div>
+      <h2 class="text-lg font-serif font-bold text-stone-900 dark:text-zinc-100">
+        No pudimos cargar el pedido
+      </h2>
+      <p class="text-xs text-stone-500 dark:text-zinc-400 max-w-md mx-auto">
+        {{ errorMensaje }}
+      </p>
+      <button (click)="irAlCatalogo()" 
+              class="px-6 py-2.5 rounded-full bg-stone-900 hover:bg-stone-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-stone-950 text-xs font-bold uppercase tracking-wider transition-all">
+        Volver al Catálogo
+      </button>
+    </div>
+
+    <!-- Success Order View -->
+    <div *ngIf="!cargando && pedido" class="space-y-8 animate-fade-in">
+      
+      <!-- Top Banner Card -->
+      <div class="p-6 sm:p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-md text-center relative overflow-hidden">
+        
+        <!-- Decorative subtle background badge -->
+        <div class="absolute -right-8 -bottom-8 w-40 h-40 rounded-full bg-amber-500/5 pointer-events-none blur-xl"></div>
+        
+        <div class="w-16 h-16 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-3xl mx-auto mb-4 shadow-sm">
+          <i class="ph ph-check"></i>
+        </div>
+
+        <span class="text-[11px] font-bold font-mono tracking-widest uppercase text-amber-600 dark:text-amber-400">
+          ✦ Orden Registrada Exitosamente
+        </span>
+
+        <h1 class="text-2xl sm:text-3xl font-serif font-bold text-stone-900 dark:text-zinc-100 mt-1">
+          Pedido creado correctamente
+        </h1>
+
+        <!-- Unique Order Identifier -->
+        <div class="mt-4 inline-flex items-center space-x-3 px-4 py-2 rounded-2xl bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 shadow-inner">
+          <span class="text-xs text-stone-500 dark:text-zinc-400 font-mono">Código de Pedido:</span>
+          <span class="text-sm sm:text-base font-extrabold font-mono text-amber-600 dark:text-amber-400 tracking-wider">
+            {{ pedido.codigo_pedido }}
+          </span>
+        </div>
+
+        <!-- Badges Row -->
+        <div class="flex flex-wrap items-center justify-center gap-2 mt-4 text-xs font-medium">
+          <span class="px-3 py-1 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 font-semibold font-mono">
+            Estado: {{ pedido.estado }}
+          </span>
+          <span class="px-3 py-1 rounded-full bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 border border-stone-200 dark:border-zinc-700 font-mono">
+            Pago: {{ pedido.estado_pago }}
+          </span>
+          <span class="px-3 py-1 rounded-full bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 border border-stone-200 dark:border-zinc-700 font-mono">
+            Modalidad: {{ pedido.modalidad_compra === 'RETIRO_SUCURSAL' ? 'Retiro en Sucursal' : 'Entrega a Domicilio' }}
+          </span>
+        </div>
+
+        <!-- Grand Total Highlight -->
+        <div class="mt-6 pt-6 border-t border-stone-100 dark:border-zinc-800/80 max-w-sm mx-auto flex items-baseline justify-between">
+          <span class="text-xs uppercase font-serif font-bold text-stone-500 dark:text-zinc-400">Total a Pagar:</span>
+          <span class="text-2xl sm:text-3xl font-extrabold text-amber-600 dark:text-amber-400 font-mono">
+            Bs. {{ pedido.total | number:'1.2-2' }}
+          </span>
+        </div>
+
+        <!-- Rating Prompt Section (Valoración de Compra y Servicio) -->
+        <div class="mt-6 pt-6 border-t border-stone-100 dark:border-zinc-800/80 max-w-md mx-auto">
+          <div *ngIf="!valoracionRegistrada" class="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 text-center space-y-2">
+            <p class="text-xs font-semibold text-stone-800 dark:text-zinc-200">
+              ✦ ¿Cómo calificarías tu experiencia de compra?
+            </p>
+            <p class="text-[11px] text-stone-500 dark:text-zinc-400">
+              Tu opinión nos permite mejorar la calidad de nuestras prendas y servicios.
+            </p>
+            <button (click)="abrirModalValoracion()"
+                    class="mt-1 px-5 py-2 rounded-full bg-stone-900 hover:bg-stone-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-stone-950 text-xs font-bold uppercase tracking-wider transition-all shadow-sm cursor-pointer inline-flex items-center gap-1.5">
+              <span class="text-amber-400">★</span> Calificar Compra
+            </button>
+          </div>
+          <div *ngIf="valoracionRegistrada" class="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-medium text-center">
+            ✓ Gracias por compartir tu valoración sobre esta compra.
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal de Valoración Integrado -->
+      <app-valoracion-modal 
+        [visible]="modalValoracionVisible"
+        [idPedido]="pedido.id_pedido"
+        [codigoPedido]="pedido.codigo_pedido"
+        [nombreSucursal]="pedido.sucursal_nombre || ''"
+        (cerrar)="modalValoracionVisible = false"
+        (valoracionEnviada)="onValoracionRegistrada($event)">
+      </app-valoracion-modal>
+
+      <!-- Order Details Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Branch & Delivery Details -->
+        <div class="p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm space-y-4">
+          <div class="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-stone-800 dark:text-zinc-200 font-mono border-b border-stone-100 dark:border-zinc-800 pb-3">
+            <i class="ph ph-map-pin text-base text-amber-500"></i>
+            <span>Sucursal y Entrega</span>
+          </div>
+
+          <div class="space-y-3 text-xs">
+            <div>
+              <span class="text-stone-400 dark:text-zinc-500 block text-[11px]">Tienda (Tenant):</span>
+              <strong class="text-stone-800 dark:text-zinc-200">{{ pedido.nombre_empresa }}</strong>
+            </div>
+
+            <div>
+              <span class="text-stone-400 dark:text-zinc-500 block text-[11px]">Sucursal Designada:</span>
+              <strong class="text-stone-800 dark:text-zinc-200">{{ pedido.sucursal_nombre }}</strong>
+              <p *ngIf="pedido.sucursal_direccion" class="text-[11px] text-stone-500 dark:text-zinc-400 mt-0.5">
+                {{ pedido.sucursal_direccion }}
+              </p>
+              <p *ngIf="pedido.sucursal_telefono" class="text-[10px] text-stone-400 dark:text-zinc-500 font-mono mt-0.5">
+                Tel: {{ pedido.sucursal_telefono }}
+              </p>
+            </div>
+
+            <div *ngIf="pedido.modalidad_compra === 'ENTREGA_DOMICILIO'">
+              <span class="text-stone-400 dark:text-zinc-500 block text-[11px]">Dirección de Entrega:</span>
+              <p class="text-stone-800 dark:text-zinc-200 font-medium">
+                {{ pedido.direccion_entrega }} ({{ pedido.ciudad_entrega }})
+              </p>
+              <p *ngIf="pedido.notas_entrega" class="text-[11px] text-stone-500 dark:text-zinc-400 italic mt-0.5">
+                Notas: "{{ pedido.notas_entrega }}"
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact Customer Details -->
+        <div class="p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm space-y-4">
+          <div class="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-stone-800 dark:text-zinc-200 font-mono border-b border-stone-100 dark:border-zinc-800 pb-3">
+            <i class="ph ph-user text-base text-amber-500"></i>
+            <span>Datos del Cliente Registrado</span>
+          </div>
+
+          <div class="space-y-3 text-xs">
+            <div>
+              <span class="text-stone-400 dark:text-zinc-500 block text-[11px]">Nombre de Contacto:</span>
+              <strong class="text-stone-800 dark:text-zinc-200">{{ pedido.nombre_contacto }}</strong>
+            </div>
+
+            <div>
+              <span class="text-stone-400 dark:text-zinc-500 block text-[11px]">Teléfono:</span>
+              <strong class="text-stone-800 dark:text-zinc-200 font-mono">{{ pedido.telefono_contacto }}</strong>
+            </div>
+
+            <div *ngIf="pedido.correo_contacto">
+              <span class="text-stone-400 dark:text-zinc-500 block text-[11px]">Correo Electrónico:</span>
+              <span class="text-stone-700 dark:text-zinc-300 font-mono">{{ pedido.correo_contacto }}</span>
+            </div>
+
+            <div>
+              <span class="text-stone-400 dark:text-zinc-500 block text-[11px]">Fecha de Generación:</span>
+              <span class="text-stone-700 dark:text-zinc-300 font-mono">{{ pedido.fecha_pedido | date:'medium' }}</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Items Breakdown Card -->
+      <div class="p-6 sm:p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm space-y-4">
+        <h3 class="text-sm font-serif font-bold text-stone-900 dark:text-zinc-100 uppercase tracking-wider font-mono border-b border-stone-100 dark:border-zinc-800 pb-4">
+          Detalle de Prendas Registradas (Precios Históricos Guardados)
+        </h3>
+
+        <div class="divide-y divide-stone-100 dark:divide-zinc-800/80">
+          <div *ngFor="let item of pedido.items" class="py-3 flex items-center justify-between gap-4">
+            <div class="flex items-center space-x-3.5 min-w-0">
+              <div class="w-12 h-16 rounded-xl overflow-hidden bg-stone-100 dark:bg-zinc-800 shrink-0 border border-stone-200 dark:border-zinc-700">
+                <img [src]="item.imagen_url || 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=300&q=80'" 
+                     [alt]="item.producto_nombre" 
+                     class="w-full h-full object-cover">
+              </div>
+              <div class="min-w-0">
+                <h4 class="text-xs sm:text-sm font-semibold text-stone-900 dark:text-zinc-100 truncate">
+                  {{ item.producto_nombre }}
+                </h4>
+                <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 border border-stone-200 dark:border-zinc-700">
+                    Talla: {{ item.talla_nombre }}
+                  </span>
+                  <span class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 border border-stone-200 dark:border-zinc-700">
+                    <span class="w-2 h-2 rounded-full border border-black/20" [style.backgroundColor]="item.codigo_hex"></span>
+                    <span>{{ item.color_nombre }}</span>
+                  </span>
+                </div>
+                <div class="text-[11px] text-stone-500 dark:text-zinc-400 mt-1">
+                  {{ item.cantidad }} × Bs. {{ item.precio_unitario | number:'1.2-2' }}
+                </div>
+              </div>
+            </div>
+
+            <div class="text-right font-mono text-xs sm:text-sm font-bold text-amber-700 dark:text-amber-400 shrink-0">
+              Bs. {{ item.subtotal | number:'1.2-2' }}
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-stone-100 dark:border-zinc-800 text-xs space-y-1 text-right text-stone-600 dark:text-zinc-400">
+          <div>Subtotal: <strong class="font-mono text-stone-800 dark:text-zinc-200">Bs. {{ pedido.subtotal | number:'1.2-2' }}</strong></div>
+          <div>Envío: <strong class="font-mono text-emerald-600 dark:text-emerald-400">Gratuito</strong></div>
+          <div class="text-sm sm:text-base font-bold text-stone-900 dark:text-zinc-100 pt-2 border-t border-stone-200 dark:border-zinc-800">
+            Total Registrado: <span class="font-mono text-amber-600 dark:text-amber-400">Bs. {{ pedido.total | number:'1.2-2' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- PROCESO DE PAGO Y EMISIÓN DE COMPROBANTES (W27 / W29)   -->
+      <!-- ======================================================== -->
+      <div *ngIf="pedido.estado_pago === 'PENDIENTE' || pedido.estado === 'PENDIENTE_PAGO'"
+           class="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/30 shadow-md space-y-5">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl shrink-0">
+            <i class="ph ph-credit-card"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-serif font-bold text-stone-900 dark:text-zinc-100">
+              Siguiente Paso: Proceso de Pago
+            </h3>
+            <p class="text-xs text-stone-600 dark:text-zinc-400">
+              Selecciona cómo deseas realizar el pago para confirmar definitivamente tu compra.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+          
+          <!-- Opción W27: Pago Electrónico -->
+          <div class="p-4 rounded-2xl bg-white/90 dark:bg-zinc-900/90 border border-stone-200 dark:border-zinc-800 hover:border-amber-500/50 transition-all space-y-2 relative flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-stone-900 dark:text-zinc-100 flex items-center space-x-2">
+                  <i class="ph ph-credit-card text-base text-amber-500"></i>
+                  <span>Pago Electrónico Seguro</span>
+                </span>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30">
+                  En Línea
+                </span>
+              </div>
+              <p class="text-[11px] text-stone-500 dark:text-zinc-400 mt-1">
+                Paga instantáneamente con Tarjeta de Débito/Crédito o mediante tu cuenta oficial de PayPal.
+              </p>
+            </div>
+            <button [routerLink]="['/pago', pedido.id_pedido]"
+                    class="w-full py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer mt-2">
+              <i class="ph ph-lock-key text-sm"></i>
+              <span>Pagar Ahora (Tarjeta / PayPal)</span>
+            </button>
+          </div>
+
+          <!-- Opción W28: Pago en Caja -->
+          <div class="p-4 rounded-2xl bg-white/90 dark:bg-zinc-900/90 border border-stone-200 dark:border-zinc-800 hover:border-amber-500/50 transition-all space-y-2 relative flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-stone-900 dark:text-zinc-100 flex items-center space-x-2">
+                  <i class="ph ph-storefront text-base text-amber-500"></i>
+                  <span>Pago Presencial en Sucursal</span>
+                </span>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-stone-200 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300">
+                  En Caja
+                </span>
+              </div>
+              <p class="text-[11px] text-stone-500 dark:text-zinc-400 mt-1">
+                Presenta tu código <strong class="font-mono text-stone-800 dark:text-zinc-200">{{ pedido.codigo_pedido }}</strong> en la caja de <strong>{{ pedido.sucursal_nombre }}</strong> para abonar en efectivo.
+              </p>
+            </div>
+            <button class="w-full py-2.5 px-3 rounded-xl bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-default mt-2">
+              <i class="ph ph-receipt text-sm"></i>
+              <span>Pagar en Caja al Retirar</span>
+            </button>
+          </div>
+
+        </div>
+
+        <div class="text-center text-[11px] text-stone-500 dark:text-zinc-400 italic pt-1">
+          ✦ Tu pedido se encuentra resguardado en estado <strong>PENDIENTE_PAGO</strong>. Las existencias de inventario se descuentan formalmente al confirmar el pago.
+        </div>
+      </div>
+
+      <!-- ESTADO PAGADO: DESCARGA DE COMPROBANTE (W29) -->
+      <div *ngIf="pedido.estado_pago === 'PAGADO'"
+           class="p-6 sm:p-8 rounded-3xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-300 dark:border-emerald-800/80 shadow-md space-y-4 text-center animate-fade-in">
+        <div class="w-12 h-12 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-2xl mx-auto">
+          <i class="ph ph-receipt"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-serif font-bold text-stone-900 dark:text-zinc-100">
+            Comprobante de Venta Emitido
+          </h3>
+          <p class="text-xs text-stone-600 dark:text-zinc-400 mt-0.5">
+            Este pedido se encuentra pagado y la venta ha sido registrada con su comprobante oficial en PDF.
+          </p>
+        </div>
+        <div>
+          <button (click)="descargarComprobante()"
+                  [disabled]="descargandoPdf"
+                  class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase tracking-wider shadow-md transition-all inline-flex items-center gap-2">
+            <i class="ph ph-file-pdf text-base"></i>
+            <span>{{ descargandoPdf ? 'Generando PDF...' : 'Descargar Comprobante PDF' }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
+        <button (click)="irAlCatalogo()" 
+                class="w-full sm:w-auto px-6 py-3 rounded-2xl bg-white dark:bg-zinc-900 border border-stone-300 dark:border-zinc-700 text-stone-800 dark:text-zinc-200 font-semibold text-xs transition-all hover:border-amber-500/40 shadow-sm">
+          Explorar Más Prendas
+        </button>
+        <button (click)="irAlPerfil()" 
+                class="w-full sm:w-auto px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs uppercase tracking-wider transition-all shadow-md">
+          Ir a Mi Perfil
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+</div>

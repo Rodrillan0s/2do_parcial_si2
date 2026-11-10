@@ -1,0 +1,5 @@
+/* Predicciones UI styles */
+:host {
+  display: block;
+  width: 100%;
+}

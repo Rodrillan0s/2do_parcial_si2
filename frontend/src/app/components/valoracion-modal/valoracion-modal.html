@@ -1,0 +1,176 @@
+<div *ngIf="visible" class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
+  <!-- Backdrop difuminado -->
+  <div class="fixed inset-0 bg-stone-950/60 backdrop-blur-sm transition-opacity" (click)="onCerrar()"></div>
+
+  <!-- Contenedor centrado -->
+  <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+    <div class="relative transform overflow-hidden rounded-3xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg p-6 sm:p-8 space-y-6 animate-fade-in">
+      
+      <!-- Botón de Cerrar (Flujo A1: Cierre voluntario sin guardar) -->
+      <button (click)="onCerrar()"
+              class="absolute top-5 right-5 w-9 h-9 rounded-full bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-500 dark:text-zinc-400 flex items-center justify-center text-lg transition-colors"
+              title="Cerrar sin calificar">
+        <i class="ph ph-x"></i>
+      </button>
+
+      <!-- Mensaje de Éxito Temporal -->
+      <div *ngIf="exito" class="py-8 text-center space-y-3 animate-fade-in">
+        <div class="w-16 h-16 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-3xl mx-auto shadow-sm">
+          <i class="ph ph-check"></i>
+        </div>
+        <h3 class="text-xl font-serif font-bold text-stone-900 dark:text-zinc-100">
+          ¡Gracias por tu valoración!
+        </h3>
+        <p class="text-xs text-stone-500 dark:text-zinc-400 font-sans">
+          Tu opinión ayuda a mejorar la calidad y experiencia de AuroraStore.
+        </p>
+      </div>
+
+      <!-- Formulario de Valoración -->
+      <div *ngIf="!exito" class="space-y-6">
+        
+        <!-- Encabezado -->
+        <div class="text-center space-y-1">
+          <span class="text-[11px] font-bold font-mono tracking-widest uppercase text-amber-600 dark:text-amber-400">
+            ✦ Tu Experiencia Cuenta
+          </span>
+          <h2 class="text-xl sm:text-2xl font-serif font-bold text-stone-900 dark:text-zinc-100">
+            Valorar Compra
+          </h2>
+          <p class="text-xs text-stone-500 dark:text-zinc-400">
+            {{ nombreProducto ? '¿Cómo calificarías esta prenda?' : '¿Cómo calificarías tu experiencia y servicio recibido?' }}
+          </p>
+        </div>
+
+        <!-- Prenda / Compra a calificar -->
+        <div *ngIf="nombreProducto || codigoPedido" class="flex items-center gap-4 p-3.5 rounded-2xl bg-stone-50 dark:bg-zinc-800/60 border border-stone-200/80 dark:border-zinc-700/60">
+          <img *ngIf="imagenProducto" [src]="imagenProducto" [alt]="nombreProducto" class="w-14 h-14 rounded-xl object-cover border border-stone-200 dark:border-zinc-700 shadow-sm" />
+          <div class="flex-1 min-w-0 text-left">
+            <h4 *ngIf="nombreProducto" class="text-sm font-semibold text-stone-900 dark:text-zinc-100 truncate">
+              {{ nombreProducto }}
+            </h4>
+            <div class="flex flex-wrap items-center gap-2 text-[11px] text-stone-500 dark:text-zinc-400 font-mono mt-0.5">
+              <span *ngIf="codigoPedido">Orden: <strong class="text-stone-700 dark:text-zinc-300">{{ codigoPedido }}</strong></span>
+              <span *ngIf="nombreSucursal">• {{ nombreSucursal }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selector de Estrellas (1 a 5) -->
+        <div class="space-y-2 text-center">
+          <label class="text-xs font-semibold uppercase tracking-wider text-stone-700 dark:text-zinc-300 font-mono">
+            Selecciona tu puntuación
+          </label>
+          <div class="flex items-center justify-center gap-2 py-1" (mouseleave)="clearHover()">
+            <button *ngFor="let n of [1, 2, 3, 4, 5]"
+                    type="button"
+                    (click)="seleccionarEstrellas(n)"
+                    (mouseenter)="setHover(n)"
+                    class="p-2 transition-transform hover:scale-125 focus:outline-none"
+                    [title]="n + ' estrellas'">
+              <i class="ph text-3xl transition-colors"
+                 [ngClass]="{
+                   'ph-star-fill text-amber-500 drop-shadow-sm': n <= (hoverEstrellas || estrellas),
+                   'ph-star text-stone-300 dark:text-zinc-600': n > (hoverEstrellas || estrellas)
+                 }"></i>
+            </button>
+          </div>
+          <p class="text-xs font-mono font-medium"
+             [ngClass]="{
+               'text-rose-600 dark:text-rose-400': estrellas === 1,
+               'text-amber-600 dark:text-amber-400': estrellas > 1 && estrellas < 4,
+               'text-emerald-600 dark:text-emerald-400': estrellas >= 4,
+               'text-stone-400': estrellas === 0
+             }">
+            <span *ngIf="estrellas === 1">1 estrella — Muy Insatisfecho</span>
+            <span *ngIf="estrellas === 2">2 estrellas — Insatisfecho</span>
+            <span *ngIf="estrellas === 3">3 estrellas — Aceptable</span>
+            <span *ngIf="estrellas === 4">4 estrellas — Bueno</span>
+            <span *ngIf="estrellas === 5">5 estrellas — ¡Excelente!</span>
+            <span *ngIf="estrellas === 0">Toca una estrella para calificar</span>
+          </p>
+        </div>
+
+        <!-- Flujo Alternativo A2: Panel Dinámico para 1 Estrella -->
+        <div *ngIf="esUnaEstrella" class="p-4 rounded-2xl bg-rose-50/80 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/50 space-y-3 text-left animate-fade-in">
+          <div class="flex items-center gap-2 text-rose-700 dark:text-rose-400 text-xs font-bold font-mono">
+            <i class="ph ph-warning-circle text-base"></i>
+            <span>Lamentamos mucho tu mala experiencia</span>
+          </div>
+          <p class="text-[11px] text-stone-600 dark:text-zinc-300">
+            Para poder darte una solución inmediata y reportarlo al equipo de tienda, por favor dinos la razón principal:
+          </p>
+          
+          <!-- Chips de Motivos Rápidos -->
+          <div class="flex flex-wrap gap-1.5">
+            <button *ngFor="let m of motivosPredefinidos"
+                    type="button"
+                    (click)="seleccionarMotivoRapido(m)"
+                    class="px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors"
+                    [ngClass]="{
+                      'bg-rose-600 text-white border-rose-600 shadow-sm': motivoSeleccionadoRapido === m,
+                      'bg-white dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 border-stone-300 dark:border-zinc-700 hover:border-rose-400': motivoSeleccionadoRapido !== m
+                    }">
+              {{ m }}
+            </button>
+          </div>
+
+          <!-- Justificación Obligatoria para 1 Estrella -->
+          <div>
+            <textarea [(ngModel)]="motivoNegativo"
+                      rows="2"
+                      placeholder="Explica qué sucedió con la prenda o servicio (obligatorio)..."
+                      class="w-full text-xs p-3 rounded-xl border border-rose-300 dark:border-rose-900 bg-white dark:bg-zinc-900 text-stone-900 dark:text-zinc-100 placeholder-stone-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all"></textarea>
+            <p *ngIf="motivoNegativo.trim().length > 0 && motivoNegativo.trim().length < 5" class="text-[10px] text-rose-500 font-mono mt-1">
+              Por favor ingresa al menos 5 caracteres detallando el problema.
+            </p>
+          </div>
+        </div>
+
+        <!-- Comentario Adicional (Opcional para 2 a 5 estrellas) -->
+        <div *ngIf="!esUnaEstrella && estrellas > 1" class="text-left space-y-1">
+          <label class="text-xs font-semibold text-stone-700 dark:text-zinc-300">
+            Comentario u opinión (opcional)
+          </label>
+          <textarea [(ngModel)]="comentario"
+                    rows="2"
+                    placeholder="Cuéntanos más sobre el calce de la prenda, la tela o la atención..."
+                    class="w-full text-xs p-3 rounded-xl border border-stone-200 dark:border-zinc-700 bg-stone-50/50 dark:bg-zinc-800/50 text-stone-900 dark:text-zinc-100 placeholder-stone-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all"></textarea>
+        </div>
+
+        <!-- Mensaje de Error -->
+        <div *ngIf="mensajeError" class="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 text-xs text-left">
+          {{ mensajeError }}
+        </div>
+
+        <!-- Acciones del Modal -->
+        <div class="flex items-center justify-end gap-3 pt-2">
+          <!-- Flujo A1: Omitir / Cerrar sin calificar -->
+          <button type="button"
+                  (click)="onCerrar()"
+                  [disabled]="guardando"
+                  class="px-4 py-2.5 rounded-full text-xs font-semibold text-stone-600 hover:text-stone-900 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors">
+            Omitir por ahora
+          </button>
+
+          <!-- Guardar Valoración -->
+          <button type="button"
+                  (click)="enviar()"
+                  [disabled]="!puedeEnviar"
+                  class="px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all shadow-md"
+                  [ngClass]="{
+                    'bg-amber-600 hover:bg-amber-500 text-white cursor-pointer hover:shadow-lg': puedeEnviar,
+                    'bg-stone-200 dark:bg-zinc-800 text-stone-400 dark:text-zinc-600 cursor-not-allowed shadow-none': !puedeEnviar
+                  }">
+            <span *ngIf="guardando" class="inline-flex items-center gap-2">
+              <i class="ph ph-spinner animate-spin"></i> Enviando...
+            </span>
+            <span *ngIf="!guardando">Enviar Valoración</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>

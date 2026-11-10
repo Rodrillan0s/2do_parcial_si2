@@ -1,0 +1,520 @@
+<!-- Top Announcement Banner (Configurable per Tenant + Link to AuroraStore SaaS) -->
+<div class="border-b border-stone-200 dark:border-white/10 py-1.5 px-4 text-xs tracking-wider font-medium flex flex-wrap items-center justify-between gap-2"
+     [style.backgroundColor]="tenantContext.configStorefront().color_primario"
+     [style.color]="tenantContext.colorTextoSobrePrimario()">
+  <div class="flex items-center gap-2 truncate">
+    <span class="inline-block w-1.5 h-1.5 rounded-full shrink-0" [style.backgroundColor]="tenantContext.configStorefront().color_secundario"></span>
+    <span class="uppercase tracking-widest text-[11px] font-semibold truncate">
+      {{ tenantContext.configStorefront().nombre_comercial }} — {{ tenantContext.configStorefront().eslogan }}
+    </span>
+  </div>
+  <div class="flex items-center gap-3 ml-auto text-[11px]">
+    <!-- Selector de Tienda / Tenant (cuando hay múltiples tiendas activas) -->
+    <div *ngIf="tenantContext.tenantsDisponibles().length > 1" class="relative" data-tenant-menu>
+      <button type="button"
+              (click)="toggleTenantDropdown()"
+              class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold transition-all cursor-pointer shadow-xs border"
+              [ngClass]="tenantContext.esPrimarioClaro() 
+                ? 'bg-black/5 hover:bg-black/10 text-zinc-900 border-black/10' 
+                : 'bg-white/15 hover:bg-white/25 text-white border-white/20'">
+        <i class="ph ph-storefront text-xs"></i>
+        <span>Tienda: {{ tenantContext.configStorefront().nombre_comercial }}</span>
+        <i class="ph ph-caret-down text-[10px]"></i>
+      </button>
+      <div *ngIf="isTenantDropdownOpen"
+           class="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-stone-200 dark:border-zinc-800 shadow-2xl p-2 z-50">
+        <div class="px-3 py-1.5 text-[10px] uppercase tracking-wider text-zinc-400 font-bold border-b border-stone-100 dark:border-zinc-800 mb-1">
+          Cambiar Tienda Activa
+        </div>
+        <button *ngFor="let t of tenantContext.tenantsDisponibles()"
+                type="button"
+                (click)="cambiarTienda(t)"
+                class="w-full text-left px-3 py-2 rounded-xl hover:bg-stone-100 dark:hover:bg-zinc-800 transition-all flex items-center justify-between text-xs"
+                [class.bg-stone-100]="t.id_empresa === tenantContext.idEmpresaActual()"
+                [class.dark:bg-zinc-800]="t.id_empresa === tenantContext.idEmpresaActual()">
+          <div class="truncate">
+            <div class="font-bold text-zinc-900 dark:text-white truncate">{{ t.configuracion_storefront?.nombre_comercial || t.nombre_empresa }}</div>
+            <div class="text-[10px] text-zinc-500">{{ t.ciudad || 'Bolivia' }} · /t/{{ t.slug }}</div>
+          </div>
+          <i *ngIf="t.id_empresa === tenantContext.idEmpresaActual()" class="ph ph-check-circle text-emerald-500 text-base"></i>
+        </button>
+      </div>
+    </div>
+
+    <a routerLink="/saas"
+       class="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full transition-all font-semibold border"
+       [ngClass]="tenantContext.esPrimarioClaro()
+         ? 'bg-black/5 hover:bg-black/10 text-zinc-900/90 hover:text-zinc-900 border-black/10'
+         : 'bg-white/10 hover:bg-white/20 text-white/90 hover:text-white border-white/15'">
+      <span>¿Tienes una tienda? Contrata AuroraStore SaaS</span>
+      <i class="ph ph-arrow-up-right text-xs"></i>
+    </a>
+  </div>
+</div>
+
+<!-- Main Sticky Glass Navbar -->
+<header class="sticky top-0 z-40 backdrop-blur-xl bg-stone-50/90 dark:bg-zinc-950/85 border-b border-stone-200 dark:border-white/10 transition-colors duration-200">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-20 gap-3">
+      
+      <!-- Brand Logo & Multi-tenant Branch Indicator -->
+      <div class="flex items-center space-x-3 lg:space-x-4 shrink-0">
+        <a routerLink="/explorar" [queryParams]="{ empresa: tenantContext.idEmpresaActual() }" class="flex items-center space-x-2.5 group">
+          <img *ngIf="tenantContext.tenantActual()?.logo"
+               [src]="tenantContext.tenantActual()?.logo"
+               [alt]="tenantContext.configStorefront().nombre_comercial"
+               class="w-9 h-9 rounded-xl object-cover border border-stone-200 dark:border-zinc-800 shadow-sm" />
+          <span class="text-lg sm:text-xl lg:text-2xl font-bold tracking-tight text-zinc-900 dark:text-white truncate max-w-[200px] sm:max-w-none"
+                [style.fontFamily]="tenantContext.obtenerFamiliaTipografica()">
+            {{ tenantContext.configStorefront().nombre_comercial }}
+          </span>
+        </a>
+
+        <!-- Multi-tenant Branch Selector Pill -->
+        <div *ngIf="sucursalesTenant.length > 0" class="relative hidden lg:block" data-branch-menu>
+          <button (click)="toggleBranchDropdown()" 
+                  type="button"
+                  class="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-white dark:bg-zinc-900/90 border border-stone-300 dark:border-zinc-800 text-xs text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white shadow-sm transition-all cursor-pointer">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+            <span class="font-medium truncate max-w-[110px] xl:max-w-[140px]">{{ authService.activeBranch()?.nombre || sucursalesTenant[0]?.nombre || 'Sucursal Principal' }}</span>
+            <i class="ph ph-caret-down text-zinc-400"></i>
+          </button>
+
+          <!-- Branch Dropdown -->
+          <div *ngIf="isBranchDropdownOpen" 
+               class="absolute left-0 mt-2 w-64 rounded-2xl glass-panel border border-stone-200 dark:border-white/10 shadow-2xl p-2 z-50 animate-fade-in bg-white dark:bg-zinc-950">
+            <div class="px-3 py-2 text-[10px] uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-semibold border-b border-stone-200 dark:border-zinc-800 mb-1">
+              Sucursales de {{ tenantContext.configStorefront().nombre_comercial }}
+            </div>
+            <button *ngFor="let branch of sucursalesTenant" 
+                    (click)="selectBranch(branch)"
+                    [class.bg-amber-500/10]="branch.id === authService.activeBranch()?.id"
+                    class="w-full text-left px-3 py-2.5 rounded-xl border border-transparent hover:bg-stone-100 dark:hover:bg-zinc-800/80 transition-all flex items-center justify-between text-xs my-0.5 cursor-pointer">
+              <div>
+                <div class="font-medium text-zinc-800 dark:text-zinc-100">{{ branch.nombre }}</div>
+                <div class="text-[10px] text-zinc-500 dark:text-zinc-400">{{ branch.ciudad }}</div>
+              </div>
+              <i *ngIf="branch.id === authService.activeBranch()?.id" class="ph ph-check-circle text-emerald-500 text-base"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic Navigation Links (Generated from Tenant's Real Publics & Categories) -->
+      <nav class="hidden md:flex items-center space-x-3 lg:space-x-5 text-sm font-medium tracking-wide shrink-0">
+        <a routerLink="/explorar"
+           [queryParams]="{ empresa: tenantContext.idEmpresaActual() }"
+           routerLinkActive="font-bold text-zinc-900 dark:text-white" 
+           [routerLinkActiveOptions]="{exact: true}"
+           class="text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors relative py-1">
+          Inicio
+        </a>
+
+        <a routerLink="/catalogo"
+           [queryParams]="{ empresa: tenantContext.idEmpresaActual() }"
+           routerLinkActive="font-bold text-zinc-900 dark:text-white" 
+           class="text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors relative py-1">
+          Catálogo
+        </a>
+
+        <!-- Públicos Objetivo Dinámicos del Tenant (Mujer, Hombre, Unisex, Niños, Niñas, Bebés) -->
+        <button *ngFor="let pub of tenantContext.publicosDisponibles().slice(0, 3)"
+                type="button"
+                (click)="filtrarPorPublico(pub.nombre)"
+                class="text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors py-1 cursor-pointer">
+          {{ pub.nombre }}
+        </button>
+
+        <!-- Si el tenant solo tiene 1 público, mostrar sus categorías principales dinámicamente -->
+        <ng-container *ngIf="tenantContext.publicosDisponibles().length <= 1">
+          <button *ngFor="let cat of tenantContext.filtrosActuales().categorias.slice(0, 2)"
+                  type="button"
+                  (click)="filtrarPorCategoria(cat.id_categoria)"
+                  class="text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors py-1 cursor-pointer">
+            {{ cat.nombre }}
+          </button>
+        </ng-container>
+      </nav>
+
+      <!-- Centered Modern Search Pill Bar (Visible en pantallas grandes 2xl) -->
+      <div class="relative w-full max-w-xs hidden 2xl:block mx-2">
+        <input 
+          type="text" 
+          [(ngModel)]="busquedaTexto" 
+          (keyup.enter)="buscarEnCatalogo()"
+          placeholder="Buscar prendas, categorías..." 
+          class="w-full bg-stone-100 dark:bg-zinc-900/90 border border-stone-200 dark:border-zinc-800 rounded-full py-2 pl-9 pr-7 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-500 shadow-inner transition-all"
+        />
+        <i class="ph ph-magnifying-glass absolute left-3 top-2.5 text-zinc-400 text-sm"></i>
+        <button *ngIf="busquedaTexto" (click)="busquedaTexto = ''; buscarEnCatalogo()" class="absolute right-2.5 top-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-xs cursor-pointer">✕</button>
+      </div>
+
+      <!-- Right Action Controls -->
+      <div class="flex items-center space-x-2 sm:space-x-3 shrink-0">
+        
+        <!-- Theme Mode Toggle Button -->
+        <button (click)="themeService.alternarTema()" 
+                type="button"
+                class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white dark:bg-zinc-900 border border-stone-300 dark:border-zinc-800 text-amber-600 dark:text-amber-400 hover:scale-105 active:scale-95 flex items-center justify-center transition-all shadow-sm cursor-pointer"
+                [title]="(themeService.modoOscuro$ | async) ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'">
+          <i [class]="(themeService.modoOscuro$ | async) ? 'ph ph-sun text-lg text-amber-400' : 'ph ph-moon text-lg text-indigo-600'"></i>
+        </button>
+
+        <!-- Search Trigger -->
+        <a routerLink="/catalogo" [queryParams]="{ empresa: tenantContext.idEmpresaActual() }" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white dark:bg-zinc-900 border border-stone-300 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center transition-all shadow-sm" title="Buscar en catálogo">
+          <i class="ph ph-magnifying-glass text-lg"></i>
+        </a>
+
+        <!-- Wishlist / Lista de Deseos (Favoritos) -->
+        <button type="button" (click)="abrirFavoritos()" 
+                class="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white dark:bg-zinc-900 border border-stone-300 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-rose-500 hover:border-rose-400 flex items-center justify-center transition-all shadow-sm cursor-pointer" 
+                title="Ver mis prendas favoritas (Lista de deseos)">
+          <svg *ngIf="totalFavoritos > 0" class="w-5 h-5 text-rose-500 fill-rose-500" viewBox="0 0 24 24">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+          <svg *ngIf="totalFavoritos === 0" class="w-5 h-5 text-zinc-600 dark:text-zinc-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+          <span *ngIf="totalFavoritos > 0" 
+                class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
+            {{ totalFavoritos }}
+          </span>
+        </button>
+
+        <!-- Shopping Bag Counter -->
+        <button (click)="abrirCarrito()" 
+                type="button"
+                class="relative px-3 py-2 rounded-full bg-white dark:bg-zinc-900 border border-stone-300 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white flex items-center space-x-1.5 sm:space-x-2 transition-all shadow-sm group cursor-pointer"
+                title="Ver bolsa de compras">
+          <i class="ph ph-shopping-bag text-lg group-hover:scale-110 transition-transform"
+             [style.color]="tenantContext.configStorefront().color_secundario"></i>
+          <span class="text-xs font-bold text-zinc-800 dark:text-zinc-200">
+            {{ (carritoService.totalItems$ | async) || 0 }}
+          </span>
+        </button>
+
+        <!-- User Authentication State (Clean Dropdown - No Horiz Overflow) -->
+        <ng-container *ngIf="authService.currentUser() as user; else guestActions">
+          <div class="flex items-center space-x-2 border-l border-stone-200 dark:border-zinc-800 pl-3">
+            
+            <!-- Acceso Directo Compacto a Panel Admin (Solo visible en pantallas ultra-anchas 2xl) -->
+            <a *ngIf="!authService.isCashier() && authService.esEmpleadoOAdmin()" 
+               routerLink="/admin" 
+               class="hidden 2xl:inline-flex px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 text-xs font-semibold items-center space-x-1.5 transition-all shadow-xs"
+               title="Ir al Panel Administrativo">
+              <i class="ph ph-sliders text-xs"></i>
+              <span>Panel Admin</span>
+            </a>
+
+            <!-- Dropdown Unificado de Usuario (Evita desbordamiento y sobreposición) -->
+            <div class="relative" data-user-menu>
+              <button (click)="toggleUserMenu()"
+                      type="button"
+                      class="flex items-center space-x-2 p-1 pl-1.5 pr-2.5 rounded-full bg-white dark:bg-zinc-900 border border-stone-300 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-700 shadow-sm transition-all cursor-pointer">
+                <!-- Avatar Circular -->
+                <div class="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs uppercase shadow-xs shrink-0"
+                     [style.backgroundColor]="tenantContext.configStorefront().color_secundario"
+                     [style.color]="tenantContext.colorTextoSobreSecundario()">
+                  {{ user.nombre.charAt(0) }}{{ user.apellido ? user.apellido.charAt(0) : '' }}
+                </div>
+
+                <!-- Nombre corto visible en desktop -->
+                <div class="text-left hidden sm:block max-w-[90px] xl:max-w-[120px]">
+                  <div class="text-xs font-bold text-zinc-900 dark:text-zinc-100 leading-tight truncate">
+                    {{ user.nombre.split(' ')[0] }}
+                  </div>
+                  <div class="text-[9px] uppercase tracking-wider text-zinc-400 font-semibold truncate leading-none mt-0.5">
+                    {{ authService.esCliente() ? 'Cliente' : (user.nombre_rol || 'Mi cuenta') }}
+                  </div>
+                </div>
+
+                <i class="ph ph-caret-down text-zinc-400 text-xs transition-transform duration-200"
+                   [class.rotate-180]="isUserMenuOpen"></i>
+              </button>
+
+              <!-- Panel Desplegable de Usuario -->
+              <div *ngIf="isUserMenuOpen"
+                   class="absolute right-0 mt-2.5 w-64 sm:w-72 rounded-2xl bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 shadow-2xl p-2.5 z-50 animate-slide-up">
+                
+                <!-- Encabezado con datos del usuario -->
+                <div class="p-3 rounded-xl bg-stone-50 dark:bg-zinc-900/60 border border-stone-100 dark:border-zinc-800 mb-2">
+                  <div class="font-bold text-xs text-zinc-900 dark:text-white truncate">
+                    {{ user.nombre }} {{ user.apellido }}
+                  </div>
+                  <div class="text-[11px] text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
+                    {{ user.correo }}
+                  </div>
+                  <div class="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-zinc-200/80 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <span>{{ user.nombre_rol || 'Usuario' }}</span>
+                  </div>
+                </div>
+
+                <!-- Opciones de Navegación del Usuario -->
+                <div class="space-y-0.5 text-xs font-medium">
+                  <!-- Accesos de Personal / Administración -->
+                  <a *ngIf="authService.esEmpleadoOAdmin()"
+                     routerLink="/admin"
+                     (click)="isUserMenuOpen = false"
+                     class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-zinc-700 dark:text-zinc-200 hover:bg-stone-100 dark:hover:bg-zinc-900 transition-colors">
+                    <i class="ph ph-sliders text-base text-amber-600 dark:text-amber-400"></i>
+                    <span>Panel Administrativo</span>
+                  </a>
+
+                  <a *ngIf="!authService.esCliente() && (authService.isCashier() || authService.hasPermission('ventas.crear'))"
+                     routerLink="/admin/caja"
+                     (click)="isUserMenuOpen = false"
+                     class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-zinc-700 dark:text-zinc-200 hover:bg-stone-100 dark:hover:bg-zinc-900 transition-colors">
+                    <i class="ph ph-cash-register text-base text-emerald-500"></i>
+                    <span>Terminal POS / Caja</span>
+                  </a>
+
+                  <a *ngIf="authService.hasPermission('storefront.configurar') || authService.isStoreAdmin()"
+                     routerLink="/admin/mi-tienda"
+                     (click)="isUserMenuOpen = false"
+                     class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-zinc-700 dark:text-zinc-200 hover:bg-stone-100 dark:hover:bg-zinc-900 transition-colors">
+                    <i class="ph ph-paint-brush-broad text-base text-indigo-500"></i>
+                    <span>Personalizar Mi Tienda</span>
+                  </a>
+
+                  <!-- Accesos de Cliente / Usuario -->
+                  <a routerLink="/mis-pedidos"
+                     (click)="isUserMenuOpen = false"
+                     class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-zinc-700 dark:text-zinc-200 hover:bg-stone-100 dark:hover:bg-zinc-900 transition-colors">
+                    <i class="ph ph-package text-base" [style.color]="tenantContext.configStorefront().color_secundario"></i>
+                    <span>Mis Pedidos & Compras</span>
+                  </a>
+
+                  <a *ngIf="authService.esCliente()"
+                     routerLink="/mis-reservas"
+                     (click)="isUserMenuOpen = false"
+                     class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-zinc-700 dark:text-zinc-200 hover:bg-stone-100 dark:hover:bg-zinc-900 transition-colors">
+                    <i class="ph ph-calendar-check text-base" [style.color]="tenantContext.configStorefront().color_secundario"></i>
+                    <span>Mis Reservas & Citas</span>
+                  </a>
+
+                  <a routerLink="/perfil"
+                     (click)="isUserMenuOpen = false"
+                     class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-zinc-700 dark:text-zinc-200 hover:bg-stone-100 dark:hover:bg-zinc-900 transition-colors">
+                    <i class="ph ph-user text-base text-zinc-500"></i>
+                    <span>Mi Perfil & Ajustes</span>
+                  </a>
+                </div>
+
+                <!-- Separador y Cerrar Sesión -->
+                <div class="border-t border-stone-100 dark:border-zinc-800 my-1 pt-1">
+                  <button (click)="cerrarSesion(); isUserMenuOpen = false"
+                          type="button"
+                          class="w-full text-left flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer">
+                    <i class="ph ph-sign-out text-base"></i>
+                    <span>Cerrar Sesión</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </ng-container>
+
+        <!-- Guest Actions: Iniciar Sesión / Registrarse -->
+        <ng-template #guestActions>
+          <div class="flex items-center space-x-2 border-l border-stone-300 dark:border-zinc-800 pl-3">
+            <button (click)="openAuth('login')" 
+                    type="button"
+                    class="px-3 sm:px-4 py-2 rounded-full text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-all hover:bg-stone-200/60 dark:hover:bg-zinc-900 cursor-pointer">
+              Iniciar Sesión
+            </button>
+
+            <button (click)="openAuth('register')" 
+                    type="button"
+                    class="px-3 sm:px-4 py-2 rounded-full text-xs font-bold shadow-sm transition-transform active:scale-95 flex items-center space-x-1.5 cursor-pointer"
+                    [style.backgroundColor]="tenantContext.configStorefront().color_secundario"
+                    [style.color]="tenantContext.colorTextoSobreSecundario()">
+              <span>Registrarse</span>
+              <i class="ph ph-arrow-up-right text-sm"></i>
+            </button>
+          </div>
+        </ng-template>
+
+        <!-- Mobile Menu Toggle -->
+        <button (click)="toggleMobileMenu()" class="md:hidden w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white dark:bg-zinc-900 border border-stone-300 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-center shadow-sm">
+          <i [class]="isMobileMenuOpen ? 'ph ph-x' : 'ph ph-list'" class="text-xl"></i>
+        </button>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Dropdown Navigation -->
+  <div *ngIf="isMobileMenuOpen" class="md:hidden glass-modal border-b border-stone-200 dark:border-zinc-800 px-4 py-6 space-y-4 animate-slide-up">
+    <div class="py-2 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between">
+      <span class="text-xs text-zinc-500 dark:text-zinc-400">Tienda Activa:</span>
+      <span class="text-xs font-bold text-zinc-900 dark:text-white">{{ tenantContext.configStorefront().nombre_comercial }}</span>
+    </div>
+
+    <a routerLink="/explorar" [queryParams]="{ empresa: tenantContext.idEmpresaActual() }" (click)="isMobileMenuOpen = false" class="block py-2 text-base font-medium text-zinc-800 dark:text-zinc-200">✦ Inicio de Tienda</a>
+    <a routerLink="/catalogo" [queryParams]="{ empresa: tenantContext.idEmpresaActual() }" (click)="isMobileMenuOpen = false" class="block py-2 text-base font-medium text-zinc-800 dark:text-zinc-200">✦ Catálogo Completo</a>
+
+    <!-- Públicos dinámicos en móvil -->
+    <div *ngIf="tenantContext.publicosDisponibles().length > 0" class="pt-2 border-t border-stone-200 dark:border-zinc-800">
+      <div class="text-[10px] uppercase tracking-wider text-zinc-400 font-bold mb-2">Públicos Disponibles</div>
+      <div class="flex flex-wrap gap-2">
+        <button *ngFor="let pub of tenantContext.publicosDisponibles()"
+                type="button"
+                (click)="filtrarPorPublico(pub.nombre)"
+                class="px-3 py-1.5 rounded-full bg-stone-100 dark:bg-zinc-800 text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+          {{ pub.nombre }} ({{ pub.total_prendas }})
+        </button>
+      </div>
+    </div>
+
+    <a routerLink="/saas" (click)="isMobileMenuOpen = false" class="block py-2 text-xs font-bold text-indigo-600 dark:text-indigo-400">
+      🚀 ¿Tienes una tienda? Contrata AuroraStore SaaS →
+    </a>
+    
+    <button (click)="isMobileMenuOpen = false; abrirCarrito()" class="w-full py-2.5 px-3 rounded-xl bg-stone-100 dark:bg-zinc-900 border border-stone-300 dark:border-zinc-800 text-zinc-900 dark:text-white font-semibold text-sm flex items-center justify-between">
+      <span class="flex items-center space-x-2">
+        <i class="ph ph-shopping-bag text-lg"></i>
+        <span>Mi Bolsa de Compras</span>
+      </span>
+      <span class="px-2 py-0.5 rounded-full text-white font-bold text-xs"
+            [style.backgroundColor]="tenantContext.configStorefront().color_secundario">
+        {{ (carritoService.totalItems$ | async) || 0 }}
+      </span>
+    </button>
+    
+    <div *ngIf="authService.currentUser()" class="pt-4 border-t border-stone-200 dark:border-zinc-800 space-y-2">
+      <ng-container *ngIf="authService.esCliente()">
+        <a routerLink="/mis-reservas" 
+           (click)="isMobileMenuOpen = false" 
+           class="block w-full py-3 rounded-xl bg-white dark:bg-zinc-900 border border-stone-300 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 text-sm font-semibold text-center">
+          📅 Mis Citas y Reservas
+        </a>
+        <a routerLink="/mis-pedidos" 
+           (click)="isMobileMenuOpen = false" 
+           class="block w-full py-3 rounded-xl bg-white dark:bg-zinc-900 border border-stone-300 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 text-sm font-semibold text-center">
+          📦 Mis Pedidos y Compras
+        </a>
+      </ng-container>
+      <a routerLink="/perfil" 
+         (click)="isMobileMenuOpen = false" 
+         class="block w-full py-3 rounded-xl bg-white dark:bg-zinc-900 border border-stone-300 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 text-sm font-semibold text-center">
+        👤 Mi Perfil de Usuario
+      </a>
+      <a *ngIf="!authService.isCashier() && authService.esEmpleadoOAdmin()" 
+         routerLink="/admin" 
+         (click)="isMobileMenuOpen = false" 
+         class="block w-full py-3 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-700 dark:text-amber-300 text-sm font-bold text-center">
+        🛠️ Ir al Panel Administrativo
+      </a>
+      <button (click)="cerrarSesion()" class="w-full py-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-300 text-sm font-semibold text-center">
+        Cerrar Sesión
+      </button>
+    </div>
+
+    <div *ngIf="!authService.currentUser()" class="pt-4 border-t border-stone-200 dark:border-zinc-800 flex flex-col gap-2">
+      <button (click)="openAuth('login')" class="w-full py-3 rounded-xl bg-stone-100 dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 text-sm font-semibold text-center">
+        Iniciar Sesión
+      </button>
+      <button (click)="openAuth('register')"
+              class="w-full py-3 rounded-xl text-white text-sm font-bold text-center"
+              [style.backgroundColor]="tenantContext.configStorefront().color_secundario">
+        Crear Cuenta
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ========================================================================= -->
+<!-- MODAL DE LISTA DE DESEOS / FAVORITOS (SLIDE-OVER LATERAL)                 -->
+<!-- ========================================================================= -->
+<div *ngIf="mostrarModalFavoritos" 
+     class="fixed inset-0 z-50 flex justify-end animate-fade-in">
+  
+  <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
+       (click)="cerrarFavoritos()"></div>
+
+  <div class="relative w-full max-w-md bg-stone-50 dark:bg-zinc-950 border-l border-stone-200 dark:border-zinc-800 shadow-2xl z-10 flex flex-col h-full transform transition-transform">
+    <div class="p-5 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-9 h-9 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-500">
+          <svg class="w-5 h-5 fill-rose-500 text-rose-500" viewBox="0 0 24 24">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-base font-editorial font-bold text-zinc-900 dark:text-white">Lista de Deseos</h3>
+          <p class="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono">
+            {{ totalFavoritos }} prenda(s) guardada(s)
+          </p>
+        </div>
+      </div>
+
+      <button (click)="cerrarFavoritos()" 
+              class="w-8 h-8 rounded-full bg-stone-200/70 dark:bg-zinc-900 hover:bg-stone-300 dark:hover:bg-zinc-800 flex items-center justify-center text-zinc-500 dark:text-zinc-400 transition-colors cursor-pointer">
+        ✕
+      </button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-5 space-y-4">
+      <div *ngIf="totalFavoritos === 0" 
+           class="py-16 text-center space-y-4">
+        <div class="w-16 h-16 rounded-full bg-stone-200/50 dark:bg-zinc-900 border border-stone-300 dark:border-zinc-800 text-zinc-400 flex items-center justify-center mx-auto text-2xl">
+          🤍
+        </div>
+        <div class="space-y-1">
+          <h4 class="text-sm font-bold text-zinc-900 dark:text-white">Tu lista de deseos está vacía</h4>
+          <p class="text-xs text-zinc-500 dark:text-zinc-400 max-w-xs mx-auto">
+            Explora las colecciones y pulsa el corazón en cualquier prenda para guardarla y consultarla más tarde.
+          </p>
+        </div>
+        <a routerLink="/catalogo" [queryParams]="{ empresa: tenantContext.idEmpresaActual() }" (click)="cerrarFavoritos()" 
+           class="inline-block px-5 py-2.5 rounded-full text-white font-bold text-xs uppercase tracking-wider transition-colors shadow-sm"
+           [style.backgroundColor]="tenantContext.configStorefront().color_secundario">
+          Explorar Catálogo
+        </a>
+      </div>
+
+      <div *ngFor="let fav of listaFavoritos" 
+           (click)="verPrendaFavorita(fav)"
+           class="group p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 transition-all flex items-center gap-4 cursor-pointer shadow-sm">
+        <div class="w-16 h-20 rounded-xl overflow-hidden bg-stone-100 dark:bg-zinc-800 shrink-0">
+          <img [src]="fav.imagen_principal" [alt]="fav.nombre" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+        </div>
+        <div class="flex-1 min-w-0">
+          <span class="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold block">
+            {{ fav.categoria_nombre }}
+          </span>
+          <h4 class="text-sm font-bold text-zinc-900 dark:text-white truncate">
+            {{ fav.nombre }}
+          </h4>
+          <p class="text-xs font-bold text-zinc-700 dark:text-zinc-300 mt-1">
+            Bs. {{ fav.precio }}
+          </p>
+        </div>
+        <button type="button" 
+                (click)="quitarFavorito(fav.id_producto, $event)" 
+                class="w-8 h-8 rounded-full bg-stone-100 dark:bg-zinc-800 hover:bg-rose-500/15 text-zinc-400 hover:text-rose-500 flex items-center justify-center transition-colors shrink-0 cursor-pointer"
+                title="Quitar de favoritos">
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="totalFavoritos > 0" 
+         class="p-5 border-t border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 flex items-center justify-between gap-3">
+      <button type="button" 
+              (click)="vaciarFavoritos()" 
+              class="px-4 py-2.5 rounded-xl border border-stone-300 dark:border-zinc-700 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-rose-500 hover:border-rose-400 transition-colors cursor-pointer">
+        Vaciar lista
+      </button>
+      <a routerLink="/catalogo" 
+         [queryParams]="{ empresa: tenantContext.idEmpresaActual() }"
+         (click)="cerrarFavoritos()" 
+         class="flex-1 py-2.5 px-4 rounded-xl text-white font-bold text-xs text-center uppercase tracking-wider transition-colors shadow-sm"
+         [style.backgroundColor]="tenantContext.configStorefront().color_secundario">
+        Ir al Catálogo
+      </a>
+    </div>
+  </div>
+</div>

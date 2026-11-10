@@ -1,0 +1,84 @@
+<div class="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto min-h-screen bg-gray-50 dark:bg-slate-950">
+  
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 bg-white dark:bg-slate-900 p-5 rounded-md shadow-sm border border-gray-200 dark:border-slate-800">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Business Intelligence & KPIs</h1>
+      <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">Análisis predictivo e histórico basado en Data Warehousing.</p>
+    </div>
+    
+    <div class="flex items-center gap-3 w-full md:w-auto">
+      <button *ngIf="esAdministrador()" (click)="ejecutarETL()" [disabled]="procesandoETL" class="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm font-semibold transition-colors shadow-sm disabled:opacity-50">
+        <div *ngIf="procesandoETL" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        <svg *ngIf="!procesandoETL" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+        <span>{{ procesandoETL ? 'Extrayendo Datos...' : 'Ejecutar Cierre ETL' }}</span>
+      </button>
+
+      <button (click)="cargarDashboard()" [disabled]="cargando" class="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-[#0052cc] hover:bg-[#003d99] text-white rounded-md text-sm font-semibold transition-colors shadow-sm disabled:opacity-50">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M5.5 15.5A7.5 7.5 0 0118.3 7.7L20 9.4M18.5 8.5A7.5 7.5 0 015.7 16.3L4 14.6"></path></svg>
+        <span>Refrescar</span>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="mensajeEtl" class="mb-6 bg-emerald-50 text-emerald-700 border border-emerald-200 p-3 rounded-md text-sm font-semibold flex items-center gap-2 animate-fade-in-up">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+    {{ mensajeEtl }}
+  </div>
+
+  <div *ngIf="cargando" class="flex justify-center items-center py-12">
+    <div class="w-8 h-8 rounded-full border-4 border-gray-200 dark:border-slate-700 border-t-[#0052cc] animate-spin"></div>
+  </div>
+
+  <div *ngIf="!cargando && metricas" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+    
+    <div class="bg-white dark:bg-slate-900 p-5 rounded-md shadow-sm border border-gray-200 dark:border-slate-800 border-l-4 border-l-emerald-500">
+      <p class="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Ingresos Acumulados</p>
+      <h3 class="text-2xl font-black text-gray-900 dark:text-white">Bs. {{ metricas.tiempos_y_finanzas.ingresos_totales_historicos | number:'1.2-2' }}</h3>
+      <p class="text-[10px] text-emerald-600 mt-2 font-semibold">↑ Extraído del Data Warehouse</p>
+    </div>
+
+    <div class="bg-white dark:bg-slate-900 p-5 rounded-md shadow-sm border border-gray-200 dark:border-slate-800 border-l-4 border-l-blue-500">
+      <p class="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Promedio de Respuesta</p>
+      <h3 class="text-2xl font-black text-gray-900 dark:text-white">{{ metricas.tiempos_y_finanzas.promedio_respuesta_minutos }} <span class="text-sm font-medium text-gray-500">min</span></h3>
+      <p class="text-[10px] text-blue-600 mt-2 font-semibold">Tiempos de SLA calculados</p>
+    </div>
+
+    <div class="bg-white dark:bg-slate-900 p-5 rounded-md shadow-sm border border-gray-200 dark:border-slate-800 border-l-4 border-l-indigo-500">
+      <p class="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Transacciones Totales</p>
+      <h3 class="text-2xl font-black text-gray-900 dark:text-white">{{ metricas.total_casos_registrados }}</h3>
+      <p class="text-[10px] text-indigo-600 mt-2 font-semibold">Operaciones registradas</p>
+    </div>
+
+    <div class="bg-white dark:bg-slate-900 p-5 rounded-md shadow-sm border border-gray-200 dark:border-slate-800 border-l-4 border-l-red-500">
+      <p class="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Pedidos Cancelados</p>
+      <h3 class="text-2xl font-black text-gray-900 dark:text-white">{{ metricas.casos_cancelados_actuales }}</h3>
+      <p class="text-[10px] text-red-600 mt-2 font-semibold">Anulaciones y devoluciones</p>
+    </div>
+
+  </div>
+
+  <div *ngIf="!cargando && metricas" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    
+    <div class="bg-white dark:bg-slate-900 rounded-md shadow-sm border border-gray-200 dark:border-slate-800 p-5">
+      <h3 class="text-sm font-bold text-gray-800 dark:text-white uppercase mb-4 border-b border-gray-100 dark:border-slate-800 pb-2">Distribución de Eventos</h3>
+      <ul class="space-y-3">
+        <li *ngFor="let item of metricas.incidentes_por_tipo_historico" class="flex items-center justify-between">
+          <span class="text-sm text-gray-600 dark:text-slate-300 font-medium">{{ item.tipo }}</span>
+          <span class="bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-slate-200 text-xs font-bold px-2 py-1 rounded">{{ item.cantidad }} registros</span>
+        </li>
+        <li *ngIf="metricas.incidentes_por_tipo_historico.length === 0" class="text-xs text-gray-500 italic text-center py-4">No hay datos procesados por el ETL aún.</li>
+      </ul>
+    </div>
+
+    <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-md shadow-sm border border-slate-700 p-6 text-white flex flex-col justify-center">
+      <svg class="w-10 h-10 text-blue-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+      <h3 class="text-lg font-bold mb-2">Arquitectura OLAP y Vistas Analíticas</h3>
+      <p class="text-sm text-slate-300 mb-4 leading-relaxed">
+        Este dashboard consulta vistas analíticas y tablas consolidadas mediante sincronización continua, garantizando una latencia óptima y protegiendo el rendimiento de las operaciones transaccionales POS y E-commerce.
+      </p>
+      <p class="text-xs text-slate-400 font-mono">Vistas analíticas de AuroraStore verificadas.</p>
+    </div>
+
+  </div>
+
+</div>

@@ -1,0 +1,505 @@
+<div class="h-screen flex overflow-hidden bg-stone-100 dark:bg-slate-950 font-sans transition-colors duration-200 antialiased text-zinc-900 dark:text-slate-100">
+
+  <!-- Mobile Sidebar Overlay -->
+  <div *ngIf="sidebarAbierto"
+       (click)="cerrarSidebarMobile()"
+       class="fixed inset-0 z-40 bg-stone-900/40 dark:bg-slate-950/80 backdrop-blur-md md:hidden transition-opacity duration-300">
+  </div>
+
+  <!-- Sidebar Component -->
+  <aside
+    [ngClass]="sidebarColapsado ? 'w-72 md:w-20' : 'w-72'"
+    [class.-translate-x-full]="!sidebarAbierto"
+    [class.translate-x-0]="sidebarAbierto"
+    class="fixed md:relative inset-y-0 left-0 z-50 bg-white dark:bg-slate-950 border-r border-stone-200 dark:border-slate-800/80 transition-all duration-300 md:translate-x-0 flex flex-col h-full shadow-lg md:shadow-none overflow-hidden select-none">
+
+    <!-- Branding & Tenant Header -->
+    <div class="h-20 flex items-center justify-between border-b border-stone-200 dark:border-slate-800/80 shrink-0 px-5"
+         [ngClass]="sidebarColapsado ? 'md:justify-center md:px-0' : ''">
+
+      <div *ngIf="!sidebarColapsado || sidebarAbierto" class="flex items-center gap-3.5 min-w-0">
+        <div class="relative w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-700 flex items-center justify-center text-white font-black text-sm shadow-md shadow-indigo-500/25 ring-1 ring-white/20 shrink-0">
+          <span>{{ (scopeContext.sidebarTitle.substring(0, 1) || 'A').toUpperCase() }}</span>
+          <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white dark:border-slate-950 rounded-full"></span>
+        </div>
+        <div class="flex flex-col min-w-0">
+          <div class="flex items-center gap-1.5">
+            <span class="text-sm font-black tracking-wider text-zinc-900 dark:text-white uppercase truncate">{{ scopeContext.sidebarTitle }}</span>
+            <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded border" [ngClass]="scopeContext.badgeClass">
+              {{ scopeContext.badgeText }}
+            </span>
+          </div>
+          <span class="text-[10px] font-semibold text-zinc-500 dark:text-slate-400 truncate mt-0.5">
+            {{ scopeContext.sidebarSubtitle }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Icon in collapsed state -->
+      <div *ngIf="sidebarColapsado && !sidebarAbierto" class="hidden md:flex w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white items-center justify-center font-black text-sm shadow-md shadow-indigo-500/20 ring-1 ring-white/20">
+        {{ (scopeContext.sidebarTitle.substring(0, 1) || 'A').toUpperCase() }}
+      </div>
+
+      <button (click)="cerrarSidebarMobile()"
+              class="md:hidden p-2 text-zinc-500 hover:text-zinc-900 dark:text-slate-400 dark:hover:text-white rounded-lg hover:bg-stone-100 dark:hover:bg-slate-800/80 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="flex-1 overflow-y-auto py-5 px-3 space-y-6 scrollbar-thin">
+
+      <!-- Workspace Primary Entry Point -->
+      <div *ngIf="authService.hasPermission('reportes.ver') || authService.isGlobalAdmin() || authService.isStoreAdmin()">
+        <a routerLink="/admin/kpis"
+           (click)="cerrarSidebarMobile()"
+           [title]="sidebarColapsado ? 'Panel General' : ''"
+           routerLinkActive="bg-indigo-50 text-indigo-700 font-bold border-r-2 border-indigo-600 dark:bg-indigo-600/15 dark:text-indigo-300 dark:border-indigo-500 shadow-sm"
+           [routerLinkActiveOptions]="{exact: true}"
+           class="flex items-center py-2.5 px-3 text-xs font-medium text-zinc-600 hover:text-zinc-900 hover:bg-stone-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-900/80 rounded-xl transition-all group"
+           [ngClass]="sidebarColapsado ? 'gap-3 md:justify-center md:px-0 md:gap-0' : 'gap-3.5'">
+          <div class="w-7 h-7 rounded-lg bg-stone-100 group-hover:bg-indigo-100 text-zinc-500 group-hover:text-indigo-600 dark:bg-slate-900 dark:group-hover:bg-indigo-600/20 dark:text-slate-400 dark:group-hover:text-indigo-400 flex items-center justify-center transition-colors shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>
+          </div>
+          <span *ngIf="!sidebarColapsado || sidebarAbierto" class="truncate">
+            {{ scopeContext.scope === 'PLATAFORMA' ? 'Dashboard Global' : (scopeContext.scope === 'EMPRESA' ? 'Dashboard Empresa' : 'Dashboard Sucursal') }}
+          </span>
+        </a>
+      </div>
+
+      <!-- Quick Caja Entry for Cashier / Operators -->
+      <div *ngIf="authService.isCashier() || (!authService.hasPermission('reportes.ver') && authService.hasPermission('ventas.crear'))">
+        <a routerLink="/admin/caja"
+           (click)="cerrarSidebarMobile()"
+           [title]="sidebarColapsado ? 'Terminal de Caja' : ''"
+           routerLinkActive="bg-emerald-50 text-emerald-700 font-bold border-r-2 border-emerald-600 dark:bg-emerald-600/15 dark:text-emerald-300 dark:border-emerald-500 shadow-sm"
+           class="flex items-center py-2.5 px-3 text-xs font-medium text-zinc-600 hover:text-zinc-900 hover:bg-stone-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-900/80 rounded-xl transition-all group"
+           [ngClass]="sidebarColapsado ? 'gap-3 md:justify-center md:px-0 md:gap-0' : 'gap-3.5'">
+          <div class="w-7 h-7 rounded-lg bg-emerald-100 group-hover:bg-emerald-200 text-emerald-600 dark:bg-emerald-950/60 dark:group-hover:bg-emerald-900/60 dark:text-emerald-400 flex items-center justify-center transition-colors shrink-0">
+            <i class="ph ph-cash-register text-base font-bold"></i>
+          </div>
+          <span *ngIf="!sidebarColapsado || sidebarAbierto" class="truncate font-bold text-zinc-800 dark:text-zinc-100">Terminal POS / Caja</span>
+        </a>
+      </div>
+
+      <!-- Menu Categories -->
+      <div *ngFor="let modulo of menuFiltrado" class="space-y-1.5">
+        <button (click)="toggleAcordeon(modulo)"
+                [title]="sidebarColapsado ? modulo.titulo : ''"
+                class="w-full flex items-center py-2 px-3 text-left hover:bg-stone-100 dark:hover:bg-slate-900/60 rounded-xl transition-colors group focus:outline-none"
+                [ngClass]="sidebarColapsado ? 'md:justify-center md:px-0' : 'justify-between'">
+
+          <div class="flex items-center" [ngClass]="sidebarColapsado ? 'gap-3 md:gap-0' : 'gap-3'">
+            <div class="w-7 h-7 rounded-lg bg-stone-100 text-zinc-500 group-hover:text-indigo-600 dark:bg-slate-900/60 dark:text-slate-400 dark:group-hover:text-indigo-400 flex items-center justify-center transition-colors shrink-0">
+              <svg class="w-4 h-4 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="modulo.icono"/>
+              </svg>
+            </div>
+            <span *ngIf="!sidebarColapsado || sidebarAbierto"
+                  class="text-[11px] font-bold uppercase tracking-wider text-zinc-500 group-hover:text-zinc-800 dark:text-slate-400 dark:group-hover:text-slate-200 transition-colors truncate">
+              {{ modulo.titulo }}
+            </span>
+          </div>
+
+          <svg *ngIf="!sidebarColapsado || sidebarAbierto"
+               class="w-3.5 h-3.5 text-zinc-400 dark:text-slate-500 transition-transform duration-200"
+               [class.rotate-180]="modulo.expandido"
+               fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+
+        <div *ngIf="modulo.expandido && (!sidebarColapsado || sidebarAbierto)" class="ml-4 pl-3.5 border-l border-stone-200 dark:border-slate-800 space-y-1">
+          <a *ngFor="let sub of modulo.submenus"
+             [routerLink]="sub.ruta"
+             (click)="cerrarSidebarMobile()"
+             routerLinkActive="text-indigo-600 font-bold bg-indigo-50/70 dark:bg-indigo-600/10 dark:text-indigo-400"
+             class="flex items-center py-2 px-3 text-xs font-medium text-zinc-600 hover:text-zinc-900 hover:bg-stone-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-900/60 rounded-lg transition-colors">
+            <span class="truncate">{{ sub.nombre || sub.titulo }}</span>
+          </a>
+        </div>
+      </div>
+
+    </nav>
+
+    <!-- User Profile Footer Card in Sidebar -->
+    <div class="p-3 border-t border-stone-200 dark:border-slate-800/80 bg-stone-50 dark:bg-slate-900/50 shrink-0">
+      <div class="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-slate-950/60 border border-stone-200 dark:border-slate-800/60 shadow-sm"
+           [ngClass]="sidebarColapsado ? 'md:justify-center md:p-1.5' : ''">
+
+        <div class="flex items-center gap-2.5 min-w-0" *ngIf="!sidebarColapsado || sidebarAbierto">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-amber-500 to-indigo-600 p-[1px] shrink-0">
+            <div class="w-full h-full rounded-lg bg-white dark:bg-slate-950 flex items-center justify-center font-bold text-xs text-zinc-800 dark:text-indigo-300">
+              {{ (usuarioActual?.nombre || 'U').substring(0, 1).toUpperCase() }}
+            </div>
+          </div>
+          <div class="flex flex-col min-w-0">
+            <span class="text-xs font-bold text-zinc-900 dark:text-white truncate leading-snug">
+              {{ usuarioActual?.nombre || usuarioActual?.nombre_completo || 'Usuario' }}
+            </span>
+            <span class="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider truncate">
+              {{ usuarioActual?.nombre_rol || 'ADMIN' }}
+            </span>
+          </div>
+        </div>
+
+        <button (click)="cerrarSesion()"
+                title="Cerrar Sesión"
+                class="p-2 text-zinc-400 hover:text-rose-500 hover:bg-rose-50 dark:text-slate-400 dark:hover:text-rose-400 dark:hover:bg-slate-900 rounded-lg transition-colors shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Workspace Wrapper -->
+  <div class="flex-1 flex flex-col min-w-0 bg-stone-100/70 dark:bg-slate-900 overflow-hidden transition-colors duration-200">
+
+    <!-- Header / Topbar Command Strip -->
+    <header class="relative h-20 bg-white/90 dark:bg-slate-950/80 backdrop-blur-xl border-b border-stone-200 dark:border-slate-800/80 flex items-center justify-between px-6 z-10 shrink-0 transition-colors duration-200 shadow-sm">
+
+      <!-- Context Transition Progress Line -->
+      <div *ngIf="cargandoContexto" class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 via-violet-600 to-indigo-500 animate-pulse z-20"></div>
+
+      <!-- Left: Sidebar Toggle + Breadcrumb / Scope Context -->
+      <div class="flex items-center gap-3 min-w-0">
+        <button (click)="toggleSidebar()"
+                class="p-2.5 text-zinc-600 hover:text-zinc-900 dark:text-slate-400 dark:hover:text-white bg-stone-100 hover:bg-stone-200 dark:bg-slate-900/60 dark:hover:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-xl focus:outline-none transition-all shadow-sm">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+
+        <!-- Brand Context Badge -->
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="font-extrabold text-sm tracking-tight text-zinc-900 dark:text-white hidden sm:inline">Aurora Store</span>
+          <span class="hidden sm:inline text-zinc-400 dark:text-slate-600">•</span>
+          
+          <!-- Context Pill -->
+          <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-bold tracking-wide uppercase transition-all"
+               [ngClass]="scopeContext.badgeClass">
+            <span class="w-2 h-2 rounded-full"
+                  [ngClass]="{
+                    'bg-indigo-500': scopeContext.scope === 'PLATAFORMA',
+                    'bg-emerald-500': scopeContext.scope === 'EMPRESA',
+                    'bg-amber-500': scopeContext.scope === 'SUCURSAL'
+                  }"></span>
+            <span>{{ scopeContext.headerSubtitle }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Global Actions + Selectors + Status -->
+      <div class="flex items-center gap-2.5 sm:gap-3" *ngIf="usuarioActual">
+
+        <!-- =================================================================== -->
+        <!-- SELECTOR DE EMPRESA / TENANT                                        -->
+        <!-- =================================================================== -->
+        <!-- 1. Para ADMINISTRADOR GLOBAL (PLATAFORMA): Selector desplegable activo -->
+        <div class="relative" data-tenant-panel *ngIf="scopeContext.canSelectCompany">
+          <button (click)="toggleTenantDropdown()"
+                  data-tenant-panel
+                  class="flex items-center gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/70 dark:hover:bg-indigo-900/80 border border-indigo-200 dark:border-indigo-800 text-xs font-bold text-indigo-700 dark:text-indigo-300 transition-all shadow-sm focus:outline-none cursor-pointer">
+            <i class="ph ph-buildings text-base text-indigo-600 dark:text-indigo-400"></i>
+            <div class="flex flex-col text-left">
+              <span class="text-[9px] uppercase tracking-wider text-indigo-400 dark:text-indigo-500 font-extrabold leading-none">Empresa</span>
+              <span class="max-w-[110px] sm:max-w-[150px] truncate leading-tight mt-0.5">
+                {{ tiendaActiva ? tiendaActiva.nombre_empresa : 'Todas las Empresas' }}
+              </span>
+            </div>
+            <i class="ph ph-caret-down text-xs text-indigo-500"></i>
+          </button>
+
+          <!-- Dropdown de Empresas -->
+          <div *ngIf="mostrarTenantDropdown"
+               data-tenant-panel
+               class="absolute right-0 mt-2 w-72 sm:w-80 rounded-2xl bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 shadow-2xl p-2.5 z-50 animate-slide-up">
+            <div class="px-3 py-2 text-[10px] uppercase font-bold tracking-wider text-zinc-400 dark:text-zinc-500 border-b border-stone-100 dark:border-zinc-800/80 flex items-center justify-between mb-1.5">
+              <span>Seleccionar Empresa</span>
+              <span class="text-indigo-500 font-bold">{{ tenants.length }} Empresas</span>
+            </div>
+            
+            <!-- Opción: Todas las empresas (Global) -->
+            <button (click)="seleccionarTiendaGlobal(null)"
+                    [class.bg-indigo-50]="tiendaActiva === null"
+                    [class.dark:bg-indigo-950/60]="tiendaActiva === null"
+                    class="w-full text-left p-2.5 rounded-xl border border-transparent hover:bg-stone-100 dark:hover:bg-zinc-900 transition-all flex items-center justify-between text-xs cursor-pointer group mb-1">
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                  <i class="ph ph-globe text-sm"></i>
+                </div>
+                <div>
+                  <div class="font-bold text-zinc-900 dark:text-white">Todas las Empresas</div>
+                  <div class="text-[10px] text-zinc-500">Visión global consolidada</div>
+                </div>
+              </div>
+              <i *ngIf="tiendaActiva === null" class="ph ph-check text-indigo-600 font-bold"></i>
+            </button>
+
+            <!-- Lista de empresas individuales -->
+            <div class="max-h-56 overflow-y-auto space-y-1 scrollbar-thin">
+              <button *ngFor="let t of tenants"
+                      (click)="seleccionarTiendaGlobal(t)"
+                      [class.bg-indigo-50]="tiendaActiva?.id_empresa === t.id_empresa"
+                      [class.dark:bg-indigo-950/60]="tiendaActiva?.id_empresa === t.id_empresa"
+                      class="w-full text-left p-2.5 rounded-xl border border-transparent hover:bg-stone-100 dark:hover:bg-zinc-900 transition-all flex items-center justify-between text-xs cursor-pointer group">
+                <div class="min-w-0 pr-2">
+                  <div class="font-bold text-zinc-900 dark:text-white truncate group-hover:text-indigo-600">
+                    {{ t.nombre_empresa }}
+                  </div>
+                  <div class="text-[10px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 mt-0.5">
+                    <span>📍 {{ t.ciudad }}</span>
+                    <span>•</span>
+                    <span>{{ t.total_sucursales }} sucursales</span>
+                  </div>
+                </div>
+                <i *ngIf="tiendaActiva?.id_empresa === t.id_empresa" class="ph ph-check text-indigo-600 font-bold text-sm"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Para ROLES DE TIENDA (EMPRESA / SUCURSAL): Indicador estático (sin cambiar tenant) -->
+        <div *ngIf="!scopeContext.canSelectCompany"
+             class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-slate-900 border border-stone-200 dark:border-slate-800 text-xs font-semibold text-zinc-700 dark:text-slate-300">
+          <i class="ph ph-buildings text-emerald-500 text-sm"></i>
+          <span class="truncate max-w-[130px] md:max-w-[180px]">
+            {{ authService.getUserCompanyName() }}
+          </span>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- SELECTOR DE SUCURSAL                                                -->
+        <!-- =================================================================== -->
+        <!-- 1. Si el usuario puede alternar sucursales (PLATAFORMA o EMPRESA) -->
+        <div class="relative" data-branch-panel *ngIf="scopeContext.canSelectBranch">
+          <button (click)="toggleSucursalDropdown()"
+                  data-branch-panel
+                  class="flex items-center gap-2 px-3 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-slate-900/80 dark:hover:bg-slate-800 border border-stone-200 dark:border-slate-800 text-xs font-bold text-zinc-700 dark:text-slate-300 transition-all shadow-sm focus:outline-none cursor-pointer">
+            <i class="ph ph-map-pin text-amber-500 text-sm"></i>
+            <div class="flex flex-col text-left">
+              <span class="text-[9px] uppercase tracking-wider text-zinc-400 dark:text-slate-500 font-extrabold leading-none">Sucursal</span>
+              <span class="max-w-[100px] sm:max-w-[130px] truncate leading-tight mt-0.5 text-zinc-900 dark:text-white">
+                {{ sucursalActiva ? sucursalActiva.nombre : (scopeContext.scope === 'PLATAFORMA' ? 'Todas' : 'Todas las autorizadas') }}
+              </span>
+            </div>
+            <i class="ph ph-caret-down text-xs text-zinc-400"></i>
+          </button>
+
+          <!-- Dropdown de Sucursales -->
+          <div *ngIf="mostrarSucursalDropdown"
+               data-branch-panel
+               class="absolute right-0 mt-2 w-64 sm:w-72 rounded-2xl bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 shadow-2xl p-2.5 z-50 animate-slide-up">
+            <div class="px-3 py-2 text-[10px] uppercase font-bold tracking-wider text-zinc-400 dark:text-zinc-500 border-b border-stone-100 dark:border-zinc-800/80 flex items-center justify-between mb-1.5">
+              <span>Sucursales</span>
+              <span class="text-amber-500 font-bold">{{ sucursalesDisponibles.length }} Disponibles</span>
+            </div>
+
+            <button (click)="seleccionarSucursal(null)"
+                    [class.bg-amber-50]="sucursalActiva === null"
+                    [class.dark:bg-amber-950/40]="sucursalActiva === null"
+                    class="w-full text-left p-2 rounded-xl hover:bg-stone-100 dark:hover:bg-zinc-900 transition-all flex items-center justify-between text-xs cursor-pointer mb-1 font-semibold text-zinc-800 dark:text-zinc-200">
+              <span>{{ scopeContext.scope === 'PLATAFORMA' ? 'Todas las sucursales' : 'Todas las autorizadas' }}</span>
+              <i *ngIf="sucursalActiva === null" class="ph ph-check text-amber-500 font-bold"></i>
+            </button>
+
+            <div class="max-h-48 overflow-y-auto space-y-1 scrollbar-thin">
+              <button *ngFor="let s of sucursalesDisponibles"
+                      (click)="seleccionarSucursal(s)"
+                      [class.bg-amber-50]="sucursalActiva?.id === s.id"
+                      [class.dark:bg-amber-950/40]="sucursalActiva?.id === s.id"
+                      class="w-full text-left p-2 rounded-xl hover:bg-stone-100 dark:hover:bg-zinc-900 transition-all flex items-center justify-between text-xs cursor-pointer group">
+                <div class="truncate pr-2">
+                  <div class="font-medium text-zinc-900 dark:text-white truncate group-hover:text-amber-500">{{ s.nombre }}</div>
+                  <div class="text-[10px] text-zinc-400">{{ s.ciudad }}</div>
+                </div>
+                <i *ngIf="sucursalActiva?.id === s.id" class="ph ph-check text-amber-500 font-bold"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Si es Encargado / Cajero: Indicador estático de Sucursal fija -->
+        <div *ngIf="!scopeContext.canSelectBranch"
+             class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-slate-900 border border-stone-200 dark:border-slate-800 text-xs font-semibold text-zinc-700 dark:text-slate-300">
+          <i class="ph ph-map-pin text-amber-500 text-sm"></i>
+          <span class="truncate max-w-[120px]">
+            {{ authService.getUserBranchName() }}
+          </span>
+        </div>
+
+        <!-- Live Server Status Indicator (Fase F2) -->
+        <div class="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full border text-[11px] font-semibold transition-colors shadow-sm"
+             [ngClass]="{
+               'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60': networkStatus.isOnline(),
+               'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/60': !networkStatus.isOnline()
+             }"
+             [title]="networkStatus.isOnline() ? ('Conectado en línea' + (networkStatus.lastVerifiedAt() ? ' · ' + (networkStatus.lastVerifiedAt() | date:'HH:mm:ss') : '')) : 'Sin conexión con el backend'">
+          <span class="relative flex h-2 w-2">
+            <span *ngIf="networkStatus.isOnline()" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2" [ngClass]="networkStatus.isOnline() ? 'bg-emerald-500' : 'bg-amber-500'"></span>
+          </span>
+          <span>{{ networkStatus.isOnline() ? 'En Línea' : 'Sin Conexión' }}</span>
+        </div>
+
+        <!-- SaaS Plan & Validity Badge -->
+        <a *ngIf="planVigencia && authService.hasPermission('suscripciones.ver')"
+           routerLink="/admin/suscripciones"
+           class="hidden md:inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border shadow-sm group"
+           [ngClass]="planVigencia.vigente
+             ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:hover:bg-emerald-900/50 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+             : (planVigencia.estado === 'PENDIENTE_ACTIVACION'
+               ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:hover:bg-amber-900/50 dark:text-amber-300 border-amber-200 dark:border-amber-800'
+               : 'bg-rose-50 hover:bg-rose-100 text-rose-800 dark:bg-rose-950/50 dark:hover:bg-rose-900/50 dark:text-rose-300 border-rose-200 dark:border-rose-800')"
+           [title]="'Plan ' + (planVigencia.codigo_plan || 'Sin Plan') + ': ' + (planVigencia.vigente ? 'Vigente' : planVigencia.estado) + '. Sucursales: ' + (planVigencia.uso?.sucursales_activas || 0) + '/' + (planVigencia.limites.sucursales_activas || '—')">
+          <span class="w-2 h-2 rounded-full" [ngClass]="planVigencia.vigente ? 'bg-emerald-500' : (planVigencia.estado === 'PENDIENTE_ACTIVACION' ? 'bg-amber-500 animate-pulse' : 'bg-rose-500')"></span>
+          <span>{{ planVigencia.codigo_plan || (planVigencia.estado === 'PENDIENTE_ACTIVACION' ? 'Pago Pendiente' : 'Sin Plan') }}</span>
+          <span *ngIf="planVigencia.vigente" class="text-[10px] font-semibold opacity-75">({{ planVigencia.uso?.sucursales_activas ?? 0 }}/{{ planVigencia.limites.sucursales_activas ?? '—' }})</span>
+        </a>
+
+        <!-- Store Access Button -->
+        <a routerLink="/" 
+           class="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-slate-900 dark:hover:bg-slate-800 text-zinc-800 dark:text-slate-200 text-xs font-bold transition-all border border-stone-200 dark:border-slate-800 shadow-sm">
+          <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+          </svg>
+          <span>Tienda Retail</span>
+        </a>
+
+        <!-- Notifications Dropdown -->
+        <div class="relative" data-notif-panel>
+          <button (click)="toggleNotificaciones()"
+                  data-notif-panel
+                  class="p-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-slate-900/60 dark:hover:bg-slate-900 border border-stone-200 dark:border-slate-800 text-zinc-600 hover:text-zinc-900 dark:text-slate-400 dark:hover:text-white transition-all relative focus:outline-none shadow-sm">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+            </svg>
+            <span *ngIf="cantidadNoLeidas > 0" class="absolute top-2 right-2 flex h-2.5 w-2.5">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500"></span>
+            </span>
+          </button>
+
+          <!-- Notifications Popup Panel -->
+          <div *ngIf="mostrarNotificaciones"
+               class="absolute right-0 mt-3 w-80 sm:w-96 rounded-2xl bg-white dark:bg-slate-950 border border-stone-200 dark:border-slate-800 shadow-2xl z-50 overflow-hidden animate-slide-up">
+            <div class="p-4 border-b border-stone-200 dark:border-slate-800 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-zinc-900 dark:text-white uppercase tracking-wider">Notificaciones</span>
+                <span *ngIf="cantidadNoLeidas > 0" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500 text-white">
+                  {{ cantidadNoLeidas }} nuevas
+                </span>
+              </div>
+            </div>
+
+            <div class="max-h-80 overflow-y-auto divide-y divide-stone-100 dark:divide-slate-900 scrollbar-thin">
+              <div *ngIf="listaNotificaciones.length === 0" class="p-8 text-center">
+                <p class="text-xs font-semibold text-zinc-400 dark:text-slate-400">Sin notificaciones pendientes</p>
+              </div>
+
+              <div *ngFor="let noti of listaNotificaciones"
+                   (click)="leerNotificacion(noti)"
+                   class="flex gap-3 px-5 py-3.5 transition-colors cursor-pointer"
+                   [ngClass]="noti.leida
+                     ? 'bg-white hover:bg-stone-50 dark:bg-slate-950 dark:hover:bg-slate-900/60'
+                     : 'bg-indigo-50/50 hover:bg-indigo-50 dark:bg-indigo-950/20 dark:hover:bg-indigo-950/40'">
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs font-bold text-zinc-900 dark:text-white leading-tight">{{ noti.titulo }}</p>
+                  <p class="text-[11px] text-zinc-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed">{{ noti.cuerpo }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dark Mode Toggle Button -->
+        <button (click)="alternarModoOscuro()"
+                class="p-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-slate-900/60 dark:hover:bg-slate-900 border border-stone-200 dark:border-slate-800 text-amber-600 dark:text-amber-400 transition-all shadow-sm"
+                [title]="modoOscuro ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'">
+          <svg *ngIf="!modoOscuro" class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+          <svg *ngIf="modoOscuro" class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        </button>
+
+      </div>
+    </header>
+
+    <!-- Route Content Canvas -->
+    <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 w-full relative scrollbar-thin">
+      <!-- Banner de Activación / Pago Pendiente SaaS -->
+      <div *ngIf="planVigencia?.estado === 'PENDIENTE_ACTIVACION' || planVigencia?.solicitud_contratacion?.estado_contratacion === 'PENDIENTE_PAGO'"
+           role="alert"
+           class="mb-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-950 dark:text-amber-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm animate-fadeIn">
+        <div class="flex items-start sm:items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <div>
+            <p class="font-bold text-amber-900 dark:text-amber-100 text-sm">
+              Tienda en espera de activación por pago (Plan {{ planVigencia?.solicitud_contratacion?.nombre_plan || planVigencia?.codigo_plan || 'SaaS' }})
+            </p>
+            <p class="text-[11px] text-amber-700/90 dark:text-amber-300/80 mt-0.5">
+              Tu contratación está pendiente de confirmación de pago (Código: <span class="font-mono font-bold">{{ planVigencia?.solicitud_contratacion?.codigo_seguimiento }}</span>). Completa el pago para activar tus operaciones comerciales y POS.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <a *ngIf="planVigencia?.solicitud_contratacion?.codigo_seguimiento"
+             [routerLink]="['/saas/contratacion', planVigencia!.solicitud_contratacion!.codigo_seguimiento]"
+             class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm">
+            Completar Pago Ahora →
+          </a>
+          <a routerLink="/admin/suscripciones"
+             class="px-3 py-2 bg-white/80 dark:bg-slate-900/80 hover:bg-white text-zinc-700 dark:text-slate-200 rounded-xl text-xs font-semibold border border-amber-200 dark:border-amber-800 transition-all">
+            Ver Suscripción
+          </a>
+        </div>
+      </div>
+
+      <!-- Banner informativo no invasivo cuando se pierde conexión (Fase F2) -->
+      <div *ngIf="!networkStatus.isOnline()"
+           role="status"
+           aria-live="polite"
+           class="mb-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+        <div class="flex items-start sm:items-center gap-3">
+          <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 text-base">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 010 12.728M5.636 5.636a9 9 0 000 12.728M12 9v4m0 4h.01" />
+            </svg>
+          </div>
+          <div class="space-y-0.5">
+            <p class="font-bold flex items-center gap-1.5">
+              <span *ngIf="esModuloSoloOnline()">Este módulo requiere conexión</span>
+              <span *ngIf="!esModuloSoloOnline()">Panel Administrativo en Modo Consulta Offline</span>
+              <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/20 border border-amber-400/30">Sesión Activa</span>
+            </p>
+            <p class="text-[11px] opacity-90">
+              <span *ngIf="esModuloSoloOnline()">
+                La gestión administrativa de esta sección requiere conexión activa con el servidor. Tu sesión no ha expirado y tus permisos se mantienen intactos.
+              </span>
+              <span *ngIf="!esModuloSoloOnline()">
+                No se detecta conexión con el servidor. Tu sesión se mantiene activa y segura. Las operaciones de modificación o confirmación en tiempo real requieren internet.
+              </span>
+            </p>
+          </div>
+        </div>
+        <button type="button"
+                (click)="networkStatus.verifyApiConnectivity(true)"
+                class="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 font-semibold shrink-0 transition cursor-pointer self-start sm:self-auto text-amber-900 dark:text-amber-100">
+          Reintentar conexión
+        </button>
+      </div>
+
+      <router-outlet></router-outlet>
+    </main>
+
+  </div>
+</div>

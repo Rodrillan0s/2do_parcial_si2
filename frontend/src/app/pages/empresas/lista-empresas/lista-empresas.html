@@ -1,0 +1,378 @@
+<div class="min-h-full space-y-8 antialiased text-zinc-900 dark:text-zinc-100">
+  
+  <!-- Header / Workspace Context Banner -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white dark:bg-zinc-950/90 p-8 rounded-3xl border border-stone-200 dark:border-zinc-800 shadow-sm dark:shadow-2xl backdrop-blur-xl relative overflow-hidden transition-colors duration-200">
+    <!-- Subtle Gradient Glow in Background -->
+    <div class="absolute -top-16 -right-16 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="space-y-2 relative z-10">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-[10px] font-bold uppercase tracking-widest">
+        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-amber-400 animate-pulse"></span>
+        Arquitectura Multi-Tenant • Aurora Store
+      </div>
+
+      <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 dark:text-white flex items-center gap-3">
+        <span>Gestión de Tiendas & Empresas</span>
+        <span class="text-xs px-2.5 py-0.5 rounded-full font-mono bg-stone-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-stone-200 dark:border-zinc-700">Tenants</span>
+      </h1>
+      <p class="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 max-w-2xl leading-relaxed">
+        Plataforma SaaS Aurora Store. Registra y administra las cadenas de tiendas o empresas matrices que operan con sus propias sucursales, inventarios y catálogos independientes.
+      </p>
+    </div>
+
+    <!-- Primary Action Button (SuperAdmin) -->
+    <div class="relative z-10 shrink-0">
+      <button *ngIf="esSuperAdmin" (click)="abrirModalNuevo()" 
+              class="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:scale-[0.98] text-zinc-950 text-xs font-black rounded-2xl shadow-lg shadow-amber-500/20 transition-all ring-1 ring-amber-400/40 focus:outline-none cursor-pointer">
+        <i class="ph ph-plus-circle text-base"></i>
+        <span>Registrar Tienda / Empresa</span>
+      </button>
+      <div *ngIf="!esSuperAdmin" class="text-right text-[11px] text-zinc-500 italic">
+        <i class="ph ph-lock mr-1"></i>Solo SuperAdministrador puede registrar nuevas empresas
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Notification Banner -->
+  <div *ngIf="mensajeExito" class="p-4 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-500/40 rounded-2xl text-xs sm:text-sm font-semibold text-emerald-800 dark:text-emerald-300 flex items-center justify-between gap-3 shadow-sm dark:shadow-lg dark:shadow-emerald-950/50 animate-fade-in backdrop-blur-md">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+        <i class="ph ph-check-circle text-lg"></i>
+      </div>
+      <span>{{ mensajeExito }}</span>
+    </div>
+    <button (click)="mensajeExito = ''" class="text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-200 text-xs px-2 py-1 cursor-pointer">✕</button>
+  </div>
+
+  <!-- Error Banner -->
+  <div *ngIf="mensajeError" class="p-5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 rounded-2xl text-xs sm:text-sm font-semibold text-rose-800 dark:text-rose-300 flex items-center gap-3 backdrop-blur-md shadow-sm">
+    <i class="ph ph-warning-circle text-lg text-rose-500 dark:text-rose-400 shrink-0"></i>
+    <span>{{ mensajeError }}</span>
+  </div>
+
+  <!-- Metric Strip -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+    <div class="bg-white dark:bg-zinc-950/80 p-6 rounded-3xl border border-stone-200 dark:border-zinc-800 shadow-sm dark:shadow-xl flex items-center justify-between group hover:border-amber-500/40 transition-all">
+      <div class="space-y-1">
+        <p class="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Total Empresas / Tenants</p>
+        <p class="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ totalEmpresas }}</p>
+        <p class="text-[11px] font-medium text-amber-600 dark:text-amber-400/80 mt-1">Cadenas comerciales globales</p>
+      </div>
+      <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+        <i class="ph ph-buildings text-2xl"></i>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-zinc-950/80 p-6 rounded-3xl border border-stone-200 dark:border-zinc-800 shadow-sm dark:shadow-xl flex items-center justify-between group hover:border-emerald-500/40 transition-all">
+      <div class="space-y-1">
+        <p class="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Tenants Activos</p>
+        <p class="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ empresasActivas }}</p>
+        <p class="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 mt-1">Habilitados para operar</p>
+      </div>
+      <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+        <i class="ph ph-check-square-offset text-2xl"></i>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-zinc-950/80 p-6 rounded-3xl border border-stone-200 dark:border-zinc-800 shadow-sm dark:shadow-xl flex items-center justify-between group hover:border-zinc-400 dark:hover:border-zinc-700 transition-all">
+      <div class="space-y-1">
+        <p class="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Tenants Inactivos</p>
+        <p class="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ empresasInactivas }}</p>
+        <p class="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 mt-1">Suscripción o acceso suspendido</p>
+      </div>
+      <div class="w-12 h-12 rounded-2xl bg-stone-100 dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 flex items-center justify-center shrink-0">
+        <i class="ph ph-prohibit text-2xl"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & Search Toolbar -->
+  <div class="bg-white dark:bg-zinc-950/90 p-5 rounded-3xl border border-stone-200 dark:border-zinc-800 shadow-sm dark:shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 backdrop-blur-xl transition-colors">
+    <!-- Search Bar -->
+    <div class="relative w-full sm:w-96">
+      <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 text-base pointer-events-none"></i>
+      <input type="text" [(ngModel)]="filtroBusqueda" (input)="aplicarFiltros()"
+             placeholder="Buscar por nombre, razón social, NIT o ciudad..."
+             class="w-full bg-stone-50 dark:bg-zinc-900/80 border border-stone-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 text-xs font-medium rounded-2xl pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all">
+    </div>
+
+    <!-- Estado Filter -->
+    <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+      <span class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Estado:</span>
+      <select [(ngModel)]="filtroEstado" (change)="aplicarFiltros()"
+              class="bg-stone-50 dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-200 text-xs font-bold rounded-2xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all cursor-pointer">
+        <option value="">Todas las Tiendas</option>
+        <option value="ACTIVO">ACTIVO</option>
+        <option value="INACTIVO">INACTIVO</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Empresas & Tenants Table -->
+  <div class="bg-white dark:bg-zinc-950/90 border border-stone-200 dark:border-zinc-800 rounded-3xl shadow-sm dark:shadow-2xl overflow-hidden backdrop-blur-xl transition-colors">
+    <div *ngIf="cargando && !mostrarModal" class="p-8 space-y-4">
+      <div *ngFor="let i of [1,2,3]" class="animate-pulse flex items-center justify-between py-4 border-b border-stone-200 dark:border-zinc-900">
+        <div class="w-48 h-4 bg-stone-200 dark:bg-zinc-900 rounded"></div>
+        <div class="w-28 h-4 bg-stone-200 dark:bg-zinc-900 rounded"></div>
+        <div class="w-20 h-4 bg-stone-200 dark:bg-zinc-900 rounded"></div>
+      </div>
+    </div>
+
+    <div *ngIf="!cargando || mostrarModal" class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-stone-50/80 dark:bg-zinc-900/80 border-b border-stone-200 dark:border-zinc-800 text-[11px] font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-400">
+            <th class="py-4 px-6">Empresa / Tienda (Tenant)</th>
+            <th class="py-4 px-6">Identificación Fiscal (NIT)</th>
+            <th class="py-4 px-6">Ubicación Fiscal</th>
+            <th class="py-4 px-6">Contacto Directo</th>
+            <th class="py-4 px-6 text-center">Estado</th>
+            <th class="py-4 px-6 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-stone-100 dark:divide-zinc-900 text-xs">
+          <tr *ngFor="let e of empresasFiltradas" class="hover:bg-stone-50/80 dark:hover:bg-zinc-900/50 transition-colors group">
+            
+            <!-- Tenant Name & Logo/Initials -->
+            <td class="py-4 px-6">
+              <div class="flex items-center gap-3.5">
+                <div *ngIf="e.logo" class="w-11 h-11 rounded-2xl bg-stone-100 dark:bg-zinc-900 border border-amber-500/30 overflow-hidden flex items-center justify-center shrink-0 shadow-inner">
+                  <img [src]="e.logo" alt="{{ e.nombre_empresa }}" class="w-full h-full object-cover">
+                </div>
+                <div *ngIf="!e.logo" class="w-11 h-11 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 font-black text-xs flex items-center justify-center shrink-0 shadow-inner">
+                  {{ obtenerIniciales(e.nombre_empresa) }}
+                </div>
+                <div>
+                  <p class="font-bold text-zinc-900 dark:text-white text-sm group-hover:text-amber-600 dark:group-hover:text-amber-300 transition-colors">{{ e.nombre_empresa }}</p>
+                  <p class="text-[11px] text-zinc-500 dark:text-zinc-400">{{ e.razon_social || e.nombre_empresa }}</p>
+                  <p class="text-[10px] text-zinc-400 dark:text-zinc-600 font-mono mt-0.5">Tenant ID: #{{ e.id_empresa }}</p>
+                </div>
+              </div>
+            </td>
+
+            <!-- NIT -->
+            <td class="py-4 px-6 font-mono font-medium text-zinc-700 dark:text-zinc-200">
+              <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 text-amber-700 dark:text-amber-400 font-mono text-xs">
+                <i class="ph ph-identification-card text-zinc-400"></i>
+                <span>{{ e.nit || 'Sin NIT' }}</span>
+              </div>
+            </td>
+
+            <!-- Ubicacion -->
+            <td class="py-4 px-6 text-zinc-600 dark:text-zinc-300">
+              <div class="flex flex-col gap-0.5">
+                <span class="font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
+                  <i class="ph ph-map-pin text-amber-600 dark:text-amber-400"></i>
+                  {{ e.ciudad || 'No especificada' }}
+                </span>
+                <span class="text-[11px] text-zinc-500 dark:text-zinc-400 truncate max-w-xs" [title]="e.direccion_fiscal">
+                  {{ e.direccion_fiscal || 'Sin dirección registrada' }}
+                </span>
+              </div>
+            </td>
+
+            <!-- Contacto -->
+            <td class="py-4 px-6 text-zinc-600 dark:text-zinc-300">
+              <div class="flex flex-col gap-1 text-[11px]">
+                <div *ngIf="e.correo" class="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300 hover:text-amber-600 dark:hover:text-amber-300 transition-colors">
+                  <i class="ph ph-envelope text-zinc-400 dark:text-zinc-500"></i>
+                  <span>{{ e.correo }}</span>
+                </div>
+                <div *ngIf="e.telefono" class="flex items-center gap-1.5 text-zinc-400">
+                  <i class="ph ph-phone text-zinc-500"></i>
+                  <span>{{ e.telefono }}</span>
+                </div>
+                <span *ngIf="!e.correo && !e.telefono" class="text-zinc-500 italic">Sin datos de contacto</span>
+              </div>
+            </td>
+
+            <!-- Estado -->
+            <td class="py-4 px-6 text-center">
+              <span *ngIf="e.estado === 'ACTIVO'" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Activo
+              </span>
+              <span *ngIf="e.estado !== 'ACTIVO'" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-zinc-900 text-zinc-400 border border-zinc-800">
+                <span class="w-1.5 h-1.5 rounded-full bg-zinc-500"></span> Inactivo
+              </span>
+            </td>
+
+            <!-- Acciones -->
+            <td class="py-4 px-6 text-right">
+              <div *ngIf="esSuperAdmin" class="flex items-center justify-end gap-1.5">
+                <a [routerLink]="['/admin/suscripciones']" [queryParams]="{ empresa: e.id_empresa }"
+                   title="Gestionar Suscripción y Límites SaaS"
+                   class="p-2 text-zinc-400 hover:text-indigo-400 hover:bg-indigo-950/40 border border-transparent hover:border-indigo-800/40 rounded-xl transition-all cursor-pointer">
+                  <i class="ph ph-shield-check text-base"></i>
+                </a>
+                <button (click)="abrirModalEditar(e)" title="Editar Empresa" class="p-2 text-zinc-400 hover:text-amber-300 hover:bg-zinc-900 border border-transparent hover:border-zinc-800 rounded-xl transition-all cursor-pointer">
+                  <i class="ph ph-pencil-simple text-base"></i>
+                </button>
+                <button (click)="eliminarEmpresa(e.id_empresa, e.nombre_empresa)" title="Desactivar Empresa" class="p-2 text-zinc-400 hover:text-rose-400 hover:bg-rose-950/40 border border-transparent hover:border-rose-800/40 rounded-xl transition-all cursor-pointer">
+                  <i class="ph ph-power text-base"></i>
+                </button>
+              </div>
+              <span *ngIf="!esSuperAdmin" class="text-[11px] text-zinc-600 italic">Solo lectura</span>
+            </td>
+          </tr>
+          <tr *ngIf="empresasFiltradas.length === 0">
+            <td colspan="6" class="py-16 text-center text-zinc-500">
+              <div class="flex flex-col items-center justify-center gap-3">
+                <i class="ph ph-buildings text-4xl text-zinc-700"></i>
+                <p class="text-sm font-semibold">No se encontraron tiendas o empresas registradas</p>
+                <p class="text-xs text-zinc-600">Intenta con otros filtros o registra una nueva empresa.</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal Form: Registrar / Editar Tienda / Empresa (Tenant) -->
+<div *ngIf="mostrarModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/85 backdrop-blur-md transition-all overflow-y-auto">
+  <div class="bg-zinc-950 border border-zinc-800 rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden ring-1 ring-amber-500/20 my-8">
+    
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center px-8 py-6 border-b border-zinc-800 bg-zinc-900/60">
+      <div class="space-y-1">
+        <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold uppercase tracking-widest">
+          {{ modoEdicion ? 'Actualización' : 'Nuevo Tenant' }}
+        </div>
+        <h3 class="text-lg font-black text-white">
+          <span *ngIf="modoEdicion">Editar Tienda / Empresa <span class="text-amber-400 font-mono text-sm">#{{ empresaForm.id_empresa }}</span></span>
+          <span *ngIf="!modoEdicion">Registrar Tienda / Empresa (Tenant)</span>
+        </h3>
+        <p class="text-xs text-zinc-400">
+          La tienda registrada actuará como entidad matriz (Tenant) para sus sucursales, usuarios y catálogo.
+        </p>
+      </div>
+      <button (click)="cerrarModal()" class="p-2 text-zinc-400 hover:text-white rounded-xl hover:bg-zinc-900 transition-colors cursor-pointer">
+        <i class="ph ph-x text-lg"></i>
+      </button>
+    </div>
+
+    <!-- Modal Form Body -->
+    <div class="p-8 max-h-[75vh] overflow-y-auto space-y-6">
+      
+      <!-- Error Message inside Modal -->
+      <div *ngIf="mensajeModalError" class="p-4 bg-rose-950/50 border border-rose-800/60 rounded-2xl text-xs font-semibold text-rose-300 flex items-center gap-3">
+        <i class="ph ph-warning-circle text-lg text-rose-400 shrink-0"></i>
+        <span>{{ mensajeModalError }}</span>
+      </div>
+
+      <form #form="ngForm" class="space-y-5 text-xs">
+        
+        <!-- Grid 2 Columnas -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <!-- Nombre Comercial * -->
+          <div>
+            <label class="block font-bold text-zinc-300 mb-1.5 flex items-center justify-between">
+              <span>Nombre Comercial *</span>
+              <span class="text-[10px] font-normal text-amber-400">Obligatorio</span>
+            </label>
+            <input type="text" name="nombre_empresa" [(ngModel)]="empresaForm.nombre_empresa" required placeholder="Ej. AURORA FASHION STORE"
+                   class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-white placeholder-zinc-600 focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all uppercase">
+          </div>
+
+          <!-- Razón Social * -->
+          <div>
+            <label class="block font-bold text-zinc-300 mb-1.5 flex items-center justify-between">
+              <span>Razón Social *</span>
+              <span class="text-[10px] font-normal text-amber-400">Obligatorio</span>
+            </label>
+            <input type="text" name="razon_social" [(ngModel)]="empresaForm.razon_social" required placeholder="Ej. AURORA STORE S.R.L."
+                   class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-white placeholder-zinc-600 focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all uppercase">
+          </div>
+
+          <!-- NIT * -->
+          <div>
+            <label class="block font-bold text-zinc-300 mb-1.5 flex items-center justify-between">
+              <span>NIT / Identificación Fiscal *</span>
+              <span class="text-[10px] font-normal text-amber-400">Único</span>
+            </label>
+            <input type="text" name="nit" [(ngModel)]="empresaForm.nit" required placeholder="Ej. 1029384029"
+                   class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-white font-mono placeholder-zinc-600 focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all">
+          </div>
+
+          <!-- Ciudad * -->
+          <div>
+            <label class="block font-bold text-zinc-300 mb-1.5 flex items-center justify-between">
+              <span>Ciudad *</span>
+              <span class="text-[10px] font-normal text-amber-400">Obligatorio</span>
+            </label>
+            <input type="text" name="ciudad" [(ngModel)]="empresaForm.ciudad" required placeholder="Ej. Santa Cruz, La Paz, Cochabamba"
+                   class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-white placeholder-zinc-600 focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all">
+          </div>
+
+          <!-- Correo Empresarial * -->
+          <div>
+            <label class="block font-bold text-zinc-300 mb-1.5 flex items-center justify-between">
+              <span>Correo Empresarial *</span>
+              <span class="text-[10px] font-normal text-amber-400">Obligatorio</span>
+            </label>
+            <input type="email" name="correo" [(ngModel)]="empresaForm.correo" required placeholder="contacto@empresa.com"
+                   class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-white lowercase placeholder-zinc-600 focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all">
+          </div>
+
+          <!-- Teléfono * -->
+          <div>
+            <label class="block font-bold text-zinc-300 mb-1.5 flex items-center justify-between">
+              <span>Teléfono de Contacto *</span>
+              <span class="text-[10px] font-normal text-amber-400">Obligatorio</span>
+            </label>
+            <input type="text" name="telefono" [(ngModel)]="empresaForm.telefono" required placeholder="Ej. +591 3 3445566 o 77012345"
+                   class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-white placeholder-zinc-600 focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all">
+          </div>
+
+        </div>
+
+        <!-- Dirección Fiscal * (Full width) -->
+        <div>
+          <label class="block font-bold text-zinc-300 mb-1.5 flex items-center justify-between">
+            <span>Dirección Fiscal *</span>
+            <span class="text-[10px] font-normal text-amber-400">Obligatorio</span>
+          </label>
+          <input type="text" name="direccion_fiscal" [(ngModel)]="empresaForm.direccion_fiscal" required placeholder="Ej. Av. San Martín #450, Equipetrol Norte"
+                 class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-white placeholder-zinc-600 focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all">
+        </div>
+
+        <!-- Logo URL & Estado (Grid 2 cols) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-bold text-zinc-300 mb-1.5">URL del Logo (Opcional)</label>
+            <input type="url" name="logo" [(ngModel)]="empresaForm.logo" placeholder="https://ejemplo.com/logo.png"
+                   class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-white placeholder-zinc-600 focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all">
+          </div>
+
+          <div>
+            <label class="block font-bold text-zinc-300 mb-1.5">Estado Inicial / Operación</label>
+            <select name="estado" [(ngModel)]="empresaForm.estado" required
+                    class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-white focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all cursor-pointer">
+              <option value="ACTIVO">ACTIVO (Recomendado)</option>
+              <option value="INACTIVO">INACTIVO</option>
+            </select>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="px-8 py-5 border-t border-zinc-800 bg-zinc-900/60 flex items-center justify-end gap-3">
+      <button type="button" (click)="cerrarModal()" 
+              class="px-5 py-2.5 text-xs font-bold text-zinc-300 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl transition-all cursor-pointer">
+        Cancelar
+      </button>
+      <button type="button" (click)="guardarEmpresa()" [disabled]="form.invalid || guardando"
+              class="px-6 py-2.5 text-xs font-black text-zinc-950 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 rounded-xl transition-all disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-amber-500/20 ring-1 ring-amber-400/40 cursor-pointer">
+        <span *ngIf="guardando" class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-zinc-950 border-r-transparent"></span>
+        <i *ngIf="!guardando" class="ph ph-check text-base"></i>
+        {{ modoEdicion ? 'Actualizar Tenant' : 'Registrar Tenant' }}
+      </button>
+    </div>
+    
+  </div>
+</div>

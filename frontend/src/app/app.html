@@ -1,0 +1,21 @@
+<div class="min-h-screen flex flex-col bg-stone-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 selection:bg-amber-500 selection:text-black transition-colors duration-200">
+  <!-- Global PWA Connectivity & Sync Operations Bar (CU37W / CU38W / CU39W) -->
+  <app-pwa-status-bar></app-pwa-status-bar>
+
+  <app-navbar *ngIf="!esRutaAdmin"></app-navbar>
+  
+  <main class="flex-grow flex flex-col min-h-0">
+    <router-outlet></router-outlet>
+  </main>
+  
+  <app-footer *ngIf="!esRutaAdmin"></app-footer>
+
+  <!-- Global Integrated Auth Modal Overlay -->
+  <app-auth-modal></app-auth-modal>
+
+  <!-- Global Shopping Cart Drawer Overlay -->
+  <app-carrito-drawer></app-carrito-drawer>
+
+  <!-- Global Floating AI Assistant Bubble (W13) -->
+  <app-assistant-floating></app-assistant-floating>
+</div>

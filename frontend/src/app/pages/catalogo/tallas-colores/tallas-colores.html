@@ -1,0 +1,644 @@
+<div class="space-y-6 animate-fade-in text-zinc-100">
+
+  <!-- CABECERA PRINCIPAL -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800/80 pb-6">
+    <div>
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight text-zinc-100">
+            Tallas y Colores
+          </h1>
+          <p class="text-sm text-zinc-400 mt-0.5">
+            Catálogos independientes de tallas y gama cromática para variantes de prendas del Tenant actual.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botón Dinámico según Tab -->
+    <div class="flex items-center gap-3">
+      <button 
+        *ngIf="tabActivo === 'TALLAS'"
+        (click)="abrirModalCrearTalla()"
+        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-semibold shadow-lg shadow-amber-500/20 transition-all duration-200 active:scale-95 text-sm cursor-pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4"/>
+        </svg>
+        <span>Nueva Talla</span>
+      </button>
+
+      <button 
+        *ngIf="tabActivo === 'COLORES'"
+        (click)="abrirModalCrearColor()"
+        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-semibold shadow-lg shadow-amber-500/20 transition-all duration-200 active:scale-95 text-sm cursor-pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4"/>
+        </svg>
+        <span>Nuevo Color</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- NAVEGACIÓN POR PESTAÑAS (TALLAS / COLORES) -->
+  <div class="flex items-center gap-2 border-b border-zinc-800 pb-2">
+    <button 
+      (click)="cambiarTab('TALLAS')"
+      class="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer"
+      [ngClass]="tabActivo === 'TALLAS' ? 'bg-amber-500 text-zinc-950 shadow-md shadow-amber-500/20 font-bold' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l4-2 4 2 4-2 4 2z" />
+      </svg>
+      <span>Tallas</span>
+      <span class="px-2 py-0.5 rounded-full text-xs" [ngClass]="tabActivo === 'TALLAS' ? 'bg-zinc-950 text-amber-400' : 'bg-zinc-800 text-zinc-400'">
+        {{ totalTallas }}
+      </span>
+    </button>
+
+    <button 
+      (click)="cambiarTab('COLORES')"
+      class="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer"
+      [ngClass]="tabActivo === 'COLORES' ? 'bg-amber-500 text-zinc-950 shadow-md shadow-amber-500/20 font-bold' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+      </svg>
+      <span>Colores</span>
+      <span class="px-2 py-0.5 rounded-full text-xs" [ngClass]="tabActivo === 'COLORES' ? 'bg-zinc-950 text-amber-400' : 'bg-zinc-800 text-zinc-400'">
+        {{ totalColores }}
+      </span>
+    </button>
+  </div>
+
+  <!-- ALERTAS -->
+  <div *ngIf="mensajeExito" class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-between text-sm animate-fade-in shadow-lg shadow-emerald-950/40">
+    <div class="flex items-center gap-3">
+      <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span>{{ mensajeExito }}</span>
+    </div>
+    <button (click)="mensajeExito = ''" class="text-emerald-400/60 hover:text-emerald-300">✕</button>
+  </div>
+
+  <div *ngIf="mensajeError" class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-center justify-between text-sm animate-fade-in shadow-lg shadow-rose-950/40">
+    <div class="flex items-center gap-3">
+      <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span>{{ mensajeError }}</span>
+    </div>
+    <button (click)="mensajeError = ''" class="text-rose-400/60 hover:text-rose-300">✕</button>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- SECCIÓN 1: PESTAÑA TALLAS -->
+  <!-- ======================================================================= -->
+  <div *ngIf="tabActivo === 'TALLAS'" class="space-y-6 animate-fade-in">
+    
+    <!-- Métricas Tallas -->
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div class="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-stone-200 dark:border-zinc-800/80 shadow-sm backdrop-blur-sm">
+        <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">Total Tallas</span>
+        <p class="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mt-1">{{ totalTallas }}</p>
+        <span class="text-xs text-zinc-500">Cortes y talles de prendas de mujer</span>
+      </div>
+      <div class="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-stone-200 dark:border-zinc-800/80 shadow-sm backdrop-blur-sm">
+        <span class="text-xs font-medium text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">Tallas Activas</span>
+        <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">{{ tallasActivas }}</p>
+        <span class="text-xs text-zinc-500">Disponibles para variantes de productos</span>
+      </div>
+      <div class="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-stone-200 dark:border-zinc-800/80 shadow-sm backdrop-blur-sm">
+        <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">Inactivas</span>
+        <p class="text-2xl font-bold text-zinc-700 dark:text-zinc-400 mt-1">{{ totalTallas - tallasActivas }}</p>
+        <span class="text-xs text-zinc-500">Ocultas al registrar productos</span>
+      </div>
+    </div>
+
+    <!-- Barra de Filtros Tallas -->
+    <div class="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-stone-200 dark:border-zinc-800/80 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+      <div class="relative flex-1">
+        <input 
+          type="text" 
+          [(ngModel)]="filtroBusquedaTallas" 
+          (input)="onBusquedaTallasInput()"
+          placeholder="Buscar talla por nombre o descripción (ej. XS, 38, Busto)..."
+          class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-stone-50 dark:bg-zinc-950/80 border border-stone-200 dark:border-zinc-800 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-amber-500/50">
+        <svg class="w-4 h-4 text-zinc-400 dark:text-zinc-500 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+
+      <div class="flex items-center gap-2.5">
+        <select 
+          *ngIf="esSuperAdmin && empresas.length > 0"
+          [(ngModel)]="filtroEmpresaId"
+          (change)="onFiltroEmpresaChange()"
+          class="px-3 py-2.5 rounded-xl bg-stone-50 dark:bg-zinc-950/80 border border-stone-200 dark:border-zinc-800 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500/50 cursor-pointer">
+          <option [ngValue]="0">🏢 Todos los Tenants</option>
+          <option *ngFor="let emp of empresas" [ngValue]="emp.id_empresa">
+            🏢 {{ emp.nombre_empresa }}
+          </option>
+        </select>
+
+        <select 
+          [(ngModel)]="filtroEstadoTallas" 
+          (change)="aplicarFiltrosTallas()"
+          class="px-3 py-2.5 rounded-xl bg-stone-50 dark:bg-zinc-950/80 border border-stone-200 dark:border-zinc-800 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500/50 cursor-pointer">
+          <option value="TODOS">⚡ Todos los Estados</option>
+          <option value="ACTIVOS">🟢 Solo Activas</option>
+          <option value="INACTIVOS">⚪ Solo Inactivas</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Tabla de Tallas -->
+    <div class="rounded-2xl bg-white dark:bg-zinc-900/60 border border-stone-200 dark:border-zinc-800/80 overflow-hidden shadow-sm dark:shadow-xl dark:shadow-zinc-950/50">
+      <table class="w-full text-left text-sm text-zinc-700 dark:text-zinc-300">
+        <thead class="bg-stone-50/90 dark:bg-zinc-950/60 text-xs uppercase font-semibold text-zinc-600 dark:text-zinc-400 border-b border-stone-200 dark:border-zinc-800">
+          <tr>
+            <th class="px-5 py-4">Talla</th>
+            <th class="px-5 py-4">Descripción y Guía de Medidas</th>
+            <th class="px-5 py-4 text-center">Variantes Vinculadas</th>
+            <th *ngIf="esSuperAdmin" class="px-5 py-4">Tenant</th>
+            <th class="px-5 py-4 text-center">Estado</th>
+            <th class="px-5 py-4 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-stone-100 dark:divide-zinc-800/60">
+          <tr *ngIf="cargando">
+            <td [attr.colspan]="esSuperAdmin ? 6 : 5" class="px-5 py-10 text-center text-zinc-500">
+              <div class="flex items-center justify-center gap-2">
+                <div class="w-5 h-5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+                <span>Cargando tallas...</span>
+              </div>
+            </td>
+          </tr>
+
+          <tr *ngIf="!cargando && tallasFiltradas.length === 0">
+            <td [attr.colspan]="esSuperAdmin ? 6 : 5" class="px-5 py-10 text-center text-zinc-500">
+              No se encontraron tallas registradas.
+            </td>
+          </tr>
+
+          <tr *ngFor="let talla of tallasFiltradas; trackBy: trackByTallaId" class="hover:bg-zinc-800/30 transition-colors group">
+            <td class="px-5 py-3.5">
+              <span class="inline-flex items-center justify-center min-w-[3rem] px-2.5 py-1 rounded-lg bg-zinc-800 border border-zinc-700 font-bold text-amber-400 text-sm">
+                {{ talla.nombre }}
+              </span>
+            </td>
+            <td class="px-5 py-3.5 text-xs text-zinc-300">
+              {{ talla.descripcion || 'Sin descripción de medidas' }}
+            </td>
+            <td class="px-5 py-3.5 text-center">
+              <span 
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border"
+                [ngClass]="(talla.total_variantes || 0) > 0 ? 'bg-amber-500/10 border-amber-500/30 text-amber-300' : 'bg-zinc-800/60 border-zinc-700/40 text-zinc-500'">
+                {{ talla.total_variantes || 0 }} variantes
+              </span>
+            </td>
+            <td *ngIf="esSuperAdmin" class="px-5 py-3.5 text-xs text-zinc-400">
+              {{ talla.empresa_nombre }}
+            </td>
+            <td class="px-5 py-3.5 text-center">
+              <button 
+                (click)="toggleEstadoTalla(talla, $event)"
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold cursor-pointer transition-all border"
+                [ngClass]="talla.activo ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-zinc-800 border-zinc-700 text-zinc-500'">
+                <span class="w-1.5 h-1.5 rounded-full" [ngClass]="talla.activo ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-500'"></span>
+                {{ talla.activo ? 'Activa' : 'Inactiva' }}
+              </button>
+            </td>
+            <td class="px-5 py-3.5 text-right">
+              <div class="flex items-center justify-end gap-1.5">
+                <button 
+                  (click)="abrirModalEditarTalla(talla)"
+                  title="Editar talla"
+                  class="p-2 rounded-lg text-amber-400/80 hover:text-amber-400 hover:bg-amber-500/10 transition-colors cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+                <button 
+                  (click)="confirmarEliminacion('TALLA', talla)"
+                  title="Eliminar talla"
+                  class="p-2 rounded-lg text-rose-400/80 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- SECCIÓN 2: PESTAÑA COLORES -->
+  <!-- ======================================================================= -->
+  <div *ngIf="tabActivo === 'COLORES'" class="space-y-6 animate-fade-in">
+    
+    <!-- Métricas Colores -->
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div class="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-stone-200 dark:border-zinc-800/80 shadow-sm backdrop-blur-sm">
+        <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">Total Colores</span>
+        <p class="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mt-1">{{ totalColores }}</p>
+        <span class="text-xs text-zinc-500">Tonalidades textiles registradas</span>
+      </div>
+      <div class="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-stone-200 dark:border-zinc-800/80 shadow-sm backdrop-blur-sm">
+        <span class="text-xs font-medium text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">Colores Activos</span>
+        <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">{{ coloresActivos }}</p>
+        <span class="text-xs text-zinc-500">Disponibles para variantes de productos</span>
+      </div>
+      <div class="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-stone-200 dark:border-zinc-800/80 shadow-sm backdrop-blur-sm">
+        <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">Inactivos</span>
+        <p class="text-2xl font-bold text-zinc-700 dark:text-zinc-400 mt-1">{{ totalColores - coloresActivos }}</p>
+        <span class="text-xs text-zinc-500">Ocultos al registrar productos</span>
+      </div>
+    </div>
+
+    <!-- Barra de Filtros Colores -->
+    <div class="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-stone-200 dark:border-zinc-800/80 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+      <div class="relative flex-1">
+        <input 
+          type="text" 
+          [(ngModel)]="filtroBusquedaColores" 
+          (input)="onBusquedaColoresInput()"
+          placeholder="Buscar color por nombre o código HEX (ej. Champagne, #E8C5C8)..."
+          class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-stone-50 dark:bg-zinc-950/80 border border-stone-200 dark:border-zinc-800 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-amber-500/50">
+        <svg class="w-4 h-4 text-zinc-400 dark:text-zinc-500 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+
+      <div class="flex items-center gap-2.5">
+        <select 
+          *ngIf="esSuperAdmin && empresas.length > 0"
+          [(ngModel)]="filtroEmpresaId"
+          (change)="onFiltroEmpresaChange()"
+          class="px-3 py-2.5 rounded-xl bg-stone-50 dark:bg-zinc-950/80 border border-stone-200 dark:border-zinc-800 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500/50 cursor-pointer">
+          <option [ngValue]="0">🏢 Todos los Tenants</option>
+          <option *ngFor="let emp of empresas" [ngValue]="emp.id_empresa">
+            🏢 {{ emp.nombre_empresa }}
+          </option>
+        </select>
+
+        <select 
+          [(ngModel)]="filtroEstadoColores" 
+          (change)="aplicarFiltrosColores()"
+          class="px-3 py-2.5 rounded-xl bg-stone-50 dark:bg-zinc-950/80 border border-stone-200 dark:border-zinc-800 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500/50 cursor-pointer">
+          <option value="TODOS">⚡ Todos los Estados</option>
+          <option value="ACTIVOS">🟢 Solo Activos</option>
+          <option value="INACTIVOS">⚪ Solo Inactivos</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Tabla de Colores -->
+    <div class="rounded-2xl bg-white dark:bg-zinc-900/60 border border-stone-200 dark:border-zinc-800/80 overflow-hidden shadow-sm dark:shadow-xl dark:shadow-zinc-950/50">
+      <table class="w-full text-left text-sm text-zinc-700 dark:text-zinc-300">
+        <thead class="bg-stone-50/90 dark:bg-zinc-950/60 text-xs uppercase font-semibold text-zinc-600 dark:text-zinc-400 border-b border-stone-200 dark:border-zinc-800">
+          <tr>
+            <th class="px-5 py-4">Muestra Visual</th>
+            <th class="px-5 py-4">Nombre del Color</th>
+            <th class="px-5 py-4">Código HEX</th>
+            <th class="px-5 py-4 text-center">Variantes Vinculadas</th>
+            <th *ngIf="esSuperAdmin" class="px-5 py-4">Tenant</th>
+            <th class="px-5 py-4 text-center">Estado</th>
+            <th class="px-5 py-4 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-stone-100 dark:divide-zinc-800/60">
+          <tr *ngIf="cargando">
+            <td [attr.colspan]="esSuperAdmin ? 7 : 6" class="px-5 py-10 text-center text-zinc-500">
+              <div class="flex items-center justify-center gap-2">
+                <div class="w-5 h-5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+                <span>Cargando colores...</span>
+              </div>
+            </td>
+          </tr>
+
+          <tr *ngIf="!cargando && coloresFiltrados.length === 0">
+            <td [attr.colspan]="esSuperAdmin ? 7 : 6" class="px-5 py-10 text-center text-zinc-500">
+              No se encontraron colores registrados.
+            </td>
+          </tr>
+
+          <tr *ngFor="let color of coloresFiltrados; trackBy: trackByColorId" class="hover:bg-zinc-800/30 transition-colors group">
+            <!-- Muestra visual Swatch -->
+            <td class="px-5 py-3.5">
+              <div class="flex items-center gap-3">
+                <div 
+                  class="w-8 h-8 rounded-full border border-zinc-600/80 shadow-md flex-shrink-0"
+                  [style.backgroundColor]="color.codigo_hex"
+                  [title]="color.codigo_hex"></div>
+              </div>
+            </td>
+            <!-- Nombre -->
+            <td class="px-5 py-3.5 font-semibold text-zinc-100">
+              {{ color.nombre }}
+            </td>
+            <!-- Código HEX -->
+            <td class="px-5 py-3.5">
+              <span class="px-2.5 py-1 rounded-md bg-zinc-950 border border-zinc-800 font-mono text-xs text-amber-300">
+                {{ color.codigo_hex }}
+              </span>
+            </td>
+            <!-- Variantes -->
+            <td class="px-5 py-3.5 text-center">
+              <span 
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border"
+                [ngClass]="(color.total_variantes || 0) > 0 ? 'bg-amber-500/10 border-amber-500/30 text-amber-300' : 'bg-zinc-800/60 border-zinc-700/40 text-zinc-500'">
+                {{ color.total_variantes || 0 }} variantes
+              </span>
+            </td>
+            <!-- Tenant -->
+            <td *ngIf="esSuperAdmin" class="px-5 py-3.5 text-xs text-zinc-400">
+              {{ color.empresa_nombre }}
+            </td>
+            <!-- Estado -->
+            <td class="px-5 py-3.5 text-center">
+              <button 
+                (click)="toggleEstadoColor(color, $event)"
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold cursor-pointer transition-all border"
+                [ngClass]="color.activo ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-zinc-800 border-zinc-700 text-zinc-500'">
+                <span class="w-1.5 h-1.5 rounded-full" [ngClass]="color.activo ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-500'"></span>
+                {{ color.activo ? 'Activo' : 'Inactivo' }}
+              </button>
+            </td>
+            <!-- Acciones -->
+            <td class="px-5 py-3.5 text-right">
+              <div class="flex items-center justify-end gap-1.5">
+                <button 
+                  (click)="abrirModalEditarColor(color)"
+                  title="Editar color"
+                  class="p-2 rounded-lg text-amber-400/80 hover:text-amber-400 hover:bg-amber-500/10 transition-colors cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+                <button 
+                  (click)="confirmarEliminacion('COLOR', color)"
+                  title="Eliminar color"
+                  class="p-2 rounded-lg text-rose-400/80 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- MODAL: REGISTRAR / EDITAR TALLA -->
+  <!-- ======================================================================= -->
+  <div *ngIf="mostrarModalTalla" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-md animate-fade-in">
+    <div class="relative w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
+      <div class="px-6 py-4.5 border-b border-zinc-800 flex items-center justify-between bg-zinc-950/40">
+        <h2 class="text-base font-bold text-zinc-100 flex items-center gap-2">
+          <span class="p-1.5 rounded-lg bg-amber-500/10 text-amber-400">👗</span>
+          {{ modoEdicionTalla ? 'Editar Talla' : 'Registrar Nueva Talla' }}
+        </h2>
+        <button (click)="cerrarModalTalla()" class="text-zinc-500 hover:text-zinc-300">✕</button>
+      </div>
+
+      <div *ngIf="mensajeModalError" class="mx-6 mt-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs">
+        {{ mensajeModalError }}
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-zinc-300 mb-1.5 uppercase tracking-wider">
+            Nombre de la Talla <span class="text-amber-400">*</span>
+          </label>
+          <input 
+            type="text" 
+            [(ngModel)]="tallaForm.nombre" 
+            placeholder="Ej: XS, S, M, L, XL, 38, 40..."
+            class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500/50">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-zinc-300 mb-1.5 uppercase tracking-wider">
+            Descripción / Guía de Medidas
+          </label>
+          <textarea 
+            [(ngModel)]="tallaForm.descripcion" 
+            rows="3"
+            placeholder="Ej: Busto 88-92 cm, Cintura 68-72 cm, corte estándar..."
+            class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500/50"></textarea>
+        </div>
+
+        <div *ngIf="esSuperAdmin && empresas.length > 0">
+          <label class="block text-xs font-semibold text-zinc-300 mb-1.5 uppercase tracking-wider">
+            Tenant / Empresa
+          </label>
+          <select 
+            [(ngModel)]="tallaForm.id_empresa"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500/50 cursor-pointer">
+            <option *ngFor="let emp of empresas" [ngValue]="emp.id_empresa">
+              🏢 {{ emp.nombre_empresa }}
+            </option>
+          </select>
+        </div>
+
+        <div class="flex items-center justify-between p-3.5 rounded-xl bg-zinc-950/70 border border-zinc-800">
+          <div>
+            <span class="text-sm font-semibold text-zinc-200 block">Estado de la Talla</span>
+            <span class="text-xs text-zinc-500">Las tallas inactivas no aparecerán al crear productos.</span>
+          </div>
+          <button 
+            type="button"
+            (click)="tallaForm.activo = !tallaForm.activo"
+            class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+            [ngClass]="tallaForm.activo ? 'bg-amber-500' : 'bg-zinc-700'">
+            <span 
+              class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+              [ngClass]="tallaForm.activo ? 'translate-x-5' : 'translate-x-0'"></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="px-6 py-4 border-t border-zinc-800 bg-zinc-950/40 flex items-center justify-end gap-3">
+        <button (click)="cerrarModalTalla()" [disabled]="guardando" class="px-4 py-2 text-sm text-zinc-400 hover:text-zinc-200">
+          Cancelar
+        </button>
+        <button 
+          (click)="guardarTalla()" 
+          [disabled]="guardando"
+          class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 text-sm font-semibold shadow-lg shadow-amber-500/20 active:scale-95 transition-all cursor-pointer">
+          {{ guardando ? 'Guardando...' : (modoEdicionTalla ? 'Actualizar Talla' : 'Registrar Talla') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- MODAL: REGISTRAR / EDITAR COLOR -->
+  <!-- ======================================================================= -->
+  <div *ngIf="mostrarModalColor" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-md animate-fade-in">
+    <div class="relative w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
+      <div class="px-6 py-4.5 border-b border-zinc-800 flex items-center justify-between bg-zinc-950/40">
+        <h2 class="text-base font-bold text-zinc-100 flex items-center gap-2">
+          <span class="p-1.5 rounded-lg bg-amber-500/10 text-amber-400">🎨</span>
+          {{ modoEdicionColor ? 'Editar Color' : 'Registrar Nuevo Color' }}
+        </h2>
+        <button (click)="cerrarModalColor()" class="text-zinc-500 hover:text-zinc-300">✕</button>
+      </div>
+
+      <div *ngIf="mensajeModalError" class="mx-6 mt-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs">
+        {{ mensajeModalError }}
+      </div>
+
+      <div class="p-6 space-y-4">
+        <!-- Nombre del color -->
+        <div>
+          <label class="block text-xs font-semibold text-zinc-300 mb-1.5 uppercase tracking-wider">
+            Nombre del Color <span class="text-amber-400">*</span>
+          </label>
+          <input 
+            type="text" 
+            [(ngModel)]="colorForm.nombre" 
+            placeholder="Ej: Rosa Empolvado, Negro Azabache, Champagne..."
+            class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500/50">
+        </div>
+
+        <!-- Selector HEX interactivo -->
+        <div>
+          <label class="block text-xs font-semibold text-zinc-300 mb-1.5 uppercase tracking-wider">
+            Código HEX <span class="text-amber-400">*</span>
+          </label>
+          <div class="flex items-center gap-3">
+            <!-- Input nativo color picker -->
+            <div class="relative w-11 h-11 rounded-xl overflow-hidden border border-zinc-700 bg-zinc-950 flex items-center justify-center shadow-inner">
+              <input 
+                type="color" 
+                [(ngModel)]="colorForm.codigo_hex"
+                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+              <div class="w-8 h-8 rounded-lg border border-white/20 shadow-sm pointer-events-none" [style.backgroundColor]="colorForm.codigo_hex"></div>
+            </div>
+
+            <!-- Input texto HEX -->
+            <input 
+              type="text" 
+              [(ngModel)]="colorForm.codigo_hex"
+              placeholder="#E8C5C8"
+              maxlength="7"
+              class="flex-1 px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 font-mono text-sm text-amber-300 uppercase focus:outline-none focus:border-amber-500/50">
+          </div>
+          <p class="text-[11px] text-zinc-500 mt-1">Haga clic en la muestra de color para abrir el selector visual interactivo.</p>
+        </div>
+
+        <!-- Previsualización de Muestra -->
+        <div class="p-3.5 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-between">
+          <span class="text-xs text-zinc-400">Previsualización de Tono:</span>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-medium text-zinc-300">{{ colorForm.nombre || 'Sin nombre' }}</span>
+            <div class="w-6 h-6 rounded-full border border-zinc-600 shadow" [style.backgroundColor]="colorForm.codigo_hex"></div>
+          </div>
+        </div>
+
+        <!-- Tenant -->
+        <div *ngIf="esSuperAdmin && empresas.length > 0">
+          <label class="block text-xs font-semibold text-zinc-300 mb-1.5 uppercase tracking-wider">
+            Tenant / Empresa
+          </label>
+          <select 
+            [(ngModel)]="colorForm.id_empresa"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500/50 cursor-pointer">
+            <option *ngFor="let emp of empresas" [ngValue]="emp.id_empresa">
+              🏢 {{ emp.nombre_empresa }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Estado -->
+        <div class="flex items-center justify-between p-3.5 rounded-xl bg-zinc-950/70 border border-zinc-800">
+          <div>
+            <span class="text-sm font-semibold text-zinc-200 block">Estado del Color</span>
+            <span class="text-xs text-zinc-500">Los colores inactivos no aparecerán al crear productos.</span>
+          </div>
+          <button 
+            type="button"
+            (click)="colorForm.activo = !colorForm.activo"
+            class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+            [ngClass]="colorForm.activo ? 'bg-amber-500' : 'bg-zinc-700'">
+            <span 
+              class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+              [ngClass]="colorForm.activo ? 'translate-x-5' : 'translate-x-0'"></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="px-6 py-4 border-t border-zinc-800 bg-zinc-950/40 flex items-center justify-end gap-3">
+        <button (click)="cerrarModalColor()" [disabled]="guardando" class="px-4 py-2 text-sm text-zinc-400 hover:text-zinc-200">
+          Cancelar
+        </button>
+        <button 
+          (click)="guardarColor()" 
+          [disabled]="guardando"
+          class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 text-sm font-semibold shadow-lg shadow-amber-500/20 active:scale-95 transition-all cursor-pointer">
+          {{ guardando ? 'Guardando...' : (modoEdicionColor ? 'Actualizar Color' : 'Registrar Color') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- MODAL: CONFIRMACIÓN ELIMINACIÓN INTELIGENTE -->
+  <!-- ======================================================================= -->
+  <div *ngIf="mostrarModalConfirmacion && elementoAeliminar" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-md animate-fade-in">
+    <div class="relative w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl p-6 space-y-4 animate-scale-in">
+      <div class="flex items-center gap-3.5">
+        <div class="p-3 rounded-xl" [ngClass]="elementoAeliminar.variantes > 0 ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-zinc-100">
+            {{ elementoAeliminar.variantes > 0 ? 'Desactivar ' + (elementoAeliminar.tipo === 'TALLA' ? 'Talla' : 'Color') : 'Eliminar ' + (elementoAeliminar.tipo === 'TALLA' ? 'Talla' : 'Color') }}
+          </h3>
+          <p class="text-xs text-zinc-400">Protección de integridad de catálogo</p>
+        </div>
+      </div>
+
+      <!-- Si tiene variantes vinculadas -->
+      <div *ngIf="elementoAeliminar.variantes > 0" class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200/90 leading-relaxed">
+        <p class="font-semibold text-amber-400 mb-1">Protección de Catálogo Activa:</p>
+        El elemento <strong>"{{ elementoAeliminar.nombre }}"</strong> cuenta con <strong>{{ elementoAeliminar.variantes }} variante(s)</strong> de producto vinculadas.
+        <br><br>
+        Por reglas de integridad, <strong>no se eliminará físicamente</strong> de la base de datos; en su lugar, se <strong>desactivará</strong> para preservar el historial y consistencia de productos.
+      </div>
+
+      <!-- Si tiene 0 variantes -->
+      <div *ngIf="elementoAeliminar.variantes === 0" class="text-sm text-zinc-300">
+        ¿Está seguro de que desea eliminar permanentemente {{ elementoAeliminar.tipo === 'TALLA' ? 'la talla' : 'el color' }} <strong>"{{ elementoAeliminar.nombre }}"</strong>?
+        <p class="text-xs text-zinc-500 mt-1">Esta acción eliminará el registro de la base de datos de manera definitiva.</p>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-2">
+        <button (click)="cerrarConfirmacion()" [disabled]="guardando" class="px-4 py-2 rounded-xl text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors">
+          Cancelar
+        </button>
+        <button 
+          (click)="ejecutarEliminacion()" 
+          [disabled]="guardando"
+          class="px-4 py-2 rounded-xl text-xs font-semibold text-white transition-all cursor-pointer"
+          [ngClass]="elementoAeliminar.variantes > 0 ? 'bg-amber-600 hover:bg-amber-500' : 'bg-rose-600 hover:bg-rose-500'">
+          {{ elementoAeliminar.variantes > 0 ? 'Confirmar Desactivación' : 'Eliminar Definitivamente' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,1827 @@
+<div class="space-y-6">
+
+  <!-- ========================================================================= -->
+  <!-- ENCABEZADO Y ACCIONES PRINCIPALES                                        -->
+  <!-- ========================================================================= -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <div class="p-2.5 rounded-2xl bg-gradient-to-tr from-amber-500/20 via-amber-500/10 to-transparent border border-amber-500/20 text-amber-400 shadow-lg shadow-amber-500/5">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight text-zinc-100 flex items-center gap-2.5">
+          Gestión de Productos
+        </h1>
+        <p class="text-sm text-zinc-400 mt-0.5">
+          Catálogo de prendas, variantes por talla y color, y galería de alta costura.
+        </p>
+      </div>
+    </div>
+
+    <!-- Botón Crear Producto (Condicionado a permisos RBAC) -->
+    <div class="flex items-center gap-2" *ngIf="puedeCrear">
+      <button 
+        type="button" 
+        (click)="abrirModalCrear()"
+        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-semibold shadow-lg shadow-amber-500/20 transition-all duration-200 active:scale-95 text-sm cursor-pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        <span>Nuevo Producto</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast / Alertas -->
+  <div *ngIf="mensajeAlerta" 
+       [ngClass]="{
+         'bg-emerald-500/10 border-emerald-500/30 text-emerald-400': tipoAlerta === 'exito',
+         'bg-rose-500/10 border-rose-500/30 text-rose-400': tipoAlerta === 'error',
+         'bg-amber-500/10 border-amber-500/30 text-amber-400': tipoAlerta === 'info'
+       }" 
+       class="p-4 rounded-2xl border text-sm font-medium flex items-center justify-between shadow-xl backdrop-blur-sm transition-all duration-300">
+    <div class="flex items-center gap-3">
+      <svg *ngIf="tipoAlerta === 'exito'" class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      </svg>
+      <svg *ngIf="tipoAlerta === 'error'" class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+      <svg *ngIf="tipoAlerta === 'info'" class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span>{{ mensajeAlerta }}</span>
+    </div>
+    <button (click)="mensajeAlerta = ''" class="text-zinc-400 hover:text-zinc-200">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- TARJETAS DE MÉTRICAS (AURORA STATS)                                       -->
+  <!-- ========================================================================= -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <!-- Total Productos -->
+    <div class="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-stone-200 dark:border-zinc-800/80 shadow-sm backdrop-blur-sm">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Total Prendas</span>
+        <span class="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+          </svg>
+        </span>
+      </div>
+      <p class="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mt-2">{{ totalProductos }}</p>
+      <span class="text-xs text-zinc-500">Registradas en catálogo</span>
+    </div>
+
+    <!-- Activos -->
+    <div class="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-stone-200 dark:border-zinc-800/80 shadow-sm backdrop-blur-sm">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-medium text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Activas</span>
+        <span class="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </span>
+      </div>
+      <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-2">{{ totalActivos }}</p>
+      <span class="text-xs text-zinc-500">Visibles en catálogo público</span>
+    </div>
+
+    <!-- Inactivos -->
+    <div class="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-stone-200 dark:border-zinc-800/80 shadow-sm backdrop-blur-sm">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Inactivas</span>
+        <span class="p-2 rounded-xl bg-stone-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+          </svg>
+        </span>
+      </div>
+      <p class="text-2xl font-bold text-zinc-700 dark:text-zinc-400 mt-2">{{ totalInactivos }}</p>
+      <span class="text-xs text-zinc-500">Ocultas para operaciones</span>
+    </div>
+
+    <!-- Variantes Totales -->
+    <div class="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-stone-200 dark:border-zinc-800/80 shadow-sm backdrop-blur-sm">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-medium text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">Variantes Activas</span>
+        <span class="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+          </svg>
+        </span>
+      </div>
+      <p class="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mt-2">{{ totalVariantes }}</p>
+      <span class="text-xs text-zinc-500">Tallas y Colores combinados</span>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- BARRA DE HERRAMIENTAS Y FILTROS                                           -->
+  <!-- ========================================================================= -->
+  <div class="p-4 rounded-2xl bg-white dark:bg-zinc-900/40 border border-stone-200 dark:border-zinc-800/80 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+    <!-- Buscador reactivo -->
+    <div class="relative flex-1">
+      <input 
+        type="text" 
+        [value]="busqueda"
+        (input)="onBusquedaInput($event)" 
+        placeholder="Buscar prenda por nombre, código SKU o descripción..."
+        class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-stone-50 dark:bg-zinc-950/80 border border-stone-200 dark:border-zinc-800 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-amber-500/50">
+      <svg class="w-4 h-4 text-zinc-400 dark:text-zinc-500 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+    </div>
+
+    <div class="flex items-center gap-2.5 flex-wrap">
+      <!-- Filtro Tenant (Solo SuperAdmin) -->
+      <select 
+        *ngIf="esSuperAdmin && empresas.length > 0"
+        [(ngModel)]="filtroEmpresa"
+        (change)="onFiltroEmpresaChange()"
+        class="px-3 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs font-semibold text-amber-700 dark:text-amber-300 focus:outline-none focus:border-amber-500 cursor-pointer">
+        <option [ngValue]="null">Todos los Tenants</option>
+        <option *ngFor="let emp of empresas" [ngValue]="emp.id_empresa">
+          🏢 {{ emp.nombre_empresa }}
+        </option>
+      </select>
+
+      <!-- Filtro Categoría -->
+      <select 
+        [(ngModel)]="filtroCategoria"
+        (ngModelChange)="paginaActual = 1"
+        class="px-3 py-2.5 rounded-xl bg-stone-50 dark:bg-zinc-950/80 border border-stone-200 dark:border-zinc-800 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500/50 cursor-pointer">
+        <option [ngValue]="null">Todas las Categorías</option>
+        <option *ngFor="let cat of categoriasDisponibles" [ngValue]="cat.id_categoria">
+          {{ cat.nombre }}
+        </option>
+      </select>
+
+      <!-- Filtro Estado -->
+      <select 
+        [(ngModel)]="filtroEstado"
+        (ngModelChange)="paginaActual = 1"
+        class="px-3 py-2.5 rounded-xl bg-stone-50 dark:bg-zinc-950/80 border border-stone-200 dark:border-zinc-800 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-amber-500/50 cursor-pointer">
+        <option value="TODOS">Todos los Estados</option>
+        <option value="ACTIVOS">Solo Activos</option>
+        <option value="INACTIVOS">Solo Inactivos</option>
+      </select>
+
+      <!-- Recargar -->
+      <button 
+        type="button"
+        (click)="cargarProductos()"
+        class="p-2.5 rounded-xl bg-stone-100 dark:bg-zinc-950/80 border border-stone-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-400 dark:hover:border-zinc-700 transition-colors cursor-pointer"
+        title="Recargar catálogo">
+        <svg class="w-4 h-4" [ngClass]="cargando ? 'animate-spin' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- TABLA DE PRODUCTOS                                                        -->
+  <!-- ========================================================================= -->
+  <div class="rounded-2xl border border-zinc-800/80 bg-zinc-900/50 backdrop-blur-sm overflow-hidden shadow-2xl">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm text-zinc-300">
+        <thead class="text-xs uppercase bg-zinc-950/70 border-b border-zinc-800 text-zinc-400">
+          <tr>
+            <th class="px-5 py-4 font-semibold">Prenda / Portada</th>
+            <th *ngIf="esSuperAdmin" class="px-5 py-4 font-semibold">Tenant</th>
+            <th class="px-5 py-4 font-semibold">Categoría</th>
+            <th class="px-5 py-4 font-semibold">Colección & Temporada</th>
+            <th class="px-5 py-4 font-semibold">Precio (Bs.)</th>
+            <th class="px-5 py-4 font-semibold text-center">Variantes</th>
+            <th class="px-5 py-4 font-semibold text-center">Fotos</th>
+            <th class="px-5 py-4 font-semibold text-center">Estado</th>
+            <th class="px-5 py-4 font-semibold text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-zinc-800/60">
+          <!-- Skeleton de carga inicial -->
+          <ng-container *ngIf="cargando && productos.length === 0">
+            <tr *ngFor="let sk of [1,2,3,4,5]" class="animate-pulse">
+              <td [attr.colspan]="esSuperAdmin ? 9 : 8" class="px-5 py-4">
+                <div class="flex items-center gap-4">
+                  <div class="w-12 h-14 rounded-xl bg-zinc-800/70"></div>
+                  <div class="flex-1 space-y-2">
+                    <div class="h-4 w-48 bg-zinc-800/70 rounded"></div>
+                    <div class="h-3 w-32 bg-zinc-800/50 rounded"></div>
+                  </div>
+                  <div class="h-6 w-24 bg-zinc-800/60 rounded-lg"></div>
+                  <div class="h-6 w-20 bg-zinc-800/60 rounded-lg"></div>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+
+          <tr *ngFor="let prod of productosPaginados; trackBy: trackByProductoId" class="hover:bg-zinc-800/30 transition-colors group">
+            
+            <!-- Portada y Nombre -->
+            <td class="px-5 py-4">
+              <div class="flex items-center gap-3.5">
+                <!-- Miniatura de Cloudinary con Zoom -->
+                <div class="relative w-12 h-14 rounded-xl overflow-hidden bg-zinc-950 border border-zinc-800/80 flex-shrink-0 cursor-pointer shadow-md group-hover:border-amber-500/40 transition-colors"
+                     (click)="prod.imagen_principal ? abrirZoom(prod.imagen_principal) : null"
+                     title="Clic para ampliar foto">
+                  <img *ngIf="prod.imagen_principal" 
+                       [src]="prod.imagen_thumbnail || prod.imagen_principal" 
+                       [alt]="prod.nombre"
+                       loading="lazy"
+                       decoding="async"
+                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                  <div *ngIf="!prod.imagen_principal" class="w-full h-full flex items-center justify-center text-zinc-600 bg-zinc-900">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                </div>
+
+                <!-- Datos de Prenda -->
+                <div class="min-w-0">
+                  <span class="font-semibold text-zinc-100 block group-hover:text-amber-300 transition-colors truncate max-w-xs">
+                    {{ prod.nombre }}
+                  </span>
+                  <div class="flex items-center gap-2 mt-0.5">
+                    <span class="text-xs font-mono text-zinc-500">{{ prod.codigo_producto }}</span>
+                    <span *ngIf="prod.marca" class="text-[10px] text-zinc-400 px-1.5 py-0.5 rounded bg-zinc-800/80 border border-zinc-700/50">
+                      {{ prod.marca }}
+                    </span>
+                    <span *ngIf="prod.tiene_ra" class="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/40 text-amber-300">
+                      <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                      AR {{ prod.tipo_prenda_ra || 'TOP' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Tenant (Solo SuperAdmin Global) -->
+            <td *ngIf="esSuperAdmin" class="px-5 py-4">
+              <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium bg-zinc-800 text-amber-300 border border-zinc-700">
+                🏢 {{ prod.empresa_nombre || 'Tenant #' + prod.id_empresa }}
+              </span>
+            </td>
+
+            <!-- Categoría -->
+            <td class="px-5 py-4">
+              <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                {{ prod.categoria_nombre }}
+              </span>
+            </td>
+
+            <!-- Temporada & Colección -->
+           <!-- Temporada & Colección -->
+<td class="px-5 py-4">
+  <div class="text-xs space-y-1.5">
+
+    <!-- Colección -->
+    <p class="text-zinc-200 font-medium">
+      {{ prod.coleccion || 'Línea Regular' }}
+    </p>
+
+    <!-- Temporada -->
+    <div class="flex items-center gap-2 flex-wrap">
+      <span
+        class="px-2 py-0.5 rounded-lg bg-zinc-800 text-zinc-300 border border-zinc-700/60 font-medium">
+        {{ prod.temporada || 'PERMANENTE' }}
+      </span>
+
+      <!-- Fuera de temporada -->
+      <span
+        *ngIf="!esTemporadaActual(prod)"
+        class="px-2 py-0.5 rounded-lg bg-rose-500/10 text-rose-300 border border-rose-500/30 font-semibold">
+        ⚠ Fuera de temporada
+      </span>
+    </div>
+
+    <!-- Promoción vigente -->
+    <div
+      *ngIf="prod.promocion"
+      class="flex items-center gap-1.5 text-emerald-400 font-semibold">
+      <span>🏷</span>
+      <span>
+        {{ prod.promocion.nombre }}
+        - {{ prod.promocion.porcentaje_descuento }}%
+      </span>
+    </div>
+
+    <!-- Fuera de temporada pero disponible por promoción -->
+    <div
+      *ngIf="!esTemporadaActual(prod) && prod.promocion"
+      class="text-[10px] text-emerald-400">
+      ✓ Disponible por promoción
+    </div>
+
+  </div>
+</td>
+
+           <!-- Precio -->
+<td class="px-5 py-4">
+
+  <!-- Producto con promoción -->
+  <div
+    *ngIf="prod.promocion; else precioNormal"
+    class="space-y-0.5">
+
+    <!-- Precio original -->
+    <div class="text-xs text-zinc-500 line-through font-mono">
+      Bs. {{ prod.precio | number:'1.2-2' }}
+    </div>
+
+    <!-- Precio promocional -->
+    <div class="font-bold text-emerald-400 font-mono text-base">
+      Bs. {{ prod.promocion.precio_promocional | number:'1.2-2' }}
+    </div>
+
+    <!-- Descuento -->
+    <div class="text-[10px] text-emerald-400 font-semibold">
+      -{{ prod.promocion.porcentaje_descuento }}%
+    </div>
+
+  </div>
+
+  <!-- Producto sin promoción -->
+  <ng-template #precioNormal>
+    <span class="font-semibold text-amber-400 font-mono text-base">
+      Bs. {{ prod.precio | number:'1.2-2' }}
+    </span>
+  </ng-template>
+
+</td>
+
+            <!-- Conteo de Variantes -->
+            <td class="px-5 py-4 text-center">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                </svg>
+                {{ prod.total_variantes || 0 }}
+              </span>
+            </td>
+
+            <!-- Conteo de Fotos -->
+            <td class="px-5 py-4 text-center">
+              <button 
+                type="button"
+                (click)="abrirModalGaleria(prod)"
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-700 transition-all border border-zinc-700/60 cursor-pointer"
+                title="Ver galería completa de la prenda">
+                <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                {{ prod.total_imagenes || 0 }} fotos
+              </button>
+            </td>
+
+            <!-- Estado Switch -->
+            <td class="px-5 py-4 text-center">
+              <button 
+                type="button" 
+                (click)="alternarEstado(prod)"
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold cursor-pointer transition-all border"
+                [ngClass]="prod.activo 
+                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20' 
+                  : 'bg-zinc-800/80 text-zinc-400 border-zinc-700/60 hover:bg-zinc-800'">
+                <span class="w-1.5 h-1.5 rounded-full" [ngClass]="prod.activo ? 'bg-emerald-400' : 'bg-zinc-500'"></span>
+                {{ prod.activo ? 'Activo' : 'Inactivo' }}
+              </button>
+            </td>
+
+            <!-- Acciones Condicionadas -->
+            <td class="px-5 py-4 text-right">
+              <div class="flex items-center justify-end gap-1">
+                <!-- Editar (si tiene permiso de modificación) -->
+                <button 
+                  *ngIf="puedeEditar"
+                  type="button" 
+                  (click)="abrirModalEditar(prod)"
+                  class="p-2 rounded-lg text-amber-400/80 hover:text-amber-400 hover:bg-amber-500/10 transition-colors cursor-pointer"
+                  title="Editar prenda y variantes">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+
+                <!-- Ver Detalle (si solo tiene permiso de lectura/consulta) -->
+                <button 
+                  *ngIf="!puedeEditar"
+                  type="button" 
+                  (click)="abrirModalEditar(prod)"
+                  class="p-2 rounded-lg text-indigo-400/80 hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors cursor-pointer"
+                  title="Ver detalle del producto">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                </button>
+
+                <button
+  type="button"
+  (click)="abrirModalPromocion(prod)"
+  class="px-3 py-2 rounded-lg
+         bg-emerald-500/10
+         border border-emerald-500/30
+         text-xs text-emerald-300
+         hover:bg-emerald-500/20
+         transition"
+  title="Gestionar promoción"
+>
+  🏷 Promoción
+</button>
+
+                <!-- Gestionar Fotos -->
+                <button 
+                  type="button" 
+                  (click)="abrirModalGaleria(prod)"
+                  class="p-2 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors cursor-pointer"
+                  title="Gestionar fotos">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </button>
+
+                <!-- Eliminar (solo si tiene permiso de eliminación) -->
+                <button 
+                  *ngIf="puedeEliminar"
+                  type="button" 
+                  (click)="confirmarEliminar(prod)"
+                  class="p-2 rounded-lg text-rose-400/80 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                  title="Eliminar o desactivar prenda">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Estado Vacío -->
+          <tr *ngIf="productosFiltrados.length === 0 && !cargando">
+            <td [attr.colspan]="esSuperAdmin ? 9 : 8" class="px-5 py-12 text-center text-zinc-500">
+              <div class="max-w-sm mx-auto flex flex-col items-center">
+                <div class="w-12 h-12 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-zinc-600 mb-3">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  </svg>
+                </div>
+                <p class="text-base font-medium text-zinc-300">No se encontraron prendas</p>
+                <p class="text-xs text-zinc-500 mt-1">
+                  {{ busqueda ? 'Intenta con otros términos de búsqueda o filtros.' : 'Comienza registrando un nuevo producto en tu catálogo.' }}
+                </p>
+                <button 
+                  *ngIf="!busqueda"
+                  type="button" 
+                  (click)="abrirModalCrear()"
+                  class="mt-4 px-4 py-2 rounded-xl bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 text-xs font-semibold border border-amber-500/30 transition-all cursor-pointer">
+                  + Registrar Primer Producto
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Barra de Paginación -->
+    <div *ngIf="productosFiltrados.length > itemsPorPagina" class="px-5 py-3.5 bg-zinc-950/60 border-t border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-400">
+      <div>
+        Mostrando
+        <span class="font-semibold text-zinc-200">{{ (paginaActual - 1) * itemsPorPagina + 1 }}</span>
+        –
+        <span class="font-semibold text-zinc-200">{{ (paginaActual * itemsPorPagina) > productosFiltrados.length ? productosFiltrados.length : (paginaActual * itemsPorPagina) }}</span>
+        de
+        <span class="font-semibold text-amber-400">{{ productosFiltrados.length }}</span>
+        prendas
+      </div>
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          [disabled]="paginaActual <= 1"
+          (click)="cambiarPagina(paginaActual - 1)"
+          class="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer">
+          Anterior
+        </button>
+        <span class="px-2.5 py-1 rounded-lg bg-zinc-900/80 border border-zinc-800 text-zinc-200 font-mono">
+          Página {{ paginaActual }} / {{ totalPaginas }}
+        </span>
+        <button
+          type="button"
+          [disabled]="paginaActual >= totalPaginas"
+          (click)="cambiarPagina(paginaActual + 1)"
+          class="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer">
+          Siguiente
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL PRINCIPAL: CREAR / EDITAR PRODUCTO CON PESTAÑAS                    -->
+  <!-- ========================================================================= -->
+  <div *ngIf="mostrarModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto">
+    <div class="relative w-full max-w-3xl rounded-3xl bg-zinc-900 border border-zinc-800 shadow-2xl p-6 sm:p-7 max-h-[92vh] flex flex-col my-auto">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-4 border-b border-zinc-800 shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-lg font-bold text-zinc-100">
+              {{ modoEdicion ? 'Editar Prenda' : 'Registrar Nueva Prenda' }}
+            </h2>
+            <p class="text-xs text-zinc-400">
+              Completa los datos generales, selecciona tallas y colores, y sube fotos del producto.
+            </p>
+          </div>
+        </div>
+        <button 
+          type="button" 
+          (click)="cerrarModal()"
+          class="p-2 text-zinc-400 hover:text-white rounded-xl hover:bg-zinc-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Selector de Pestañas del Modal -->
+      <div class="flex items-center gap-2 pt-4 pb-2 border-b border-zinc-800/80 shrink-0">
+        <button 
+          type="button"
+          (click)="tabModalActiva = 'general'"
+          [ngClass]="tabModalActiva === 'general' 
+            ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' 
+            : 'text-zinc-400 hover:text-zinc-200 border-transparent'"
+          class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Información General
+        </button>
+
+        <button 
+          type="button"
+          (click)="tabModalActiva = 'variantes'"
+          [ngClass]="tabModalActiva === 'variantes' 
+            ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' 
+            : 'text-zinc-400 hover:text-zinc-200 border-transparent'"
+          class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+          </svg>
+          Variantes (Tallas & Colores)
+          <span *ngIf="combinacionesGeneradas.length > 0" class="px-1.5 py-0.2 rounded-full bg-amber-500 text-zinc-950 font-bold text-[10px]">
+            {{ combinacionesGeneradas.length }}
+          </span>
+        </button>
+
+        <button 
+          type="button"
+          (click)="tabModalActiva = 'galeria'"
+          [ngClass]="tabModalActiva === 'galeria' 
+            ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' 
+            : 'text-zinc-400 hover:text-zinc-200 border-transparent'"
+          class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          Galería de Fotos
+          <span *ngIf="productoForm.imagenes.length > 0" class="px-1.5 py-0.2 rounded-full bg-zinc-800 text-zinc-200 text-[10px]">
+            {{ productoForm.imagenes.length }}
+          </span>
+        </button>
+
+        <button 
+          type="button"
+          (click)="tabModalActiva = 'ar'"
+          [ngClass]="tabModalActiva === 'ar' 
+            ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' 
+            : 'text-zinc-400 hover:text-zinc-200 border-transparent'"
+          class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer">
+          <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+          Vestidor Virtual RA
+          <span *ngIf="productoForm.tiene_ra" class="px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold">
+            ACTIVO
+          </span>
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="py-4 overflow-y-auto flex-1 space-y-4 pr-1">
+
+        <!-- =================================================================== -->
+        <!-- TAB 1: INFORMACIÓN GENERAL                                          -->
+        <!-- =================================================================== -->
+        <div *ngIf="tabModalActiva === 'general'" class="space-y-4">
+          <!-- Selector de Tenant (Solo SuperAdmin Global al crear) -->
+          <div *ngIf="esSuperAdmin && !modoEdicion" class="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-1.5">
+            <label class="block text-xs font-bold text-amber-300 uppercase tracking-wider">
+              Tenant / Tienda de la Prenda <span class="text-amber-400">*</span>
+            </label>
+            <select 
+              [(ngModel)]="productoForm.id_empresa"
+              (change)="onModalEmpresaChange()"
+              class="w-full px-3.5 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 font-semibold focus:outline-none focus:border-amber-500/50 cursor-pointer">
+              <option [ngValue]="undefined" disabled>Selecciona la tienda autorizada...</option>
+              <option *ngFor="let emp of empresas" [ngValue]="emp.id_empresa">
+                🏢 {{ emp.nombre_empresa }}
+              </option>
+            </select>
+            <p class="text-[11px] text-zinc-400">
+              Al seleccionar una tienda se cargarán las categorías, tallas y colores pertenecientes a ese Tenant.
+            </p>
+          </div>
+
+          <!-- Nombre y Categoría -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-zinc-300 mb-1.5">
+                Nombre de la Prenda <span class="text-amber-400">*</span>
+              </label>
+              <input 
+                type="text" 
+                [(ngModel)]="productoForm.nombre" 
+                placeholder="Ej. Vestido Gala Seda Imperial"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500/50">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-zinc-300 mb-1.5">
+                Categoría <span class="text-amber-400">*</span>
+              </label>
+              <select 
+                [(ngModel)]="productoForm.id_categoria"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500/50 cursor-pointer">
+                <option [ngValue]="null" disabled>Selecciona una categoría activa</option>
+                <option *ngFor="let cat of categoriasDisponibles" [ngValue]="cat.id_categoria">
+                  {{ cat.nombre }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Precio y Código SKU Base -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-zinc-300 mb-1.5">
+                Precio de Venta (Bs.) <span class="text-amber-400">*</span>
+              </label>
+              <div class="relative">
+                <span class="absolute left-3.5 top-2.5 text-xs font-bold text-amber-400">Bs.</span>
+                <input 
+                  type="number" 
+                  step="0.01"
+                  min="0"
+                  [(ngModel)]="productoForm.precio" 
+                  placeholder="0.00"
+                  class="w-full pl-11 pr-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 font-mono focus:outline-none focus:border-amber-500/50">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-zinc-300 mb-1.5">
+                Código SKU Base <span class="text-zinc-500">(Opcional, autogenerado)</span>
+              </label>
+              <input 
+                type="text" 
+                [(ngModel)]="productoForm.codigo_producto" 
+                placeholder="Ej. AUR-01-VEST-01"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 font-mono placeholder-zinc-500 focus:outline-none focus:border-amber-500/50">
+            </div>
+          </div>
+
+          <!-- Público Objetivo y Marca -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-zinc-300 mb-1.5">
+                Público Objetivo <span class="text-amber-400">*</span>
+              </label>
+              <select
+                [(ngModel)]="productoForm.genero"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500/50 cursor-pointer">
+                <option value="Mujer">Mujer</option>
+                <option value="Hombre">Hombre</option>
+                <option value="Unisex">Unisex</option>
+                <option value="Niños">Niños</option>
+                <option value="Niñas">Niñas</option>
+                <option value="Bebés">Bebés</option>
+                <option value="Hombre y Mujer">Hombre y Mujer</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-zinc-300 mb-1.5">
+                Marca / Línea <span class="text-zinc-500">(Opcional)</span>
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="productoForm.marca"
+                placeholder="Ej. Línea Propia / Streetwear"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500/50">
+            </div>
+          </div>
+
+          <!-- Temporada y Colección -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-zinc-300 mb-1.5">
+                Temporada <span class="text-zinc-500">(Opcional)</span>
+              </label>
+              <input 
+                type="text" 
+                [(ngModel)]="productoForm.temporada" 
+                placeholder="Ej. Otoño - Invierno 2026"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500/50">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-zinc-300 mb-1.5">
+                Colección <span class="text-zinc-500">(Opcional)</span>
+              </label>
+              <input 
+                type="text" 
+                [(ngModel)]="productoForm.coleccion" 
+                placeholder="Ej. Cápsula Ceremonia"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500/50">
+            </div>
+          </div>
+
+          <!-- Descripción -->
+          <div>
+            <label class="block text-xs font-semibold text-zinc-300 mb-1.5">
+              Descripción y Detalles de Confección
+            </label>
+            <textarea 
+              [(ngModel)]="productoForm.descripcion" 
+              rows="3"
+              placeholder="Describe los tejidos, caída, corte de sastre y especificaciones de la prenda..."
+              class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500/50"></textarea>
+          </div>
+
+          <!-- Estado Activo / Inactivo -->
+          <div class="flex items-center justify-between p-3.5 rounded-xl bg-zinc-950/70 border border-zinc-800">
+            <div>
+              <span class="text-sm font-semibold text-zinc-200 block">Estado del Producto</span>
+              <span class="text-xs text-zinc-500">
+                Los productos inactivos no aparecerán en el catálogo público ni podrán reservarse.
+              </span>
+            </div>
+            <button 
+              type="button" 
+              (click)="productoForm.activo = !productoForm.activo"
+              class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+              [ngClass]="productoForm.activo ? 'bg-amber-500' : 'bg-zinc-700'">
+              <span 
+                class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                [ngClass]="productoForm.activo ? 'translate-x-5' : 'translate-x-0'"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- TAB 2: VARIANTES (TALLAS & COLORES)                                 -->
+        <!-- =================================================================== -->
+        <div *ngIf="tabModalActiva === 'variantes'" class="space-y-5">
+          <!-- Aviso informativo -->
+          <div class="p-3.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-xs text-indigo-300 flex items-start gap-2.5">
+            <svg class="w-4 h-4 text-indigo-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <strong class="text-indigo-200">Generación Automática de Variantes:</strong>
+              Selecciona las tallas y colores disponibles para esta prenda. El sistema generará automáticamente la matriz de combinaciones. El stock por sucursal se gestionará posteriormente en el módulo de Inventario.
+            </div>
+          </div>
+
+          <!-- 1. Selector de Tallas Activas -->
+          <div class="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-zinc-200 uppercase tracking-wider">1. Seleccionar Tallas Activas</span>
+              <div class="flex items-center gap-2">
+                <button type="button" (click)="seleccionarTodasTallas()" class="text-[11px] text-amber-400 hover:underline">Todas</button>
+                <span class="text-zinc-600">|</span>
+                <button type="button" (click)="deseleccionarTodasTallas()" class="text-[11px] text-zinc-400 hover:underline">Ninguna</button>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-2 pt-1">
+              <button 
+                *ngFor="let talla of tallasDisponibles"
+                type="button"
+                (click)="toggleTalla(talla.id_talla)"
+                [ngClass]="(talla.id_talla !== undefined && productoForm.tallas_seleccionadas.includes(talla.id_talla))
+                  ? 'bg-amber-500 text-zinc-950 font-bold border-amber-400 shadow-md shadow-amber-500/20'
+                  : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-zinc-700'"
+                class="px-3 py-1.5 rounded-xl text-xs border transition-all cursor-pointer">
+                {{ talla.nombre }}
+              </button>
+              <div *ngIf="tallasDisponibles.length === 0" class="text-xs text-zinc-500 py-2">
+                No hay tallas activas registradas en el catálogo.
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Precios Específicos por Talla (Diferenciación de precio) -->
+          <div *ngIf="productoForm.tallas_seleccionadas.length > 0" class="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-3">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <span class="text-xs font-bold text-zinc-200 uppercase tracking-wider block">2. Precios Específicos por Talla</span>
+                <span class="text-[11px] text-zinc-500">Define precios distintos para cada talla (ej. tallas L / XL con costo superior).</span>
+              </div>
+              <button 
+                type="button" 
+                (click)="aplicarPrecioBaseATodasTallas()" 
+                class="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20 text-[11px] font-medium transition cursor-pointer"
+                title="Rellena todas las tallas con el precio base del producto">
+                Copiar Precio Base (Bs. {{ (productoForm.precio || 0) | number:'1.2-2' }})
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pt-1">
+              <div *ngFor="let talla of tallasSeleccionadasObjetos" 
+                   class="p-3 rounded-xl bg-zinc-900 border border-zinc-800 space-y-1.5 flex flex-col justify-between">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="font-bold text-amber-400 font-mono">{{ talla.nombre }}</span>
+                  <span *ngIf="obtenerPrecioTalla(talla.id_talla) !== (productoForm.precio || 0)" 
+                        class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                    {{ (obtenerPrecioTalla(talla.id_talla) - (productoForm.precio || 0)) > 0 ? '+' : '' }}{{ (obtenerPrecioTalla(talla.id_talla) - (productoForm.precio || 0)) | number:'1.2-2' }} Bs
+                  </span>
+                  <span *ngIf="obtenerPrecioTalla(talla.id_talla) === (productoForm.precio || 0)" class="text-[10px] text-zinc-500 font-mono">
+                    = Base
+                  </span>
+                </div>
+                <div class="relative">
+                  <span class="absolute left-3 top-2 text-xs font-mono text-zinc-500">Bs.</span>
+                  <input 
+                    type="number" 
+                    step="0.5" 
+                    min="0"
+                    [value]="obtenerPrecioTalla(talla.id_talla)"
+                    (input)="asignarPrecioTalla(talla.id_talla!, $any($event.target).value)"
+                    placeholder="0.00"
+                    class="w-full bg-zinc-950 border border-zinc-700/80 rounded-lg pl-10 pr-3 py-1.5 text-xs text-zinc-100 font-mono focus:outline-none focus:border-amber-500" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Selector de Colores Activos -->
+          <div class="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-zinc-200 uppercase tracking-wider">3. Seleccionar Colores Activos</span>
+              <div class="flex items-center gap-2">
+                <button type="button" (click)="seleccionarTodosColores()" class="text-[11px] text-amber-400 hover:underline">Todos</button>
+                <span class="text-zinc-600">|</span>
+                <button type="button" (click)="deseleccionarTodosColores()" class="text-[11px] text-zinc-400 hover:underline">Ninguno</button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
+              <button 
+                *ngFor="let col of coloresDisponibles"
+                type="button"
+                (click)="toggleColor(col.id_color)"
+                [ngClass]="(col.id_color !== undefined && productoForm.colores_seleccionados.includes(col.id_color))
+                  ? 'bg-amber-500/15 border-amber-500/50 text-amber-300 font-semibold'
+                  : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700'"
+                class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs border transition-all cursor-pointer text-left">
+                <span class="w-4 h-4 rounded-full border border-white/20 flex-shrink-0 shadow-inner" [style.backgroundColor]="col.codigo_hex"></span>
+                <span class="truncate">{{ col.nombre }}</span>
+              </button>
+            </div>
+            <div *ngIf="coloresDisponibles.length === 0" class="text-xs text-zinc-500 py-2">
+              No hay colores activos registrados en el catálogo.
+            </div>
+          </div>
+
+          <!-- 4. Matriz de Variantes Generadas en Vivo -->
+          <div class="p-4 rounded-2xl bg-zinc-950/60 border border-zinc-800 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-zinc-300">
+                Variantes Generadas ({{ combinacionesGeneradas.length }})
+              </span>
+              <span class="text-[11px] text-zinc-500">
+                {{ productoForm.tallas_seleccionadas.length }} tallas × {{ productoForm.colores_seleccionados.length }} colores
+              </span>
+            </div>
+
+            <div *ngIf="combinacionesGeneradas.length > 0" class="flex flex-wrap gap-2 max-h-48 overflow-y-auto pt-1">
+              <div *ngFor="let comb of combinacionesGeneradas" 
+                   class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-200">
+                <span class="w-3 h-3 rounded-full border border-white/20" [style.backgroundColor]="comb.color.codigo_hex"></span>
+                <span class="font-semibold text-amber-300">{{ comb.talla.nombre }}</span>
+                <span class="text-zinc-500">+</span>
+                <span>{{ comb.color.nombre }}</span>
+                <span class="text-[10px] font-mono text-amber-400/90 bg-zinc-950 px-1.5 py-0.5 rounded border border-zinc-800">
+                  Bs. {{ obtenerPrecioTalla(comb.talla.id_talla) | number:'1.2-2' }}
+                </span>
+              </div>
+            </div>
+
+            <div *ngIf="combinacionesGeneradas.length === 0" class="text-xs text-zinc-500 py-3 text-center">
+              Selecciona al menos una talla y un color para generar combinaciones.
+            </div>
+          </div>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- TAB 3: GALERÍA DE FOTOS (CLOUDINARY)                                -->
+        <!-- =================================================================== -->
+        <div *ngIf="tabModalActiva === 'galeria'" class="space-y-4">
+          <!-- Dropzone de Subida -->
+          <div class="relative p-6 rounded-2xl border-2 border-dashed border-zinc-700/80 hover:border-amber-500/50 bg-zinc-950/60 text-center transition-colors">
+            <input 
+              type="file" 
+              (change)="onFileSelected($event)" 
+              accept="image/png, image/jpeg, image/webp"
+              [disabled]="subiendoImagen"
+              class="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed">
+            
+            <div class="flex flex-col items-center pointer-events-none">
+              <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center mb-2">
+                <svg *ngIf="!subiendoImagen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <svg *ngIf="subiendoImagen" class="w-6 h-6 animate-spin text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </div>
+              <p class="text-sm font-semibold text-zinc-200">
+                {{ subiendoImagen ? 'Cargando imagen a Cloudinary...' : 'Haz clic o arrastra una imagen aquí' }}
+              </p>
+              <p class="text-xs text-zinc-500 mt-0.5">Formatos admitidos: JPG, PNG, WEBP (Máximo 10 MB — Optimización automática)</p>
+            </div>
+          </div>
+
+          <!-- Cuadrícula de Fotos Cargadas -->
+          <div>
+            <div class="flex items-center justify-between mb-2.5">
+              <span class="text-xs font-bold text-zinc-300 uppercase tracking-wider">
+                Fotos de la Prenda ({{ productoForm.imagenes.length }})
+              </span>
+              <span class="text-[11px] text-zinc-500">
+                Marca la estrella dorada para elegir la foto de portada
+              </span>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div *ngFor="let img of productoForm.imagenes; let idx = index" 
+                   class="relative group rounded-2xl overflow-hidden bg-zinc-950 border border-zinc-800 aspect-[3/4] shadow-md">
+                <img [src]="img.imagen_url" class="w-full h-full object-cover">
+                
+                <!-- Badge Portada -->
+                <div *ngIf="img.es_principal" 
+                     class="absolute top-2 left-2 px-2 py-0.5 rounded-lg bg-amber-500 text-zinc-950 font-bold text-[10px] shadow-lg flex items-center gap-1">
+                  ★ Portada
+                </div>
+
+                <!-- Overlay de Acciones -->
+                <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2">
+                  <!-- Botón Marcar Portada -->
+                  <button 
+                    type="button" 
+                    (click)="establecerPortada(idx)"
+                    [title]="img.es_principal ? 'Ya es portada' : 'Establecer como foto principal'"
+                    class="p-2 rounded-xl bg-zinc-900/90 text-amber-400 hover:bg-amber-500 hover:text-zinc-950 transition-colors shadow">
+                    ★
+                  </button>
+
+                  <!-- Botón Eliminar -->
+                  <button 
+                    type="button" 
+                    (click)="eliminarImagen(idx)"
+                    title="Eliminar foto"
+                    class="p-2 rounded-xl bg-zinc-900/90 text-rose-400 hover:bg-rose-500 hover:text-white transition-colors shadow">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="productoForm.imagenes.length === 0" class="text-center py-6 text-xs text-zinc-500">
+              Aún no has agregado fotos a esta prenda.
+            </div>
+          </div>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- TAB 4: VESTIDOR VIRTUAL REALIDAD AUMENTADA (M14)                    -->
+        <!-- =================================================================== -->
+        <div *ngIf="tabModalActiva === 'ar'" class="space-y-6">
+
+          <!-- Banner Informativo M14 -->
+          <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-950/40 via-zinc-900 to-zinc-950 border border-amber-500/30 p-4">
+            <div class="flex items-start gap-3">
+              <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center shrink-0 text-amber-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                  <h4 class="text-sm font-bold text-zinc-100">Probador Virtual en Realidad Aumentada (M14)</h4>
+                  <span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    Cámara en Vivo
+                  </span>
+                </div>
+                <p class="text-xs text-zinc-400 mt-1 leading-relaxed">
+                  Permite a tus clientes probarse esta prenda en tiempo real sobre su cuerpo utilizando la cámara de la app móvil. Sube una fotografía 2D recortada (PNG o WebP con fondo transparente).
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Switch Habilitar RA -->
+          <div class="flex items-center justify-between p-4 rounded-2xl bg-zinc-950/70 border border-zinc-800">
+            <div>
+              <span class="text-sm font-semibold text-zinc-200 block">Habilitar Vestidor Virtual para esta Prenda</span>
+              <span class="text-xs text-zinc-500">Muestra el botón "Probar en Vestidor Virtual" en la app móvil.</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="productoForm.tiene_ra" 
+                name="tiene_ra"
+                class="sr-only peer">
+              <div class="w-11 h-6 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+            </label>
+          </div>
+
+          <!-- Configuración de RA (Visible solo si tiene_ra está activo) -->
+          <div *ngIf="productoForm.tiene_ra" class="space-y-6 animate-fade-in">
+            
+            <!-- Selector de Tipo de Prenda y Puntos de Anclaje -->
+            <div>
+              <label class="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2.5">
+                1. Tipo de Prenda y Puntos de Anclaje Corporal
+              </label>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <!-- TOP -->
+                <button 
+                  type="button" 
+                  (click)="productoForm.tipo_prenda_ra = 'TOP'"
+                  class="p-4 rounded-2xl border text-left transition-all relative flex flex-col justify-between cursor-pointer"
+                  [ngClass]="productoForm.tipo_prenda_ra === 'TOP' 
+                    ? 'bg-amber-500/10 border-amber-500/60 shadow-lg shadow-amber-500/10' 
+                    : 'bg-zinc-950/50 border-zinc-800 hover:border-zinc-700'">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-xl">👕</span>
+                    <span *ngIf="productoForm.tipo_prenda_ra === 'TOP'" class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                  </div>
+                  <div>
+                    <h5 class="text-xs font-bold text-zinc-100">Parte Superior (TOP)</h5>
+                    <p class="text-[11px] text-zinc-400 mt-1">Polos, camisas, blusas, casacas, chompas.</p>
+                    <span class="text-[10px] text-amber-400/90 font-mono mt-2 inline-block">Ancla: Hombros & Pecho</span>
+                  </div>
+                </button>
+
+                <!-- PANT -->
+                <button 
+                  type="button" 
+                  (click)="productoForm.tipo_prenda_ra = 'PANT'"
+                  class="p-4 rounded-2xl border text-left transition-all relative flex flex-col justify-between cursor-pointer"
+                  [ngClass]="productoForm.tipo_prenda_ra === 'PANT' 
+                    ? 'bg-amber-500/10 border-amber-500/60 shadow-lg shadow-amber-500/10' 
+                    : 'bg-zinc-950/50 border-zinc-800 hover:border-zinc-700'">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-xl">👖</span>
+                    <span *ngIf="productoForm.tipo_prenda_ra === 'PANT'" class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                  </div>
+                  <div>
+                    <h5 class="text-xs font-bold text-zinc-100">Parte Inferior (PANT)</h5>
+                    <p class="text-[11px] text-zinc-400 mt-1">Pantalones, jeans, shorts, faldas.</p>
+                    <span class="text-[10px] text-amber-400/90 font-mono mt-2 inline-block">Ancla: Caderas & Rodillas</span>
+                  </div>
+                </button>
+
+                <!-- DRESS -->
+                <button 
+                  type="button" 
+                  (click)="productoForm.tipo_prenda_ra = 'DRESS'"
+                  class="p-4 rounded-2xl border text-left transition-all relative flex flex-col justify-between cursor-pointer"
+                  [ngClass]="productoForm.tipo_prenda_ra === 'DRESS' 
+                    ? 'bg-amber-500/10 border-amber-500/60 shadow-lg shadow-amber-500/10' 
+                    : 'bg-zinc-950/50 border-zinc-800 hover:border-zinc-700'">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-xl">👗</span>
+                    <span *ngIf="productoForm.tipo_prenda_ra === 'DRESS'" class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                  </div>
+                  <div>
+                    <h5 class="text-xs font-bold text-zinc-100">Cuerpo Entero (DRESS)</h5>
+                    <p class="text-[11px] text-zinc-400 mt-1">Vestidos, enterizos, trajes largos.</p>
+                    <span class="text-[10px] text-amber-400/90 font-mono mt-2 inline-block">Ancla: Hombros a Tobillos</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Subida y Previsualización de la Prenda 2D -->
+            <div>
+              <label class="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2.5">
+                2. Fotografía 2D Recortada sin Fondo
+              </label>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                
+                <!-- Columna Izquierda: Botón de Subida e Instrucciones -->
+                <div class="space-y-3">
+                  <div class="p-4 rounded-2xl bg-zinc-950/80 border border-zinc-800 text-left space-y-3">
+                    <div class="space-y-1.5">
+                      <h6 class="text-xs font-semibold text-zinc-200">Requisitos para un buen seguimiento:</h6>
+                      <ul class="text-[11px] text-zinc-400 space-y-1 list-disc list-inside">
+                        <li>Formato <strong class="text-amber-300">PNG</strong> o <strong class="text-amber-300">WebP</strong> con transparencia.</li>
+                        <li>Prenda recortada sin maniquí ni fondo.</li>
+                        <li>Vista frontal recta simétrica.</li>
+                        <li>Resolución recomendada: 800x1000px o superior.</li>
+                      </ul>
+                    </div>
+
+                    <!-- Input Oculto de Archivo -->
+                    <input 
+                      type="file" 
+                      #foto2DInput
+                      accept="image/png,image/webp" 
+                      (change)="subirFoto2D($event)" 
+                      class="hidden">
+
+                    <!-- Botón de Subida a Cloudinary -->
+                    <button 
+                      type="button" 
+                      (click)="foto2DInput.click()" 
+                      [disabled]="subiendoFoto2D"
+                      class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-[0.99] transition-all cursor-pointer disabled:opacity-50">
+                      <svg *ngIf="subiendoFoto2D" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      <svg *ngIf="!subiendoFoto2D" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                      </svg>
+                      <span>{{ subiendoFoto2D ? 'Subiendo a Cloudinary...' : (productoForm.modelo_2d_url ? 'Reemplazar Foto 2D' : 'Subir Foto 2D Transparente') }}</span>
+                    </button>
+
+                    <!-- O ingresar URL directa -->
+                    <div class="pt-2 border-t border-zinc-800/80">
+                      <label class="block text-[11px] font-medium text-zinc-400 mb-1">O pegar URL de imagen Cloudinary directa:</label>
+                      <input 
+                        type="url" 
+                        [(ngModel)]="productoForm.modelo_2d_url" 
+                        name="modelo_2d_url"
+                        placeholder="https://res.cloudinary.com/.../prenda.png" 
+                        class="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-700/60 text-xs text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-amber-500 transition-colors font-mono">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Columna Derecha: Vista Previa con Cuadrícula de Transparencia -->
+                <div class="flex flex-col items-center">
+                  <div 
+                    class="w-full h-72 rounded-2xl border-2 border-zinc-800 flex items-center justify-center relative overflow-hidden p-4 group"
+                    style="background-image: linear-gradient(45deg, #18181b 25%, transparent 25%), linear-gradient(-45deg, #18181b 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #18181b 75%), linear-gradient(-45deg, transparent 75%, #18181b 75%); background-size: 16px 16px; background-position: 0 0, 0 8px, 8px -8px, -8px 0px; background-color: #0d0d10;">
+                    
+                    <!-- Prenda Cargada -->
+                    <ng-container *ngIf="productoForm.modelo_2d_url; else sinFoto2D">
+                      <img 
+                        [src]="productoForm.modelo_2d_url" 
+                        alt="Prenda 2D RA"
+                        class="max-h-full max-w-full object-contain filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] transition-transform duration-300 group-hover:scale-105">
+
+                      <!-- Badge de Verificación -->
+                      <div class="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-[10px] font-semibold flex items-center gap-1.5 backdrop-blur-md">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        Prenda 2D lista
+                      </div>
+
+                      <!-- Botón de Quitar Prenda -->
+                      <button 
+                        type="button" 
+                        (click)="eliminarFoto2D()" 
+                        title="Quitar foto 2D"
+                        class="absolute top-3 right-3 p-2 rounded-xl bg-zinc-950/80 border border-zinc-700/80 text-rose-400 hover:bg-rose-500 hover:text-white transition-colors cursor-pointer shadow-lg backdrop-blur-md">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </ng-container>
+
+                    <!-- Estado Vacío -->
+                    <ng-template #sinFoto2D>
+                      <div class="text-center p-6 space-y-2">
+                        <div class="w-14 h-14 rounded-2xl bg-zinc-900/90 border border-zinc-800 flex items-center justify-center mx-auto text-zinc-600">
+                          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <p class="text-xs font-semibold text-zinc-400">Sin fotografía 2D asignada</p>
+                        <p class="text-[11px] text-zinc-600 max-w-xs">
+                          La cuadrícula oscura te permite comprobar que el fondo esté perfectamente transparente.
+                        </p>
+                      </div>
+                    </ng-template>
+
+                  </div>
+                  <span class="text-[10px] text-zinc-500 mt-2">
+                    Vista previa de transparencia — La prenda debe verse nítida y sin bordes blancos.
+                  </span>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="pt-4 border-t border-zinc-800 shrink-0 flex items-center justify-between gap-3">
+        <button 
+          type="button" 
+          (click)="cerrarModal()"
+          class="px-4 py-2.5 rounded-xl border border-zinc-700 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 transition-all cursor-pointer">
+          Cancelar
+        </button>
+
+        <div class="flex items-center gap-2">
+          <button 
+            type="button"
+            (click)="guardarProducto()"
+            [disabled]="guardando || subiendoImagen"
+            class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 text-xs font-semibold shadow-lg shadow-amber-500/20 active:scale-95 transition-all cursor-pointer disabled:opacity-50 flex items-center gap-2">
+            <svg *ngIf="guardando" class="w-4 h-4 animate-spin text-zinc-950" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>{{ modoEdicion ? 'Actualizar Producto' : 'Registrar Producto' }}</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL RÁPIDO DE GALERÍA DE FOTOS                                          -->
+  <!-- ========================================================================= -->
+  <div *ngIf="mostrarModalGaleria && productoGaleriaSeleccionado" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto">
+    <div class="relative w-full max-w-2xl rounded-3xl bg-zinc-900 border border-zinc-800 shadow-2xl p-6 flex flex-col my-auto max-h-[90vh]">
+      
+      <div class="flex items-center justify-between pb-4 border-b border-zinc-800 shrink-0">
+        <div>
+          <h2 class="text-base font-bold text-zinc-100 flex items-center gap-2">
+            Galería: {{ productoGaleriaSeleccionado.nombre }}
+          </h2>
+          <p class="text-xs text-zinc-400 mt-0.5">Sube, elimina o define la foto de portada para esta prenda.</p>
+        </div>
+        <button (click)="cerrarModalGaleria()" class="p-2 text-zinc-400 hover:text-white rounded-xl hover:bg-zinc-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Subida Rápida -->
+      <div class="py-4 space-y-4 overflow-y-auto flex-1">
+        <div class="relative p-5 rounded-2xl border-2 border-dashed border-zinc-700/80 hover:border-amber-500/50 bg-zinc-950/60 text-center transition-colors">
+          <input 
+            type="file" 
+            (change)="subirFotoGaleriaRapida($event)" 
+            accept="image/png, image/jpeg, image/webp"
+            [disabled]="subiendoImagen"
+            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed">
+          <div class="flex flex-col items-center pointer-events-none">
+            <svg *ngIf="!subiendoImagen" class="w-6 h-6 text-amber-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <svg *ngIf="subiendoImagen" class="w-6 h-6 animate-spin text-amber-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span class="text-xs font-semibold text-zinc-200">
+              {{ subiendoImagen ? 'Subiendo imagen a Cloudinary...' : '+ Cargar Nueva Foto a Cloudinary' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Grid de Fotos -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div *ngFor="let img of (productoGaleriaSeleccionado.imagenes || []); let i = index" 
+               class="relative group rounded-2xl overflow-hidden bg-zinc-950 border border-zinc-800 aspect-[3/4] shadow">
+            <img [src]="img.imagen_url" class="w-full h-full object-cover">
+            
+            <div *ngIf="img.es_principal" class="absolute top-2 left-2 px-2 py-0.5 rounded-lg bg-amber-500 text-zinc-950 font-bold text-[10px] shadow">
+              ★ Portada
+            </div>
+
+            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2">
+              <button 
+                type="button"
+                (click)="establecerPortadaRapida(img)"
+                title="Marcar como Portada"
+                class="p-2 rounded-xl bg-zinc-900 text-amber-400 hover:bg-amber-500 hover:text-zinc-950 transition-colors shadow">
+                ★
+              </button>
+              <button 
+                type="button"
+                (click)="eliminarFotoRapida(img, i)"
+                title="Eliminar Foto"
+                class="p-2 rounded-xl bg-zinc-900 text-rose-400 hover:bg-rose-500 hover:text-white transition-colors shadow">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-zinc-800 shrink-0 flex justify-end">
+        <button 
+          type="button" 
+          (click)="cerrarModalGaleria()"
+          class="px-5 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold transition-all cursor-pointer">
+          Cerrar
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL DE ELIMINACIÓN / DESACTIVACIÓN INTELIGENTE                          -->
+  <!-- ========================================================================= -->
+  <div *ngIf="mostrarModalEliminar && productoAeliminar" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+    <div class="relative w-full max-w-md rounded-3xl bg-zinc-900 border border-zinc-800 shadow-2xl p-6 space-y-4">
+      
+      <div class="flex items-center gap-3">
+        <div class="p-3 rounded-2xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-zinc-100">
+            Confirmar Acción sobre la Prenda
+          </h3>
+          <p class="text-xs text-zinc-400">Regla de integridad de catálogo</p>
+        </div>
+      </div>
+
+      <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200/90 leading-relaxed">
+        <p class="font-semibold text-amber-400 mb-1">Protección de Inventario y Ventas:</p>
+        Si la prenda <strong>"{{ productoAeliminar.nombre }}"</strong> cuenta con existencias, reservas o ventas previas, <strong>no se eliminará físicamente</strong> de la base de datos; en su lugar, se <strong>desactivará</strong> automáticamente para que no esté disponible en el catálogo público ni en nuevas operaciones.
+      </div>
+
+      <p class="text-sm text-zinc-300">
+        ¿Deseas proceder con la eliminación de <strong>"{{ productoAeliminar.nombre }}"</strong>?
+      </p>
+
+      <div class="flex items-center justify-end gap-3 pt-2">
+        <button 
+          type="button" 
+          (click)="cerrarModalEliminar()"
+          class="px-4 py-2 rounded-xl text-xs font-semibold text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-all cursor-pointer">
+          Cancelar
+        </button>
+        <button 
+          type="button" 
+          (click)="ejecutarEliminacion()"
+          [disabled]="eliminando"
+          class="px-4 py-2 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/20 transition-all cursor-pointer disabled:opacity-50">
+          {{ eliminando ? 'Procesando...' : 'Confirmar' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL ZOOM DE FOTO                                                        -->
+  <!-- ========================================================================= -->
+  <div *ngIf="zoomImagenUrl" 
+       (click)="cerrarZoom()"
+       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-lg animate-fade-in cursor-zoom-out">
+    <div class="relative max-w-xl max-h-[85vh] rounded-3xl overflow-hidden shadow-2xl border border-zinc-800 bg-zinc-950">
+      <img [src]="zoomImagenUrl" class="w-full h-full object-contain max-h-[80vh]">
+      <button 
+        type="button" 
+        (click)="cerrarZoom()" 
+        class="absolute top-3 right-3 p-2 rounded-full bg-zinc-950/80 text-zinc-300 hover:text-white border border-zinc-800 transition-colors">
+        ✕
+      </button>
+    </div>
+  </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- MODAL DE PROMOCIONES -->
+<div
+  *ngIf="mostrarModalPromocion"
+  class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+>
+  <div
+    class="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-zinc-700 bg-zinc-950 shadow-2xl"
+  >
+
+    <!-- HEADER -->
+    <div
+      class="flex items-center justify-between px-6 py-5 border-b border-zinc-800"
+    >
+      <div>
+        <h2 class="text-lg font-bold text-white">
+          Gestionar promoción
+        </h2>
+
+        <p
+          *ngIf="productoPromocionSeleccionado"
+          class="mt-1 text-sm text-zinc-400"
+        >
+          {{ productoPromocionSeleccionado.nombre }}
+        </p>
+      </div>
+
+      <button
+        type="button"
+        (click)="cerrarModalPromocion()"
+        class="w-9 h-9 flex items-center justify-center rounded-lg
+               bg-zinc-900 text-zinc-400 hover:bg-zinc-800
+               hover:text-white transition"
+      >
+        ✕
+      </button>
+    </div>
+
+    <!-- CONTENIDO -->
+    <div class="p-6">
+
+      <!-- CARGANDO -->
+      <div
+        *ngIf="cargandoPromociones"
+        class="flex flex-col items-center justify-center py-12"
+      >
+        <div
+          class="w-8 h-8 border-2 border-zinc-700 border-t-amber-400
+                 rounded-full animate-spin"
+        ></div>
+
+        <p class="mt-3 text-sm text-zinc-500">
+          Cargando promociones...
+        </p>
+      </div>
+
+      <!-- CONTENIDO CARGADO -->
+      <div *ngIf="!cargandoPromociones">
+
+        <!-- PRODUCTO -->
+        <div
+          *ngIf="productoPromocionSeleccionado"
+          class="mb-6 rounded-xl border border-zinc-800 bg-zinc-900/50 p-4"
+        >
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <p class="text-xs text-zinc-500 uppercase tracking-wide">
+                Producto
+              </p>
+
+              <p class="mt-1 font-semibold text-white">
+                {{ productoPromocionSeleccionado.nombre }}
+              </p>
+            </div>
+
+            <div class="text-right">
+              <p class="text-xs text-zinc-500">
+                Precio normal
+              </p>
+
+              <p class="mt-1 font-bold text-amber-400 font-mono">
+                Bs.
+                {{
+                  productoPromocionSeleccionado.precio
+                    | number:'1.2-2'
+                }}
+              </p>
+            </div>
+          </div>
+
+          <!-- TEMPORADA -->
+          <div
+            class="mt-3 flex items-center gap-2 flex-wrap"
+          >
+            <span
+              class="px-2 py-1 rounded-lg bg-zinc-800
+                     border border-zinc-700 text-xs text-zinc-300"
+            >
+              {{ productoPromocionSeleccionado.temporada || 'PERMANENTE' }}
+            </span>
+
+            <span
+              *ngIf="!esTemporadaActual(productoPromocionSeleccionado)"
+              class="px-2 py-1 rounded-lg
+                     bg-rose-500/10 border border-rose-500/30
+                     text-xs text-rose-300"
+            >
+              ⚠ Fuera de temporada
+            </span>
+
+            <span
+              *ngIf="!esTemporadaActual(productoPromocionSeleccionado)"
+              class="text-xs text-zinc-500"
+            >
+              La promoción permitirá que esté disponible para clientes.
+            </span>
+          </div>
+        </div>
+
+        <!-- ASIGNAR PROMOCIÓN -->
+        <div
+          class="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5"
+        >
+          <div class="mb-4">
+            <h3 class="text-sm font-semibold text-white">
+              Asignar promoción
+            </h3>
+
+            <p class="mt-1 text-xs text-zinc-500">
+              Selecciona una promoción vigente y define el descuento.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <!-- PROMOCIÓN -->
+            <div>
+              <label
+                class="block mb-2 text-xs font-medium text-zinc-400"
+              >
+                Promoción
+              </label>
+
+              <select
+                [(ngModel)]="promocionSeleccionada"
+                class="w-full rounded-lg border border-zinc-700
+                       bg-zinc-950 px-3 py-2.5 text-sm text-white
+                       outline-none focus:border-amber-500"
+              >
+                <option [ngValue]="null">
+                  Seleccionar promoción
+                </option>
+
+                <option
+                  *ngFor="let promocion of promocionesDisponibles"
+                  [ngValue]="promocion.id_promocion"
+                >
+                  {{ promocion.nombre }}
+                  ({{ promocion.fecha_inicio }} -
+                  {{ promocion.fecha_fin }})
+                </option>
+              </select>
+            </div>
+
+            <!-- DESCUENTO -->
+            <div>
+              <label
+                class="block mb-2 text-xs font-medium text-zinc-400"
+              >
+                Descuento (%)
+              </label>
+
+              <div class="relative">
+                <input
+                  type="number"
+                  [(ngModel)]="porcentajeDescuento"
+                  min="0.01"
+                  max="100"
+                  step="0.01"
+                  placeholder="Ej. 30"
+                  class="w-full rounded-lg border border-zinc-700
+                         bg-zinc-950 px-3 py-2.5 pr-10 text-sm text-white
+                         outline-none focus:border-amber-500"
+                />
+
+                <span
+                  class="absolute right-3 top-1/2 -translate-y-1/2
+                         text-sm text-zinc-500"
+                >
+                  %
+                </span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- BOTÓN ASIGNAR -->
+          <div class="mt-5 flex justify-end">
+            <button
+              type="button"
+              (click)="asignarPromocion()"
+              [disabled]="guardandoPromocion"
+              class="px-4 py-2.5 rounded-lg bg-amber-500
+                     hover:bg-amber-400 disabled:opacity-50
+                     disabled:cursor-not-allowed
+                     text-black text-sm font-semibold transition"
+            >
+              <span *ngIf="!guardandoPromocion">
+                🏷 Asignar promoción
+              </span>
+
+              <span *ngIf="guardandoPromocion">
+                Guardando...
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- PROMOCIONES DEL PRODUCTO -->
+        <div class="mt-6">
+
+          <div class="mb-4">
+            <h3 class="text-sm font-semibold text-white">
+              Promociones del producto
+            </h3>
+
+            <p class="mt-1 text-xs text-zinc-500">
+              Historial de promociones asociadas a este producto.
+            </p>
+          </div>
+
+          <!-- SIN PROMOCIONES -->
+          <div
+            *ngIf="promocionesProducto.length === 0"
+            class="rounded-xl border border-dashed border-zinc-800
+                   py-8 text-center"
+          >
+            <p class="text-sm text-zinc-500">
+              Este producto no tiene promociones asignadas.
+            </p>
+          </div>
+
+          <!-- LISTA -->
+          <div
+            *ngIf="promocionesProducto.length > 0"
+            class="space-y-3"
+          >
+
+            <div
+              *ngFor="let promocion of promocionesProducto"
+              class="rounded-xl border border-zinc-800
+                     bg-zinc-900/40 p-4"
+            >
+
+              <div
+                class="flex flex-col md:flex-row
+                       md:items-center md:justify-between gap-4"
+              >
+
+                <!-- INFO -->
+                <div class="min-w-0">
+
+                  <div
+                    class="flex items-center gap-2 flex-wrap"
+                  >
+                    <h4
+                      class="font-semibold text-white"
+                    >
+                      {{ promocion.nombre }}
+                    </h4>
+
+                    <span
+                      *ngIf="promocion.vigente"
+                      class="px-2 py-0.5 rounded-lg
+                             bg-emerald-500/10
+                             border border-emerald-500/30
+                             text-[11px] text-emerald-400
+                             font-semibold"
+                    >
+                      ✓ Vigente
+                    </span>
+
+                    <span
+                      *ngIf="!promocion.vigente"
+                      class="px-2 py-0.5 rounded-lg
+                             bg-zinc-800 border border-zinc-700
+                             text-[11px] text-zinc-500
+                             font-semibold"
+                    >
+                      No vigente
+                    </span>
+                  </div>
+
+                  <p
+                    *ngIf="promocion.descripcion"
+                    class="mt-1 text-xs text-zinc-500"
+                  >
+                    {{ promocion.descripcion }}
+                  </p>
+
+                  <div
+                    class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1
+                           text-xs text-zinc-500"
+                  >
+                    <span>
+                      {{ promocion.fecha_inicio }}
+                      →
+                      {{ promocion.fecha_fin }}
+                    </span>
+
+                    <span
+                      class="font-semibold text-emerald-400"
+                    >
+                      {{ promocion.porcentaje_descuento }}% descuento
+                    </span>
+                  </div>
+
+                </div>
+
+                <!-- ACCIONES -->
+                <div class="flex items-center gap-3 shrink-0">
+
+                  <div
+                    *ngIf="promocion.vigente"
+                    class="text-right"
+                  >
+                    <p class="text-[10px] text-zinc-500">
+                      Precio promocional
+                    </p>
+
+                    <p
+                      *ngIf="promocion.precio_promocional !== undefined"
+                      class="font-bold text-emerald-400 font-mono"
+                    >
+                      Bs.
+                      {{
+                        promocion.precio_promocional
+                          | number:'1.2-2'
+                      }}
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    (click)="eliminarPromocionProducto(promocion)"
+                    class="px-3 py-2 rounded-lg
+                           bg-rose-500/10
+                           border border-rose-500/30
+                           text-xs text-rose-300
+                           hover:bg-rose-500/20 transition"
+                  >
+                    Quitar
+                  </button>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div
+      class="flex justify-end px-6 py-4 border-t border-zinc-800"
+    >
+      <button
+        type="button"
+        (click)="cerrarModalPromocion()"
+        class="px-4 py-2 rounded-lg bg-zinc-800
+               hover:bg-zinc-700 text-sm text-zinc-300
+               hover:text-white transition"
+      >
+        Cerrar
+      </button>
+    </div>
+
+  </div>
+</div>

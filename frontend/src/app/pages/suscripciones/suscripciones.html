@@ -1,0 +1,1053 @@
+<div class="space-y-6 pb-12">
+
+  <!-- Banner de Verificación Automática de PayPal -->
+  <div *ngIf="verificandoPagoPayPalAuto"
+       class="p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 text-indigo-950 dark:text-indigo-200 flex items-center justify-between gap-4 shadow-sm animate-pulse">
+    <div class="flex items-center gap-3">
+      <svg class="w-5 h-5 animate-spin text-indigo-600 dark:text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+      <div>
+        <p class="text-xs font-black">Aprobación de PayPal detectada — Verificando y capturando pago...</p>
+        <p class="text-[11px] text-zinc-600 dark:text-slate-300">Estamos validando tu orden server-to-server con PayPal para activar tu tienda y plan al instante.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header Section -->
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2.5">
+        <h1 class="text-2xl font-black tracking-tight text-zinc-900 dark:text-white">Suscripciones y Límites</h1>
+        <span class="px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+          Control Operativo
+        </span>
+      </div>
+      <p class="text-xs font-medium text-zinc-500 dark:text-slate-400 mt-1">
+        Consulta de periodo de vigencia, límites de sucursales activas, capacidades habilitadas e historial de renovaciones.
+      </p>
+    </div>
+
+    <!-- Company Selector (Platform Admin) & Action Buttons -->
+    <div class="flex flex-wrap items-center gap-3">
+      <!-- Selector de Empresa para Administrador Global -->
+      <div *ngIf="isGlobalAdmin && empresas.length > 0" class="flex items-center gap-2">
+        <label class="text-xs font-bold text-zinc-600 dark:text-slate-300">Empresa:</label>
+        <select [(ngModel)]="empresaSeleccionadaId"
+                (change)="onSeleccionarEmpresa()"
+                class="px-3 py-2 text-xs font-semibold bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-xl text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm max-w-xs">
+          <option *ngFor="let emp of empresas" [ngValue]="emp.id_empresa">
+            {{ emp.nombre_empresa }} (ID: {{ emp.id_empresa }})
+          </option>
+        </select>
+      </div>
+
+      <!-- Botones de Autoservicio para Propietarios de Tienda -->
+      <ng-container *ngIf="!isGlobalAdmin">
+        <!-- Botón destacado si tiene pago pendiente -->
+        <button *ngIf="planVigencia?.solicitud_contratacion?.estado_contratacion === 'PENDIENTE_PAGO' || planVigencia?.estado === 'PENDIENTE_ACTIVACION'"
+                (click)="abrirPagoPendiente()"
+                class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-xl shadow-md shadow-amber-600/25 transition-all animate-pulse">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <span>Terminar Pago</span>
+        </button>
+
+        <!-- Botón Renovar Suscripción -->
+        <button (click)="abrirModalRenovar()"
+                [disabled]="cargandoPlan"
+                class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 rounded-xl shadow-md shadow-indigo-600/25 transition-all disabled:opacity-50">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span>Renovar Plan</span>
+        </button>
+
+        <!-- Botón Cambiar de Plan -->
+        <button (click)="abrirModalCambiarPlan()"
+                [disabled]="cargandoPlan"
+                class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-zinc-800 dark:text-slate-100 bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 hover:bg-stone-50 dark:hover:bg-slate-800 rounded-xl shadow-sm transition-all disabled:opacity-50">
+          <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+          </svg>
+          <span>Cambiar de Plan</span>
+        </button>
+
+        <!-- Botón Opciones Comerciales / Cancelar Suscripción -->
+        <button *ngIf="planVigencia?.vigente"
+                (click)="abrirModalCancelarComercial()"
+                [disabled]="cargandoPlan"
+                class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-rose-700 dark:text-rose-400 bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-900/60 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl shadow-sm transition-all disabled:opacity-50">
+          <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+          <span>Gestionar / Cancelar</span>
+        </button>
+      </ng-container>
+
+      <!-- Nueva Suscripción / Renovar Button (Platform Admin) -->
+      <button *ngIf="puedeGestionar"
+              (click)="abrirModalAsignar()"
+              [disabled]="cargandoPlan"
+              class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 rounded-xl shadow-md shadow-indigo-600/25 transition-all disabled:opacity-50">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        <span>Asignar / Renovar (Admin)</span>
+      </button>
+
+      <!-- Refresh Button -->
+      <button (click)="cargarDatosEmpresa()"
+              [disabled]="cargandoPlan || cargandoHistorial"
+              class="p-2 text-zinc-600 hover:text-zinc-900 dark:text-slate-300 dark:hover:text-white bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-xl hover:bg-stone-50 dark:hover:bg-slate-800/80 transition-all shadow-sm disabled:opacity-50"
+              title="Refrescar">
+        <svg [ngClass]="cargandoPlan || cargandoHistorial ? 'animate-spin' : ''" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Notification Banner -->
+  <div *ngIf="mensajeExito"
+       class="flex items-center justify-between p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-xs font-medium transition-all animate-fadeIn">
+    <div class="flex items-center gap-2.5">
+      <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span>{{ mensajeExito }}</span>
+    </div>
+    <button (click)="mensajeExito = ''" class="text-emerald-600 hover:text-emerald-800 dark:hover:text-emerald-200">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+    </button>
+  </div>
+
+  <!-- Error Banner -->
+  <div *ngIf="mensajeError"
+       class="flex items-center justify-between p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-rose-800 dark:text-rose-300 text-xs font-medium transition-all animate-fadeIn">
+    <div class="flex items-center gap-2.5">
+      <svg class="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span>{{ mensajeError }}</span>
+    </div>
+    <button (click)="mensajeError = ''" class="text-rose-600 hover:text-rose-800 dark:hover:text-rose-200">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+    </button>
+  </div>
+
+  <!-- Hero Card: Pago Pendiente de Activación -->
+  <div *ngIf="planVigencia?.solicitud_contratacion?.estado_contratacion === 'PENDIENTE_PAGO' || planVigencia?.estado === 'PENDIENTE_ACTIVACION'"
+       class="p-6 rounded-3xl bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/30 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 animate-fadeIn">
+    <div class="space-y-1.5">
+      <div class="flex items-center gap-2">
+        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+          Activación Pendiente de Pago
+        </span>
+        <span class="text-xs font-mono font-bold text-zinc-600 dark:text-slate-400">
+          Ref: {{ planVigencia?.solicitud_contratacion?.codigo_seguimiento }}
+        </span>
+      </div>
+      <h2 class="text-xl font-black text-zinc-900 dark:text-white">
+        Suscripción al Plan {{ planVigencia?.solicitud_contratacion?.nombre_plan || planVigencia?.solicitud_contratacion?.codigo_plan || 'SaaS' }}
+      </h2>
+      <p class="text-xs text-zinc-600 dark:text-slate-300 leading-relaxed max-w-2xl">
+        Tu registro autónomo fue completado pero el pago aún no ha sido confirmado por la pasarela o verificado.
+        Importe a abonar: <strong class="text-amber-700 dark:text-amber-400 font-black">{{ planVigencia?.solicitud_contratacion?.moneda }} {{ planVigencia?.solicitud_contratacion?.monto | number:'1.2-2' }}</strong> ({{ planVigencia?.solicitud_contratacion?.periodicidad | lowercase }}).
+      </p>
+    </div>
+    <div class="flex flex-wrap items-center gap-3 shrink-0">
+      <button (click)="abrirPagoPendiente()"
+              class="px-5 py-3 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-2xl shadow-lg shadow-amber-600/30 transition-all flex items-center gap-2">
+        <span>Completar Pago de Activación</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Current Plan & Validity Overview Cards -->
+  <div *ngIf="planVigencia" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+    <!-- Card 1: Plan & Estado -->
+    <div class="p-5 rounded-2xl bg-white dark:bg-slate-950 border border-stone-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-slate-400">Plan Actual</span>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold" [ngClass]="obtenerBadgeEstadoClass(planVigencia.estado)">
+            {{ planVigencia.estado }}
+          </span>
+        </div>
+        <p class="text-xl font-black text-zinc-900 dark:text-white">
+          {{ planVigencia.codigo_plan || 'Sin Suscripción' }}
+        </p>
+        <p class="text-[11px] text-zinc-500 dark:text-slate-400 mt-1">
+          {{ planVigencia.vigente ? 'Servicios comerciales habilitados' : 'Operaciones nuevas bloqueadas' }}
+        </p>
+      </div>
+      <div class="mt-4 pt-3 border-t border-stone-100 dark:border-slate-800/80 flex items-center justify-between text-[11px]">
+        <span class="text-zinc-500 dark:text-slate-400">ID Suscripción:</span>
+        <span class="font-bold text-zinc-800 dark:text-slate-200">{{ planVigencia.id_suscripcion || '—' }}</span>
+      </div>
+    </div>
+
+    <!-- Card 2: Sucursales Activas y Límites -->
+    <div class="p-5 rounded-2xl bg-white dark:bg-slate-950 border border-stone-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-slate-400">Sucursales Activas</span>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+            {{ planVigencia.disponibles }} disponible(s)
+          </span>
+        </div>
+        <div class="flex items-baseline gap-1.5">
+          <span class="text-2xl font-black text-zinc-900 dark:text-white">{{ planVigencia.uso?.sucursales_activas ?? 0 }}</span>
+          <span class="text-xs font-bold text-zinc-400 dark:text-slate-500">/ {{ planVigencia.limites.sucursales_activas ?? '—' }} máx.</span>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="w-full bg-stone-100 dark:bg-slate-900 rounded-full h-2 mt-3 overflow-hidden">
+          <div class="h-2 rounded-full transition-all duration-500"
+               [ngClass]="(planVigencia.uso?.sucursales_activas || 0) >= (planVigencia.limites.sucursales_activas || 1) ? 'bg-rose-500' : 'bg-indigo-600 dark:bg-indigo-500'"
+               [style.width.%]="porcentajeUsoSucursales">
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 pt-3 border-t border-stone-100 dark:border-slate-800/80 text-[11px] text-zinc-500 dark:text-slate-400">
+        {{ (planVigencia.disponibles > 0) ? 'Puede crear o reactivar tiendas' : 'Capacidad máxima de tiendas alcanzada' }}
+      </div>
+    </div>
+
+    <!-- Card 3: Periodo de Vigencia -->
+    <div class="p-5 rounded-2xl bg-white dark:bg-slate-950 border border-stone-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+      <div>
+        <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-slate-400">Periodo Vigente</span>
+        <div class="mt-2 space-y-1">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-zinc-500 dark:text-slate-400">Inicio:</span>
+            <span class="font-bold text-zinc-800 dark:text-slate-200">{{ formatearFechaDisplay(planVigencia.inicio) }}</span>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-zinc-500 dark:text-slate-400">Fin:</span>
+            <span class="font-bold text-zinc-800 dark:text-slate-200">{{ formatearFechaDisplay(planVigencia.fin) }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 pt-3 border-t border-stone-100 dark:border-slate-800/80 flex items-center gap-1.5 text-[11px]">
+        <span class="w-2 h-2 rounded-full" [ngClass]="planVigencia.vigente ? 'bg-emerald-500' : 'bg-rose-500'"></span>
+        <span class="text-zinc-600 dark:text-slate-300 font-semibold">{{ planVigencia.vigente ? 'Periodo en curso' : 'Sin periodo activo' }}</span>
+      </div>
+    </div>
+
+    <!-- Card 4: Capacidades Analíticas -->
+    <div class="p-5 rounded-2xl bg-white dark:bg-slate-950 border border-stone-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+      <div>
+        <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-slate-400">Motor de Reportes</span>
+        <div class="mt-2 flex items-center gap-2">
+          <div class="p-1 rounded-lg"
+               [ngClass]="planVigencia.capacidades.reportes_generativos
+                 ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400'
+                 : 'bg-stone-100 dark:bg-slate-900 text-zinc-400'">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    [attr.d]="planVigencia.capacidades.reportes_generativos ? 'M5 13l4 4L19 7' : 'M6 18L18 6M6 6l12 12'" />
+            </svg>
+          </div>
+          <p class="text-sm font-bold text-zinc-900 dark:text-white">
+            {{ planVigencia.capacidades.reportes_generativos ? 'Habilitado' : 'No Habilitado' }}
+          </p>
+        </div>
+        <p class="text-[11px] text-zinc-500 dark:text-slate-400 mt-1">
+          {{ planVigencia.capacidades.reportes_generativos
+            ? 'Incluye motor dinámico avanzado con exportación PDF'
+            : 'Requiere plan Profesional para habilitar el motor dinámico' }}
+        </p>
+      </div>
+      <div class="mt-4 pt-3 border-t border-stone-100 dark:border-slate-800/80 text-[11px] text-zinc-500 dark:text-slate-400">
+        Reportes convencionales P1 siempre disponibles
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Historial de Suscripciones Table -->
+  <div class="rounded-3xl bg-white dark:bg-slate-950 border border-stone-200 dark:border-slate-800 shadow-sm overflow-hidden">
+
+    <!-- Table Header -->
+    <div class="p-5 border-b border-stone-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div>
+        <h2 class="text-base font-black text-zinc-900 dark:text-white">Historial de Suscripciones</h2>
+        <p class="text-xs text-zinc-500 dark:text-slate-400 mt-0.5">
+          Registro cronológico e inmutable de periodos de servicio asignados, renovados y cancelados.
+        </p>
+      </div>
+
+      <span class="text-xs font-semibold px-2.5 py-1 rounded-xl bg-stone-100 dark:bg-slate-900 text-zinc-600 dark:text-slate-300">
+        Total: {{ historial.length }} periodo(s)
+      </span>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="cargandoHistorial" class="p-8 text-center text-xs text-zinc-500 dark:text-slate-400 space-y-2">
+      <svg class="w-6 h-6 animate-spin mx-auto text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+      <p>Cargando historial de suscripciones...</p>
+    </div>
+
+    <!-- Table Content -->
+    <div *ngIf="errorHistorial && !cargandoHistorial" role="alert" class="p-5 text-sm text-rose-700 dark:text-rose-300">
+      {{ errorHistorial }}
+    </div>
+    <div *ngIf="!cargandoHistorial && !errorHistorial" class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-stone-100 dark:border-slate-800/80 bg-stone-50/50 dark:bg-slate-900/30 text-[11px] font-black uppercase tracking-wider text-zinc-500 dark:text-slate-400">
+            <th class="py-3 px-4"># ID</th>
+            <th class="py-3 px-4">Plan</th>
+            <th class="py-3 px-4">Inicio</th>
+            <th class="py-3 px-4">Fin</th>
+            <th class="py-3 px-4">Estado</th>
+            <th class="py-3 px-4">Motivo Administrativo</th>
+            <th class="py-3 px-4">Registrado Por</th>
+            <th *ngIf="puedeGestionar" class="py-3 px-4 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-stone-100 dark:divide-slate-800/60 text-xs text-zinc-700 dark:text-slate-300">
+          <tr *ngFor="let item of historial; trackBy: trackBySuscripcionId"
+              class="hover:bg-stone-50/70 dark:hover:bg-slate-900/40 transition-colors">
+            <td class="py-3 px-4 font-mono font-bold text-zinc-900 dark:text-white">#{{ item.id_suscripcion }}</td>
+            <td class="py-3 px-4 font-black">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                    [ngClass]="item.codigo_plan === 'PROFESIONAL'
+                      ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800'
+                      : 'bg-stone-100 text-zinc-700 dark:bg-slate-900 dark:text-slate-300 border border-stone-200 dark:border-slate-800'">
+                {{ item.codigo_plan }}
+              </span>
+            </td>
+            <td class="py-3 px-4 whitespace-nowrap">{{ formatearFechaDisplay(item.inicio) }}</td>
+            <td class="py-3 px-4 whitespace-nowrap">{{ formatearFechaDisplay(item.fin) }}</td>
+            <td class="py-3 px-4">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" [ngClass]="obtenerBadgeEstadoClass(estadoPeriodo(item))">
+                {{ estadoPeriodo(item) }}
+              </span>
+            </td>
+            <td class="py-3 px-4 max-w-xs truncate" [title]="item.motivo">
+              {{ item.motivo }}
+            </td>
+            <td class="py-3 px-4 whitespace-nowrap text-zinc-500 dark:text-slate-400">
+              {{ item.creado_por ? ('Usuario #' + item.creado_por) : 'Sistema' }}
+            </td>
+            <td *ngIf="puedeGestionar" class="py-3 px-4 text-right whitespace-nowrap">
+              <button *ngIf="puedeCancelar(item)"
+                      (click)="abrirModalCancelar(item)"
+                      class="px-2.5 py-1 text-[11px] font-bold text-rose-600 hover:text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors border border-rose-200 dark:border-rose-900/50">
+                Cancelar
+              </button>
+            </td>
+          </tr>
+
+          <!-- Empty Row -->
+          <tr *ngIf="historial.length === 0">
+            <td [attr.colspan]="puedeGestionar ? 8 : 7" class="py-8 text-center text-xs text-zinc-400 dark:text-slate-500">
+              No hay historial de suscripciones registradas para esta empresa.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- Modal: Asignar / Renovar Suscripción -->
+  <div *ngIf="mostrarModalAsignar"
+       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 dark:bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+    <div class="w-full max-w-lg rounded-3xl bg-white dark:bg-slate-950 border border-stone-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-slideUp">
+
+      <!-- Header -->
+      <div class="p-6 border-b border-stone-100 dark:border-slate-800 flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-black text-zinc-900 dark:text-white">Asignar o Renovar Suscripción</h3>
+          <p class="text-xs text-zinc-500 dark:text-slate-400 mt-0.5">Empresa ID #{{ empresaSeleccionadaId }}</p>
+        </div>
+        <button (click)="cerrarModalAsignar()" class="p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-slate-200 rounded-xl transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+
+      <!-- Error inside modal -->
+      <div *ngIf="modalError" class="mx-6 mt-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs leading-relaxed">
+        {{ modalError }}
+      </div>
+
+      <!-- Form Body -->
+      <div class="p-6 space-y-4">
+
+        <!-- Plan selection -->
+        <div>
+          <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-1.5">Plan Contratado</label>
+          <div class="grid grid-cols-2 gap-3">
+            <button type="button"
+                    (click)="formPlan = 'BASICO'"
+                    class="p-3 text-left rounded-2xl border transition-all"
+                    [ngClass]="formPlan === 'BASICO'
+                      ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30 ring-1 ring-indigo-500'
+                      : 'border-stone-200 dark:border-slate-800 hover:bg-stone-50 dark:hover:bg-slate-900/60'">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-black text-zinc-900 dark:text-white">BÁSICO</span>
+                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-stone-200 dark:bg-slate-800 text-zinc-700 dark:text-slate-300">2 Suc.</span>
+              </div>
+              <p class="text-[11px] text-zinc-500 dark:text-slate-400 mt-1">Hasta 2 sucursales activas</p>
+            </button>
+
+            <button type="button"
+                    (click)="formPlan = 'PROFESIONAL'"
+                    class="p-3 text-left rounded-2xl border transition-all"
+                    [ngClass]="formPlan === 'PROFESIONAL'
+                      ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30 ring-1 ring-indigo-500'
+                      : 'border-stone-200 dark:border-slate-800 hover:bg-stone-50 dark:hover:bg-slate-900/60'">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-black text-zinc-900 dark:text-white">PROFESIONAL</span>
+                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">10 Suc.</span>
+              </div>
+              <p class="text-[11px] text-zinc-500 dark:text-slate-400 mt-1">Hasta 10 sucursales y motor BI</p>
+            </button>
+          </div>
+        </div>
+
+        <!-- Dates Range -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-1.5">Fecha y Hora de Inicio</label>
+            <input type="datetime-local"
+                   [(ngModel)]="formInicio"
+                   class="w-full px-3 py-2 text-xs bg-stone-50 dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-xl text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-1.5">Fecha y Hora de Fin</label>
+            <input type="datetime-local"
+                   [(ngModel)]="formFin"
+                   class="w-full px-3 py-2 text-xs bg-stone-50 dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-xl text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+        </div>
+
+        <!-- Reason -->
+        <div>
+          <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-1.5">Motivo Administrativo</label>
+          <textarea [(ngModel)]="formMotivo"
+                    rows="2"
+                    placeholder="Ej. Renovación administrativa anual aprobada según acuerdo comercial"
+                    class="w-full px-3 py-2 text-xs bg-stone-50 dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-xl text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+        </div>
+
+        <!-- Informative note -->
+        <p class="text-[11px] text-zinc-500 dark:text-slate-400 leading-relaxed">
+          Los periodos se registran como intervalos cerrados-abiertos <code>[inicio, fin)</code>. No se permiten periodos activos solapados para la misma empresa.
+        </p>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="p-6 border-t border-stone-100 dark:border-slate-800 bg-stone-50/50 dark:bg-slate-900/30 flex items-center justify-end gap-3">
+        <button (click)="cerrarModalAsignar()"
+                [disabled]="guardando"
+                class="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-slate-300 hover:bg-stone-200/60 dark:hover:bg-slate-800 rounded-xl transition-colors">
+          Cancelar
+        </button>
+        <button (click)="guardarSuscripcion()"
+                [disabled]="guardando"
+                class="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 rounded-xl shadow-md shadow-indigo-600/25 transition-all disabled:opacity-50">
+          <svg *ngIf="guardando" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+          <span>{{ guardando ? 'Registrando...' : 'Confirmar Periodo' }}</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal: Renovación / Cambio de Plan / Terminar Pago (Autoservicio Tenant) -->
+  <div *ngIf="mostrarModalCambiarPlan"
+       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 dark:bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+    <div class="w-full max-w-2xl rounded-3xl bg-white dark:bg-slate-950 border border-stone-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-slideUp flex flex-col max-h-[90vh]">
+
+      <!-- Header Modal -->
+      <div class="p-6 border-b border-stone-100 dark:border-slate-800 flex items-center justify-between shrink-0">
+        <div>
+          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+            {{ modalCambioPaso === 'PLAN' ? 'Configurar Suscripción' : 'Completar Pago Seguro' }}
+          </span>
+          <h3 class="text-lg font-black text-zinc-900 dark:text-white mt-1">
+            {{ modalCambioPaso === 'PLAN' ? 'Renovación o Cambio de Plan' : 'Pasarela y Confirmación de Pago' }}
+          </h3>
+          <p class="text-xs text-zinc-500 dark:text-slate-400 mt-0.5">
+            {{ modalCambioPaso === 'PLAN' ? 'Selecciona las capacidades operativas deseadas para tu tienda' : 'Elige tu método de pago preferido para activar la suscripción' }}
+          </p>
+        </div>
+        <button (click)="cerrarModalCambiarPlan()" class="p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-slate-200 rounded-xl transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+
+      <!-- Error / Exito inside modal -->
+      <div *ngIf="errorModalCambio" class="mx-6 mt-4 p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs leading-relaxed shrink-0 flex items-start gap-2">
+        <svg class="w-4 h-4 shrink-0 mt-0.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <span>{{ errorModalCambio }}</span>
+      </div>
+      <div *ngIf="exitoModalCambio" class="mx-6 mt-4 p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs leading-relaxed shrink-0 flex items-start gap-2">
+        <svg class="w-4 h-4 shrink-0 mt-0.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <span>{{ exitoModalCambio }}</span>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="p-6 space-y-6 overflow-y-auto flex-1">
+
+        <!-- PASO 1: SELECCIONAR PLAN Y PERIODICIDAD -->
+        <ng-container *ngIf="modalCambioPaso === 'PLAN'">
+          <div>
+            <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-2">Selecciona tu Plan Operativo</label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+              <!-- Plan BASICO -->
+              <div (click)="planElegido = 'BASICO'"
+                   class="p-5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between"
+                   [ngClass]="planElegido === 'BASICO'
+                     ? 'border-indigo-600 bg-indigo-50/40 dark:bg-indigo-950/20 shadow-md ring-2 ring-indigo-500/20'
+                     : 'border-stone-200 dark:border-slate-800 hover:border-stone-300 dark:hover:border-slate-700'">
+                <div>
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-black text-zinc-900 dark:text-white">Plan Básico</span>
+                    <span *ngIf="planVigencia?.codigo_plan === 'BASICO' && planVigencia?.vigente" class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-emerald-100 text-emerald-800 border border-emerald-300">
+                      Actual
+                    </span>
+                  </div>
+                  <div class="flex items-baseline gap-1 my-2">
+                    <span class="text-2xl font-black text-zinc-900 dark:text-white">Bs. 199</span>
+                    <span class="text-xs text-zinc-500 dark:text-slate-400">/mes</span>
+                  </div>
+                  <ul class="text-xs space-y-2 text-zinc-600 dark:text-slate-300 mt-3">
+                    <li class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                      <span>Hasta <strong>2 sucursales</strong> activas</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                      <span>Storefront multitenant web</span>
+                    </li>
+                    <li class="flex items-center gap-2 text-zinc-400 dark:text-slate-500">
+                      <svg class="w-4 h-4 text-zinc-300 dark:text-slate-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                      <span>Sin reportes generativos de IA</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Plan PROFESIONAL -->
+              <div (click)="planElegido = 'PROFESIONAL'"
+                   class="p-5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between"
+                   [ngClass]="planElegido === 'PROFESIONAL'
+                     ? 'border-indigo-600 bg-indigo-50/40 dark:bg-indigo-950/20 shadow-md ring-2 ring-indigo-500/20'
+                     : 'border-stone-200 dark:border-slate-800 hover:border-stone-300 dark:hover:border-slate-700'">
+                <div>
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-black text-zinc-900 dark:text-white">Plan Profesional</span>
+                    <span *ngIf="planVigencia?.codigo_plan === 'PROFESIONAL' && planVigencia?.vigente" class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-emerald-100 text-emerald-800 border border-emerald-300">
+                      Actual
+                    </span>
+                  </div>
+                  <div class="flex items-baseline gap-1 my-2">
+                    <span class="text-2xl font-black text-zinc-900 dark:text-white">Bs. 399</span>
+                    <span class="text-xs text-zinc-500 dark:text-slate-400">/mes</span>
+                  </div>
+                  <ul class="text-xs space-y-2 text-zinc-600 dark:text-slate-300 mt-3">
+                    <li class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                      <span>Hasta <strong>10 sucursales</strong> activas</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                      <span>Motor de reportes avanzados</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                      <span>Asistente IA y Stylist Machine Learning</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Advertencia si excede sucursales para Básico -->
+            <div *ngIf="excedeSucursalesParaBasico()" class="mt-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-300 text-xs">
+              ⚠️ Tu tienda tiene <strong>{{ planVigencia?.uso?.sucursales_activas }}</strong> sucursales activas. El plan Básico admite un máximo de 2. Debes desactivar las sucursales sobrantes en el menú Sucursales antes de seleccionar este plan.
+            </div>
+          </div>
+
+          <!-- Selector de Periodicidad -->
+          <div>
+            <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-1.5">Periodicidad de Contratación</label>
+            <div class="grid grid-cols-2 gap-3">
+              <button type="button"
+                      (click)="periodicidadElegida = 'MENSUAL'"
+                      class="p-3 text-xs font-bold rounded-xl border text-center transition-all"
+                      [ngClass]="periodicidadElegida === 'MENSUAL'
+                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
+                        : 'border-stone-200 dark:border-slate-800 text-zinc-600 dark:text-slate-400'">
+                Mensual (Bs. {{ calcularMonto(planElegido, 'MENSUAL') }})
+              </button>
+              <button type="button"
+                      (click)="periodicidadElegida = 'ANUAL'"
+                      class="p-3 text-xs font-bold rounded-xl border text-center transition-all"
+                      [ngClass]="periodicidadElegida === 'ANUAL'
+                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
+                        : 'border-stone-200 dark:border-slate-800 text-zinc-600 dark:text-slate-400'">
+                Anual (Bs. {{ calcularMonto(planElegido, 'ANUAL') }})
+              </button>
+            </div>
+          </div>
+
+          <!-- Momento de Entrada en Vigor (para Cambio de Plan) -->
+          <div *ngIf="planVigencia?.vigente && planVigencia?.codigo_plan !== planElegido"
+               class="p-4 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 space-y-2.5">
+            <label class="block text-xs font-bold text-amber-900 dark:text-amber-200">
+              ¿Cuándo deseas aplicar el cambio de plan?
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div (click)="momentoCambioElegido = 'SIGUIENTE_CICLO'"
+                   class="p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col justify-between"
+                   [ngClass]="momentoCambioElegido === 'SIGUIENTE_CICLO'
+                     ? 'border-indigo-600 bg-white dark:bg-slate-900 shadow-sm ring-2 ring-indigo-500/20'
+                     : 'border-stone-200 dark:border-slate-800 bg-white/60 dark:bg-slate-900/40 hover:bg-white'">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <input type="radio" [checked]="momentoCambioElegido === 'SIGUIENTE_CICLO'" class="text-indigo-600">
+                    <span class="text-xs font-bold text-zinc-900 dark:text-white">Al siguiente ciclo (Recomendado)</span>
+                  </div>
+                  <p class="text-[11px] text-zinc-600 dark:text-slate-400 mt-1.5 pl-5 leading-relaxed">
+                    Conserva tu plan {{ planVigencia?.codigo_plan }} hasta el {{ planVigencia?.fin | date:'dd/MM/yyyy' }}. El nuevo plan entrará en vigor de forma automática sin cobros duplicados.
+                  </p>
+                </div>
+              </div>
+
+              <div (click)="momentoCambioElegido = 'INMEDIATO'"
+                   class="p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col justify-between"
+                   [ngClass]="momentoCambioElegido === 'INMEDIATO'
+                     ? 'border-indigo-600 bg-white dark:bg-slate-900 shadow-sm ring-2 ring-indigo-500/20'
+                     : 'border-stone-200 dark:border-slate-800 bg-white/60 dark:bg-slate-900/40 hover:bg-white'">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <input type="radio" [checked]="momentoCambioElegido === 'INMEDIATO'" class="text-indigo-600">
+                    <span class="text-xs font-bold text-zinc-900 dark:text-white">Cambio Inmediato</span>
+                  </div>
+                  <p class="text-[11px] text-zinc-600 dark:text-slate-400 mt-1.5 pl-5 leading-relaxed">
+                    Sustituye el plan anterior y activa hoy mismo el plan {{ planElegido }} con sus nuevas capacidades y reportes.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Resumen de Contratación -->
+          <div class="p-4 rounded-2xl bg-stone-50 dark:bg-slate-900 border border-stone-200 dark:border-slate-800 flex items-center justify-between">
+            <div>
+              <span class="text-[11px] font-bold text-zinc-500 dark:text-slate-400 uppercase tracking-wider">Total a Facturar</span>
+              <p class="text-xl font-black text-zinc-900 dark:text-white">
+                BOB Bs. {{ calcularMonto(planElegido, periodicidadElegida) | number:'1.2-2' }}
+              </p>
+            </div>
+            <div class="text-right text-[11px] text-zinc-500 dark:text-slate-400">
+              <span *ngIf="planVigencia?.codigo_plan === planElegido">Renovación continuada</span>
+              <span *ngIf="planVigencia?.codigo_plan !== planElegido">
+                {{ momentoCambioElegido === 'SIGUIENTE_CICLO' ? 'Programado para próximo ciclo' : 'Cambio inmediato hoy' }}
+              </span>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- PASO 2: METODO DE PAGO Y CONFIRMACION -->
+        <ng-container *ngIf="modalCambioPaso === 'PAGO'">
+          <!-- Resumen Solicitud -->
+          <div class="p-4 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/60 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Código de Solicitud</span>
+              <p class="font-mono text-base font-black text-zinc-900 dark:text-white">
+                {{ solicitudCreada?.codigo_seguimiento }}
+              </p>
+              <p class="text-xs text-zinc-600 dark:text-slate-300 mt-0.5">
+                Plan: <strong>{{ solicitudCreada?.codigo_plan }}</strong> ({{ solicitudCreada?.periodicidad | lowercase }})
+              </p>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Monto</span>
+              <p class="text-lg font-black text-zinc-900 dark:text-white">
+                {{ solicitudCreada?.moneda }} {{ solicitudCreada?.monto | number:'1.2-2' }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Selector de Método de Pago -->
+          <div>
+            <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-2">Selecciona el Método de Pago</label>
+            <div class="grid grid-cols-2 gap-3">
+              <button type="button"
+                      (click)="metodoPagoElegido = 'PAYPAL'"
+                      class="p-4 rounded-2xl border-2 text-left transition-all"
+                      [ngClass]="metodoPagoElegido === 'PAYPAL'
+                        ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/40'
+                        : 'border-stone-200 dark:border-slate-800'">
+                <p class="font-bold text-xs text-zinc-900 dark:text-white">Pasarela PayPal</p>
+                <p class="text-[11px] text-zinc-500 dark:text-slate-400 mt-0.5">Activación inmediata automática</p>
+              </button>
+
+              <button type="button"
+                      (click)="metodoPagoElegido = 'QR_TRANSFERENCIA'"
+                      class="p-4 rounded-2xl border-2 text-left transition-all"
+                      [ngClass]="metodoPagoElegido === 'QR_TRANSFERENCIA'
+                        ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/40'
+                        : 'border-stone-200 dark:border-slate-800'">
+                <p class="font-bold text-xs text-zinc-900 dark:text-white">QR / Transferencia</p>
+                <p class="text-[11px] text-zinc-500 dark:text-slate-400 mt-0.5">Comprobante y revisión manual</p>
+              </button>
+            </div>
+          </div>
+
+          <!-- Contenido según Método de Pago -->
+          <!-- PAYPAL -->
+          <div *ngIf="metodoPagoElegido === 'PAYPAL'" class="p-5 rounded-2xl bg-stone-50 dark:bg-slate-900 border border-stone-200 dark:border-slate-800 space-y-4">
+            <p class="text-xs text-zinc-600 dark:text-slate-300 leading-relaxed">
+              Pago procesado a través de la pasarela oficial de PayPal Sandbox. Al completar la autorización, el servidor validará la captura y activará tu plan inmediatamente.
+            </p>
+
+            <!-- Si aún no se abrió la ventana de PayPal -->
+            <div *ngIf="!paypalEsperandoAprobacion && !paypalOrderIdCreado">
+              <button (click)="iniciarPagoPayPalModal()"
+                      [disabled]="procesandoSolicitud"
+                      class="w-full py-3.5 px-4 bg-amber-500 hover:bg-amber-600 text-zinc-950 font-black text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+                <svg *ngIf="procesandoSolicitud" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                <span>Pagar con PayPal (Activación Inmediata)</span>
+              </button>
+            </div>
+
+            <!-- Si ya se abrió PayPal y está en proceso de verificación -->
+            <div *ngIf="paypalEsperandoAprobacion || paypalOrderIdCreado" class="space-y-3">
+              <div class="p-3.5 rounded-xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping shrink-0"></span>
+                  <span>Ventana de PayPal abierta. Completa la autorización y pulsa abajo para validar.</span>
+                </div>
+                <button type="button" (click)="iniciarPagoPayPalModal()" class="text-[11px] underline font-bold text-amber-800 dark:text-amber-300 hover:text-amber-950 shrink-0">
+                  Reabrir PayPal
+                </button>
+              </div>
+
+              <button (click)="confirmarCapturaPayPalModal()"
+                      [disabled]="procesandoSolicitud"
+                      class="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+                <svg *ngIf="procesandoSolicitud" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                <span>{{ procesandoSolicitud ? 'Verificando con PayPal...' : '↻ Verificar y Confirmar Pago Ahora' }}</span>
+              </button>
+
+              <p *ngIf="paypalOrderIdCreado" class="text-[11px] font-mono text-zinc-500 dark:text-slate-400 text-center">
+                ID de Orden PayPal: {{ paypalOrderIdCreado }}
+              </p>
+            </div>
+          </div>
+
+          <!-- QR SIMPLE / TRANSFERENCIA -->
+          <div *ngIf="metodoPagoElegido === 'QR_TRANSFERENCIA'" class="p-5 rounded-2xl bg-stone-50 dark:bg-slate-900 border border-stone-200 dark:border-slate-800 space-y-4">
+            <div class="flex flex-col sm:flex-row gap-4 items-center">
+              <div class="w-36 h-36 bg-white p-2 rounded-2xl border border-stone-200 flex items-center justify-center shrink-0">
+                <img src="/icons/icon-192x192.png" alt="QR Cobro AuroraStore" class="w-full h-full object-contain" />
+              </div>
+              <div class="space-y-1 text-xs text-zinc-600 dark:text-slate-300">
+                <p class="font-bold text-zinc-900 dark:text-white">Datos Oficiales para Transferencia:</p>
+                <p>Banco: <strong>Banco Unión / BCP</strong></p>
+                <p>Cuenta: <strong>10000048291048</strong></p>
+                <p>Titular: <strong>AuroraStore SaaS S.R.L.</strong></p>
+                <p>Glosa obligatoria: <strong class="font-mono text-indigo-600 dark:text-indigo-400">{{ solicitudCreada?.codigo_seguimiento }}</strong></p>
+              </div>
+            </div>
+
+            <div class="pt-2 border-t border-stone-200 dark:border-slate-800 space-y-3">
+              <div>
+                <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-1">Referencia de Transferencia / N° Operación</label>
+                <input type="text"
+                       [(ngModel)]="referenciaPagoQr"
+                       placeholder="Ej: TRANSF-849201"
+                       class="w-full px-3 py-2 text-xs rounded-xl border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-zinc-900 dark:text-white" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-1">Adjuntar Comprobante (Imagen)</label>
+                <input type="file"
+                       (change)="onSubirComprobanteModal($event)"
+                       [disabled]="subiendoComprobante"
+                       accept="image/*"
+                       class="w-full text-xs text-zinc-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" />
+                <p *ngIf="subiendoComprobante" class="text-[11px] text-indigo-600 dark:text-indigo-400 mt-1 animate-pulse">
+                  Subiendo y registrando comprobante...
+                </p>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+      </div>
+
+      <!-- Footer Modal -->
+      <div class="p-6 border-t border-stone-100 dark:border-slate-800 bg-stone-50/50 dark:bg-slate-900/30 flex items-center justify-between gap-3 shrink-0">
+        <div>
+          <button *ngIf="modalCambioPaso === 'PAGO' && (!planVigencia?.solicitud_contratacion || planVigencia?.solicitud_contratacion?.estado_contratacion !== 'PENDIENTE_PAGO')"
+                  (click)="modalCambioPaso = 'PLAN'"
+                  class="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-slate-300 hover:bg-stone-200/60 dark:hover:bg-slate-800 rounded-xl transition-colors">
+            ← Cambiar Plan
+          </button>
+        </div>
+        <div class="flex items-center gap-3">
+          <button (click)="cerrarModalCambiarPlan()"
+                  class="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-slate-300 hover:bg-stone-200/60 dark:hover:bg-slate-800 rounded-xl transition-colors">
+            Cerrar
+          </button>
+          <button *ngIf="modalCambioPaso === 'PLAN'"
+                  (click)="continuarAlPago()"
+                  [disabled]="procesandoSolicitud || excedeSucursalesParaBasico()"
+                  class="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 rounded-xl shadow-md shadow-indigo-600/25 transition-all disabled:opacity-50">
+            <svg *ngIf="procesandoSolicitud" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            <span>Continuar al Pago →</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal: Cancelar Suscripción -->
+  <div *ngIf="mostrarModalCancelar"
+       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 dark:bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+    <div class="w-full max-w-md rounded-3xl bg-white dark:bg-slate-950 border border-stone-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-slideUp">
+
+      <!-- Header -->
+      <div class="p-6 border-b border-stone-100 dark:border-slate-800 flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-black text-rose-600 dark:text-rose-400">Cancelar Suscripción</h3>
+          <p class="text-xs text-zinc-500 dark:text-slate-400 mt-0.5">Suscripción ID #{{ suscripcionACancelar?.id_suscripcion }} ({{ suscripcionACancelar?.codigo_plan }})</p>
+        </div>
+        <button (click)="cerrarModalCancelar()" class="p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-slate-200 rounded-xl transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+
+      <!-- Error inside modal -->
+      <div *ngIf="modalError" class="mx-6 mt-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs">
+        {{ modalError }}
+      </div>
+
+      <!-- Body -->
+      <div class="p-6 space-y-4">
+        <p class="text-xs text-zinc-600 dark:text-slate-300 leading-relaxed">
+          Esta acción cancelará administrativamente el periodo vigente. El registro histórico se conservará y las operaciones comerciales de la empresa que requieran vigencia quedarán restringidas.
+        </p>
+
+        <div>
+          <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-1.5">Motivo de Cancelación</label>
+          <textarea [(ngModel)]="formCancelarMotivo"
+                    rows="3"
+                    placeholder="Ej. Solicitud expresa del cliente por cese temporal de operaciones"
+                    class="w-full px-3 py-2 text-xs bg-stone-50 dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-xl text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500"></textarea>
+        </div>
+
+        <div class="p-3 rounded-2xl bg-rose-50/60 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/40">
+          <label class="flex items-start gap-2.5 cursor-pointer">
+            <input type="checkbox"
+                   [(ngModel)]="formCancelarConfirmar"
+                   class="rounded text-rose-600 focus:ring-rose-500 h-4 w-4 mt-0.5" />
+            <span class="text-xs font-semibold text-rose-900 dark:text-rose-200">
+              Confirmo que deseo cancelar inmediatamente este periodo de servicio.
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="p-6 border-t border-stone-100 dark:border-slate-800 bg-stone-50/50 dark:bg-slate-900/30 flex items-center justify-end gap-3">
+        <button (click)="cerrarModalCancelar()"
+                [disabled]="guardando"
+                class="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-slate-300 hover:bg-stone-200/60 dark:hover:bg-slate-800 rounded-xl transition-colors">
+          Volver
+        </button>
+        <button (click)="confirmarCancelacion()"
+                [disabled]="guardando || !formCancelarConfirmar"
+                class="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 dark:bg-rose-500 dark:hover:bg-rose-600 rounded-xl shadow-md shadow-rose-600/25 transition-all disabled:opacity-50">
+          <svg *ngIf="guardando" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+          <span>{{ guardando ? 'Cancelando...' : 'Confirmar Cancelación' }}</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL DE CANCELACIÓN COMERCIAL (Para Propietarios de Tienda) -->
+  <div *ngIf="mostrarModalCancelarComercial" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-sm animate-fade-in">
+    <div class="bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden flex flex-col max-h-[90vh]">
+
+      <!-- Header -->
+      <div class="p-6 border-b border-stone-100 dark:border-slate-800 flex items-center justify-between">
+        <div>
+          <span class="text-[10px] font-black uppercase tracking-wider text-rose-600 dark:text-rose-400">Políticas Comerciales</span>
+          <h3 class="text-base font-black text-zinc-900 dark:text-white mt-0.5">Gestión de Suscripción</h3>
+          <p class="text-xs text-zinc-500 dark:text-slate-400 mt-0.5">Opciones de cancelación conforme al ciclo de facturación</p>
+        </div>
+        <button (click)="cerrarModalCancelarComercial()" class="p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-slate-200 rounded-xl transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+
+      <!-- Error -->
+      <div *ngIf="errorModalCancelarComercial" class="mx-6 mt-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs">
+        {{ errorModalCancelarComercial }}
+      </div>
+
+      <!-- Cargando opciones -->
+      <div *ngIf="cargandoOpcionesCancelacion" class="p-8 text-center space-y-3">
+        <svg class="w-7 h-7 animate-spin text-indigo-600 mx-auto" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+        <p class="text-xs font-semibold text-zinc-500 dark:text-slate-400">Consultando términos y condiciones de tu suscripción actual...</p>
+      </div>
+
+      <!-- Body con opciones -->
+      <div *ngIf="!cargandoOpcionesCancelacion && opcionesCancelacion" class="p-6 space-y-4 overflow-y-auto">
+
+        <!-- Resumen del Estado Actual y Tiempo Transcurrido -->
+        <div class="p-4 rounded-2xl bg-stone-50 dark:bg-slate-800/60 border border-stone-200 dark:border-slate-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-slate-400">Plan Actual</span>
+              <p class="text-sm font-black text-zinc-900 dark:text-white">{{ opcionesCancelacion.nombre_plan }} ({{ opcionesCancelacion.codigo_plan }})</p>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-slate-400">Vigencia hasta</span>
+              <p class="text-sm font-black text-zinc-900 dark:text-white">{{ opcionesCancelacion.fin | date:'dd/MM/yyyy' }}</p>
+            </div>
+          </div>
+
+          <!-- Barra de Progreso de Tiempo Consumido -->
+          <div>
+            <div class="flex items-center justify-between text-[11px] mb-1 font-semibold">
+              <span class="text-zinc-600 dark:text-slate-300">Tiempo del ciclo transcurrido:</span>
+              <span [ngClass]="opcionesCancelacion.elegible_reembolso ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-zinc-500 dark:text-slate-400'">
+                {{ opcionesCancelacion.porcentaje_consumido }}% ({{ opcionesCancelacion.dias_transcurridos }} de {{ opcionesCancelacion.dias_totales }} días)
+              </span>
+            </div>
+            <div class="w-full h-2 bg-stone-200 dark:bg-slate-700 rounded-full overflow-hidden">
+              <div class="h-full rounded-full transition-all"
+                   [ngClass]="opcionesCancelacion.elegible_reembolso ? 'bg-emerald-500' : 'bg-indigo-500'"
+                   [style.width.%]="opcionesCancelacion.porcentaje_consumido"></div>
+            </div>
+          </div>
+
+          <!-- Badge explicativo de la política de reembolso -->
+          <div *ngIf="opcionesCancelacion.elegible_reembolso"
+               class="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs flex items-center gap-2">
+            <span>✓</span>
+            <span><strong>Garantía de reembolso activa:</strong> Ha transcurrido menos del 10% del período contratado. Puedes cancelar con devolución total o proporcional.</span>
+          </div>
+
+          <div *ngIf="!opcionesCancelacion.elegible_reembolso"
+               class="p-2.5 rounded-xl bg-stone-100 dark:bg-slate-800 text-zinc-600 dark:text-slate-300 text-xs leading-relaxed">
+            <span>ℹ️ <strong>Período de garantía concluido:</strong> Al haber transcurrido más del 10% del período, te recomendamos conservar tu servicio activo hasta el <strong>{{ opcionesCancelacion.fin | date:'dd/MM/yyyy' }}</strong> sin cargos futuros.</span>
+          </div>
+        </div>
+
+        <!-- Selector de Opciones Comerciales -->
+        <div class="space-y-3">
+          <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300">Selecciona tu preferencia de cancelación:</label>
+
+          <!-- Opción 1: Fin de ciclo (Conservar servicio) -->
+          <div (click)="tipoCancelacionElegida = 'FIN_DE_CICLO'"
+               class="p-4 rounded-2xl border-2 cursor-pointer transition-all"
+               [ngClass]="tipoCancelacionElegida === 'FIN_DE_CICLO'
+                 ? 'border-indigo-600 bg-indigo-50/40 dark:bg-indigo-950/30 ring-2 ring-indigo-500/20'
+                 : 'border-stone-200 dark:border-slate-800 hover:border-stone-300'">
+            <div class="flex items-start gap-3">
+              <input type="radio" [checked]="tipoCancelacionElegida === 'FIN_DE_CICLO'" class="text-indigo-600 mt-0.5">
+              <div>
+                <p class="text-xs font-bold text-zinc-900 dark:text-white">
+                  Cancelar al finalizar el período (Recomendado)
+                </p>
+                <p class="text-[11px] text-zinc-600 dark:text-slate-400 mt-1 leading-relaxed">
+                  Conserva el acceso completo a tu tienda, sucursales y productos hasta el <strong>{{ opcionesCancelacion.fin | date:'dd/MM/yyyy' }}</strong>. No se renovará ni se generarán cobros adicionales.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Opción 2: Reembolso inmediato (Si <= 10%) -->
+          <div (click)="opcionesCancelacion.elegible_reembolso && (tipoCancelacionElegida = 'REEMBOLSO_INMEDIATO')"
+               class="p-4 rounded-2xl border-2 transition-all"
+               [ngClass]="[
+                 !opcionesCancelacion.elegible_reembolso
+                   ? 'opacity-50 cursor-not-allowed border-stone-200 dark:border-slate-800 bg-stone-50 dark:bg-slate-900/40'
+                   : tipoCancelacionElegida === 'REEMBOLSO_INMEDIATO'
+                     ? 'border-rose-600 bg-rose-50/40 dark:bg-rose-950/30 ring-2 ring-rose-500/20 cursor-pointer'
+                     : 'border-stone-200 dark:border-slate-800 hover:border-stone-300 cursor-pointer'
+               ]">
+            <div class="flex items-start gap-3">
+              <input type="radio"
+                     [disabled]="!opcionesCancelacion.elegible_reembolso"
+                     [checked]="tipoCancelacionElegida === 'REEMBOLSO_INMEDIATO'"
+                     class="text-rose-600 mt-0.5">
+              <div>
+                <div class="flex items-center gap-2">
+                  <p class="text-xs font-bold text-zinc-900 dark:text-white">
+                    Cancelar ahora con Reembolso
+                  </p>
+                  <span *ngIf="!opcionesCancelacion.elegible_reembolso" class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-stone-200 text-stone-700 dark:bg-slate-800 dark:text-slate-400">
+                    Excedió 10%
+                  </span>
+                </div>
+                <p class="text-[11px] text-zinc-600 dark:text-slate-400 mt-1 leading-relaxed">
+                  {{ opcionesCancelacion.opcion_reembolso_inmediato?.descripcion }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Motivo opcional -->
+        <div>
+          <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300 mb-1">Motivo o comentarios (opcional)</label>
+          <textarea [(ngModel)]="motivoCancelacionComercial"
+                    rows="2"
+                    placeholder="Cuéntanos brevemente la razón de tu cancelación para ayudarnos a mejorar..."
+                    class="w-full px-3 py-2 text-xs bg-stone-50 dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-xl text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+        </div>
+
+        <!-- Confirmación de aceptación -->
+        <div class="p-3 rounded-2xl bg-stone-50 dark:bg-slate-900 border border-stone-200 dark:border-slate-800">
+          <label class="flex items-start gap-2.5 cursor-pointer">
+            <input type="checkbox"
+                   [(ngModel)]="confirmarCancelacionComercial"
+                   class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4 mt-0.5" />
+            <span class="text-xs font-semibold text-zinc-800 dark:text-slate-200">
+              He leído y comprendo los términos de cancelación comercial seleccionados.
+            </span>
+          </label>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="p-6 border-t border-stone-100 dark:border-slate-800 bg-stone-50/50 dark:bg-slate-900/30 flex items-center justify-end gap-3">
+        <button (click)="cerrarModalCancelarComercial()"
+                [disabled]="procesandoCancelacionComercial"
+                class="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-slate-300 hover:bg-stone-200/60 dark:hover:bg-slate-800 rounded-xl transition-colors">
+          Mantener mi Suscripción
+        </button>
+        <button (click)="confirmarCancelarComercial()"
+                [disabled]="procesandoCancelacionComercial || !confirmarCancelacionComercial || cargandoOpcionesCancelacion"
+                class="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 dark:bg-rose-500 dark:hover:bg-rose-600 rounded-xl shadow-md shadow-rose-600/25 transition-all disabled:opacity-50">
+          <svg *ngIf="procesandoCancelacionComercial" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+          <span>{{ procesandoCancelacionComercial ? 'Procesando...' : 'Confirmar Cancelación' }}</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>

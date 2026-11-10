@@ -1,0 +1,38 @@
+name: aurora_store_mobile
+description: Aurora Store - Aplicación Móvil de Moda y Alta Costura
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  provider: ^6.1.2
+  dio: ^5.4.3
+  flutter_secure_storage: ^9.0.0
+  shared_preferences: ^2.2.3
+  google_fonts: ^6.2.1
+  intl: ^0.19.0
+  gap: ^3.0.1
+  camera: ^0.12.1
+  permission_handler: ^13.0.2
+  google_mlkit_pose_detection: ^0.16.1
+  google_mlkit_commons: ^0.13.0
+  url_launcher: ^6.3.1
+  sqflite: ^2.3.3+1
+  path: ^1.9.0
+  connectivity_plus: ^6.0.5
+  uuid: ^4.4.0
+  model_viewer_plus: ^1.10.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  vector_math: ^2.1.4
+  sqflite_common_ffi: ^2.3.3
+
+flutter:
+  uses-material-design: true

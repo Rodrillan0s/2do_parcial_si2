@@ -1,0 +1,357 @@
+<div class="min-h-screen bg-stone-50/50 dark:bg-slate-950 p-4 sm:p-6 lg:p-8 space-y-6">
+
+  <!-- ========================================================================= -->
+  <!-- ENCABEZADO Y NAVEGACIÓN -->
+  <!-- ========================================================================= -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-200 dark:border-slate-800 pb-5">
+    <div class="space-y-1">
+      <div class="flex items-center gap-2">
+        <a routerLink="/admin/caja" 
+           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 text-zinc-600 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800 transition-all shadow-sm">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          Volver a POS (Caja)
+        </a>
+        <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">
+          W29 • Emisión de Comprobante
+        </span>
+      </div>
+      <h1 class="text-2xl font-black text-zinc-950 dark:text-white tracking-tight">
+        Comprobante de Venta Presencial
+      </h1>
+      <p class="text-xs text-zinc-500 dark:text-slate-400">
+        Generación de Factura / Recibo oficial en PDF y registro de datos fiscales
+      </p>
+    </div>
+
+    <!-- Badge Estado de la Venta -->
+    <div *ngIf="venta" class="flex items-center gap-3">
+      <div class="text-right">
+        <span class="text-[10px] text-zinc-400 uppercase font-bold tracking-wider block">Orden Liquidada</span>
+        <strong class="font-mono text-base font-black text-indigo-600 dark:text-indigo-400">
+          {{ venta.codigo_venta }}
+        </strong>
+      </div>
+      <div class="px-3 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider">
+        {{ venta.estado }}
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- ESTADO: CARGANDO -->
+  <!-- ========================================================================= -->
+  <div *ngIf="cargando" class="flex flex-col items-center justify-center py-24 space-y-4">
+    <div class="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+    <p class="text-sm font-medium text-zinc-500 dark:text-slate-400">Obteniendo datos de venta y liquidación...</p>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- ESTADO: ERROR DE CARGA -->
+  <!-- ========================================================================= -->
+  <div *ngIf="!cargando && errorCarga" class="max-w-xl mx-auto bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-900/50 rounded-3xl p-8 shadow-xl text-center space-y-5 animate-fadeIn">
+    <div class="w-16 h-16 mx-auto rounded-3xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-rose-600 flex items-center justify-center">
+      <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+      </svg>
+    </div>
+
+    <div class="space-y-1">
+      <h3 class="text-lg font-black text-zinc-900 dark:text-white">
+        No se puede emitir el comprobante
+      </h3>
+      <p class="text-xs text-rose-600 dark:text-rose-400 font-medium">
+        {{ errorCarga }}
+      </p>
+    </div>
+
+    <p class="text-xs text-zinc-500 dark:text-slate-400">
+      Recuerde que para emitir el comprobante (W29), la venta debe haber sido previamente cobrada en caja (W28).
+    </p>
+
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+      <button (click)="irACobro()"
+              class="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition-all">
+        Ir a Cobrar en Caja (W28)
+      </button>
+      <button (click)="irANuevaVenta()"
+              class="w-full sm:w-auto px-5 py-2.5 bg-stone-100 hover:bg-stone-200 dark:bg-slate-800 text-zinc-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all">
+        Volver a POS
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- VISTA PRINCIPAL: DETALLES DE VENTA Y FORMULARIO DE EMISIÓN -->
+  <!-- ========================================================================= -->
+  <div *ngIf="!cargando && !errorCarga && venta" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    
+    <!-- COLUMNA IZQUIERDA: RESUMEN Y DETALLE CONTABLE (5 COLS) -->
+    <div class="lg:col-span-5 space-y-5">
+      
+      <!-- Detalle de Productos Vendidos -->
+      <div class="bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm space-y-4">
+        <div class="flex items-center justify-between border-b border-stone-100 dark:border-slate-800 pb-3">
+          <div>
+            <h3 class="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-wider">
+              Artículos Facturados
+            </h3>
+            <span class="text-[11px] text-zinc-400">Detalle de la orden liquidada</span>
+          </div>
+          <span class="font-mono text-xs font-bold text-zinc-600 dark:text-slate-300">
+            {{ venta.items.length }} {{ venta.items.length === 1 ? 'ítem' : 'ítems' }}
+          </span>
+        </div>
+
+        <div class="divide-y divide-stone-100 dark:divide-slate-800 max-h-72 overflow-y-auto pr-1">
+          <div *ngFor="let item of venta.items" class="py-2.5 flex justify-between items-start text-xs gap-3">
+            <div class="space-y-0.5">
+              <strong class="font-bold text-zinc-900 dark:text-white block">{{ item.producto_nombre }}</strong>
+              <div class="flex items-center gap-2 text-[11px] text-zinc-400 font-mono">
+                <span>SKU: {{ item.sku }}</span>
+                <span *ngIf="item.talla">• Talla: {{ item.talla }}</span>
+                <span *ngIf="item.color">• Color: {{ item.color }}</span>
+              </div>
+              <span class="text-[11px] text-zinc-500">
+                {{ item.cantidad }} x Bs. {{ item.precio_unitario.toFixed(2) }}
+              </span>
+            </div>
+            <span class="font-mono font-black text-zinc-900 dark:text-white text-right whitespace-nowrap">
+              Bs. {{ item.subtotal.toFixed(2) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Totales -->
+        <div class="pt-3 border-t border-stone-200 dark:border-slate-800 space-y-1.5 text-xs">
+          <div class="flex justify-between text-zinc-500">
+            <span>Subtotal:</span>
+            <span class="font-mono">Bs. {{ venta.subtotal.toFixed(2) }}</span>
+          </div>
+          <div *ngIf="venta.descuento > 0" class="flex justify-between text-rose-500 font-semibold">
+            <span>Descuento aplicado:</span>
+            <span class="font-mono">- Bs. {{ venta.descuento.toFixed(2) }}</span>
+          </div>
+          <div class="flex justify-between items-baseline pt-2 border-t border-dashed border-stone-200 dark:border-slate-800">
+            <span class="font-black text-zinc-900 dark:text-white text-sm">TOTAL LIQUIDADO:</span>
+            <span class="font-mono font-black text-2xl text-indigo-600 dark:text-indigo-400">
+              Bs. {{ venta.total.toFixed(2) }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resumen del Pago Registrado -->
+      <div *ngIf="venta.pago" class="bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm space-y-2 text-xs">
+        <div class="flex items-center justify-between pb-2 border-b border-stone-100 dark:border-slate-800">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Registro de Pago (t_pago)</span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400 uppercase">
+            {{ venta.pago.estado }}
+          </span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-zinc-500">Método de Cobro:</span>
+          <strong class="text-zinc-900 dark:text-white font-bold">{{ venta.pago.metodo }}</strong>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-zinc-500">Monto Acreditado:</span>
+          <strong class="font-mono text-zinc-900 dark:text-white">Bs. {{ venta.pago.monto.toFixed(2) }}</strong>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-zinc-500">Fecha y Hora de Pago:</span>
+          <span class="text-zinc-600 dark:text-slate-300 font-mono">{{ venta.pago.fecha | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- COLUMNA DERECHA: FORMULARIO DE FACTURACIÓN Y EMISIÓN (7 COLS) -->
+    <div class="lg:col-span-7 space-y-5">
+
+      <!-- Notificaciones de Éxito / Error -->
+      <div *ngIf="mensajeExito" class="p-4 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 rounded-2xl flex items-center gap-3 text-xs text-emerald-800 dark:text-emerald-200 animate-fadeIn">
+        <svg class="w-5 h-5 flex-shrink-0 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+        <span>{{ mensajeExito }}</span>
+      </div>
+
+      <div *ngIf="mensajeError" class="p-4 bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 rounded-2xl flex items-center gap-3 text-xs text-rose-700 dark:text-rose-300 animate-fadeIn">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <span>{{ mensajeError }}</span>
+      </div>
+
+      <!-- Tarjeta de Emisión -->
+      <div class="bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-5">
+        
+        <div class="flex items-center justify-between border-b border-stone-100 dark:border-slate-800 pb-3">
+          <div>
+            <h3 class="text-base font-black text-zinc-900 dark:text-white">
+              Datos del Comprobante Fiscal
+            </h3>
+            <p class="text-xs text-zinc-500 dark:text-slate-400">
+              Complete o verifique la información del cliente para la emisión del documento
+            </p>
+          </div>
+        </div>
+
+        <!-- Selector de Tipo de Documento -->
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold text-zinc-700 dark:text-slate-300">
+            Tipo de Documento Fiscal
+          </label>
+          <div class="grid grid-cols-2 gap-3">
+            <button type="button" 
+                    (click)="tipoDocumento = 'FACTURA'"
+                    [ngClass]="tipoDocumento === 'FACTURA'
+                      ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 ring-2 ring-indigo-500/20'
+                      : 'border-stone-200 dark:border-slate-800 bg-stone-50/50 dark:bg-slate-800/40 text-zinc-600 dark:text-slate-400'"
+                    class="p-3 rounded-2xl border text-left flex items-center gap-3 transition-all">
+              <div class="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs"
+                   [ngClass]="tipoDocumento === 'FACTURA' ? 'bg-indigo-600 text-white' : 'bg-stone-200 dark:bg-slate-700 text-zinc-600 dark:text-slate-300'">
+                F
+              </div>
+              <div>
+                <strong class="block text-xs">Factura Oficial</strong>
+                <span class="text-[10px] text-zinc-400">Con crédito fiscal</span>
+              </div>
+            </button>
+
+            <button type="button" 
+                    (click)="tipoDocumento = 'RECIBO'"
+                    [ngClass]="tipoDocumento === 'RECIBO'
+                      ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 ring-2 ring-indigo-500/20'
+                      : 'border-stone-200 dark:border-slate-800 bg-stone-50/50 dark:bg-slate-800/40 text-zinc-600 dark:text-slate-400'"
+                    class="p-3 rounded-2xl border text-left flex items-center gap-3 transition-all">
+              <div class="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs"
+                   [ngClass]="tipoDocumento === 'RECIBO' ? 'bg-indigo-600 text-white' : 'bg-stone-200 dark:bg-slate-700 text-zinc-600 dark:text-slate-300'">
+                R
+              </div>
+              <div>
+                <strong class="block text-xs">Recibo de Venta</strong>
+                <span class="text-[10px] text-zinc-400">Constancia interna</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Campos de Facturación -->
+        <div class="space-y-3.5 text-xs">
+          
+          <div class="space-y-1">
+            <div class="flex justify-between items-baseline">
+              <label class="font-bold text-zinc-700 dark:text-slate-300">
+                Razón Social / Nombre Completo <span class="text-rose-500">*</span>
+              </label>
+              <span class="text-[10px] text-zinc-400">Requerido (ej. Consumidor Final o Nombre)</span>
+            </div>
+            <input type="text" 
+                   [(ngModel)]="razonSocial"
+                   placeholder="Ej. Juan Pérez o Aurora SRL"
+                   class="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-slate-800 border border-stone-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-zinc-900 dark:text-white font-medium"/>
+          </div>
+
+          <div class="space-y-1">
+            <div class="flex justify-between items-baseline">
+              <label class="font-bold text-zinc-700 dark:text-slate-300">
+                NIT o Carnet de Identidad (CI) <span class="text-rose-500">*</span>
+              </label>
+              <span class="text-[10px] text-zinc-400">Requerido (use '0' para sin NIT)</span>
+            </div>
+            <input type="text" 
+                   [(ngModel)]="nitCi"
+                   placeholder="Ej. 12345678 o 0"
+                   class="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-slate-800 border border-stone-200 dark:border-slate-700 rounded-xl font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500 text-zinc-900 dark:text-white"/>
+          </div>
+
+          <div class="space-y-1">
+            <div class="flex justify-between items-baseline">
+              <label class="font-bold text-zinc-700 dark:text-slate-300">
+                Correo Electrónico de Facturación
+              </label>
+              <span class="text-[10px] text-zinc-400">Opcional para envío automático</span>
+            </div>
+            <input type="email" 
+                   [(ngModel)]="correoFacturacion"
+                   placeholder="cliente@ejemplo.com"
+                   class="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-slate-800 border border-stone-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-zinc-900 dark:text-white"/>
+          </div>
+
+          <!-- Casilla de Verificación de Envío por Correo -->
+          <div class="pt-1 flex items-center gap-2.5">
+            <input type="checkbox" 
+                   id="checkEnviarCorreo" 
+                   [(ngModel)]="enviarCorreo"
+                   [disabled]="!correoFacturacion.trim()"
+                   class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-stone-300 dark:border-slate-700"/>
+            <label for="checkEnviarCorreo" class="text-zinc-600 dark:text-slate-300 select-none cursor-pointer">
+              Enviar copia digital en PDF al correo electrónico registrado
+            </label>
+          </div>
+
+        </div>
+
+        <!-- Botones Principales de Acción -->
+        <div class="space-y-2.5 pt-2">
+          
+          <button (click)="emitirComprobante()"
+                  [disabled]="!esFormularioValido || procesando"
+                  [ngClass]="esFormularioValido && !procesando
+                    ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/25 cursor-pointer' 
+                    : 'bg-stone-200 dark:bg-slate-800 text-zinc-400 dark:text-slate-600 cursor-not-allowed'"
+                  class="w-full py-3.5 rounded-2xl font-black text-xs transition-all flex items-center justify-center gap-2">
+            <svg *ngIf="procesando" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            <span *ngIf="procesando">Generando comprobante fiscal...</span>
+            <span *ngIf="!procesando">
+              {{ comprobanteEmitido ? 'Actualizar y Reemitir Comprobante' : 'Emitir Comprobante Oficial' }}
+            </span>
+          </button>
+
+          <!-- Acciones de Descarga / Visualización si ya fue emitido -->
+          <div *ngIf="comprobanteEmitido" class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 animate-fadeIn">
+            
+            <button (click)="descargarPdf()"
+                    [disabled]="descargandoPdf"
+                    class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center justify-center gap-2">
+              <svg *ngIf="descargandoPdf" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              <svg *ngIf="!descargandoPdf" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+              </svg>
+              <span>{{ descargandoPdf ? 'Descargando...' : 'Descargar PDF' }}</span>
+            </button>
+
+            <button (click)="abrirPdfEnNuevaPestana()"
+                    class="w-full py-2.5 bg-stone-100 hover:bg-stone-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-zinc-700 dark:text-slate-300 font-bold text-xs rounded-xl border border-stone-200 dark:border-slate-700 transition-all flex items-center justify-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+              </svg>
+              <span>Ver en Pestaña</span>
+            </button>
+
+          </div>
+
+          <!-- Botón de Retorno al POS -->
+          <button (click)="irANuevaVenta()"
+                  class="w-full py-3 bg-stone-100 hover:bg-stone-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-zinc-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2 mt-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+            Finalizar y Regresar a Nueva Venta (POS)
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

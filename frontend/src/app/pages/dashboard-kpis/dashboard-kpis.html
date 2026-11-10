@@ -1,0 +1,1482 @@
+<div
+  class="min-h-full space-y-6 antialiased p-3 sm:p-6 lg:p-8 max-w-[1600px] mx-auto text-zinc-900 dark:text-zinc-100 transition-colors duration-200">
+
+  <!-- ========================================================================= -->
+  <!-- HEADER PRINCIPAL / SELECTOR RÁPIDO DE TENANT -->
+  <!-- ========================================================================= -->
+  <div
+    class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 p-6 sm:p-8 rounded-3xl shadow-sm dark:shadow-xl relative overflow-hidden transition-colors duration-200">
+    <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600"></div>
+
+    <div class="space-y-1.5">
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+          <i class="ph ph-buildings text-xs"></i>
+          Multi-Tenant Architecture
+        </span>
+        <span *ngIf="tiendaSeleccionada" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          Tienda Activa
+        </span>
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 dark:text-white">
+        PANEL ADMINISTRATIVO • DASHBOARD POR TENANT
+      </h1>
+      <p class="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 max-w-2xl font-light leading-relaxed">
+        Gestiona y analiza el rendimiento individual de cada tienda: inventario físico en tiempo real, catálogo de productos, sucursales y generación de reportes ejecutivos bajo demanda.
+      </p>
+    </div>
+
+    <!-- Acciones Superiores: Selector Rápido de Tienda & Reportes -->
+    <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+      
+      <!-- Selector desplegable de Tienda / Tenant (Solo Administrador de Plataforma) -->
+      <div class="relative min-w-[220px]" *ngIf="alcance === 'PLATAFORMA'">
+        <select 
+          [ngModel]="tiendaSeleccionada?.id_empresa || 0" 
+          (change)="onSeleccionarTiendaDesdeSelect($event)"
+          class="w-full h-10 pl-9 pr-8 text-xs font-bold bg-stone-100 dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-2xl text-zinc-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all cursor-pointer shadow-sm">
+          <option [value]="0">🏢 Todas las Empresas (Global)</option>
+          <option *ngFor="let t of tenants" [value]="t.id_empresa">
+            {{ t.nombre_empresa }} ({{ t.ciudad }})
+          </option>
+        </select>
+        <i class="ph ph-storefront absolute left-3 top-1/2 -translate-y-1/2 text-indigo-500 text-sm pointer-events-none"></i>
+      </div>
+
+      <!-- Badge Empresa Estática para roles de tienda -->
+      <div *ngIf="alcance !== 'PLATAFORMA'" class="flex items-center gap-2 px-3.5 py-2 bg-stone-100 dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-2xl text-xs font-bold text-zinc-700 dark:text-zinc-300">
+        <i class="ph ph-buildings text-emerald-500"></i>
+        <span>{{ authService.getUserCompanyName() }}</span>
+      </div>
+
+      <!-- Botón Cambiar de Tienda (Solo para Administrador de Plataforma) -->
+      <button *ngIf="alcance === 'PLATAFORMA' && tiendaSeleccionada" (click)="deseleccionarTienda()"
+        class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-bold rounded-2xl border border-stone-200 dark:border-zinc-800 transition-all cursor-pointer shadow-sm"
+        title="Volver a la vista global">
+        <i class="ph ph-arrows-clockwise text-sm text-indigo-500"></i>
+        <span>Vista Global</span>
+      </button>
+
+      <!-- Botón Actualizar Datos -->
+      <button (click)="cargarTodosLosIndicadores()" [disabled]="cargando"
+        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-indigo-700 dark:text-indigo-300 text-xs font-bold rounded-2xl border border-stone-200 dark:border-zinc-800 hover:border-indigo-500/40 transition-all cursor-pointer disabled:opacity-50 shadow-sm">
+        <div *ngIf="cargando"
+          class="w-3.5 h-3.5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+        <i *ngIf="!cargando" class="ph ph-arrow-clockwise text-sm"></i>
+        <span>{{ cargando ? 'Actualizando...' : 'Refrescar' }}</span>
+      </button>
+
+      <!-- Botón Ir a Motor de Reportes -->
+      <a routerLink="/admin/reportes"
+        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-2xl shadow-md shadow-indigo-600/25 transition-all cursor-pointer">
+        <i class="ph ph-file-text text-sm"></i>
+        <span>Motor de Reportes</span>
+      </a>
+    </div>
+  </div>
+
+
+  <!-- ========================================================================= -->
+  <!-- VISTA A: PANTALLA DE SELECCIÓN DE TIENDA / TENANT (CUANDO NO HAY SELECCIÓN) -->
+  <!-- ========================================================================= -->
+  <div *ngIf="!tiendaSeleccionada" class="space-y-6">
+
+    <!-- Tarjeta de Bienvenida y Filtro de Búsqueda -->
+    <div class="bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 p-6 sm:p-8 rounded-3xl shadow-sm space-y-6">
+      <div class="max-w-3xl space-y-2">
+        <h2 class="text-xl sm:text-2xl font-black tracking-tight text-zinc-900 dark:text-white flex items-center gap-2.5">
+          <i class="ph ph-storefront text-indigo-600 dark:text-indigo-400"></i>
+          Selecciona una Tienda para ver sus Detalles
+        </h2>
+        <p class="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+          Para garantizar la estricta separación multi-tenant de la información empresarial, debes elegir una tienda o marca asociada para consultar sus indicadores clave de ventas, nivel de inventario físico, catálogo y reportes.
+        </p>
+      </div>
+
+      <!-- Buscador de Tiendas -->
+      <div class="relative max-w-md">
+        <input 
+          type="text" 
+          [(ngModel)]="filtroBusquedaTienda" 
+          placeholder="Buscar por nombre, razón social, NIT o ciudad..."
+          class="w-full h-11 pl-10 pr-4 text-xs bg-stone-50 dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-2xl text-zinc-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all placeholder:text-zinc-400">
+        <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 text-sm"></i>
+      </div>
+    </div>
+
+    <!-- Indicador de Carga de Tiendas -->
+    <div *ngIf="cargandoTenants" class="p-12 text-center space-y-3 bg-white dark:bg-zinc-950 rounded-3xl border border-stone-200 dark:border-zinc-800">
+      <div class="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+      <p class="text-xs font-semibold text-zinc-500">Cargando catálogo de tiendas...</p>
+    </div>
+
+    <!-- Cuadrícula de Tarjetas de Tiendas (Tenants) -->
+    <div *ngIf="!cargandoTenants" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      
+      <div *ngFor="let t of tenantsFiltrados"
+        class="bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 hover:border-indigo-500/60 p-6 sm:p-7 rounded-3xl shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300 flex flex-col justify-between space-y-6 group relative overflow-hidden">
+        
+        <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl group-hover:bg-indigo-500/10 transition-colors"></div>
+
+        <div class="space-y-4 relative">
+          <!-- Cabecera de la Tarjeta: Logo y Nombres -->
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-center gap-3.5">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white font-black text-base flex items-center justify-center shadow-md shadow-indigo-500/20 shrink-0">
+                {{ t.nombre_empresa.substring(0, 2).toUpperCase() }}
+              </div>
+              <div>
+                <h3 class="text-base sm:text-lg font-black text-zinc-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  {{ t.nombre_empresa }}
+                </h3>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+                  {{ t.razon_social }}
+                </p>
+              </div>
+            </div>
+
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              {{ t.estado }}
+            </span>
+          </div>
+
+          <!-- Información General -->
+          <div class="grid grid-cols-2 gap-2 text-xs py-2 border-y border-stone-100 dark:border-zinc-900 text-zinc-600 dark:text-zinc-400">
+            <div class="flex items-center gap-2">
+              <i class="ph ph-identification-badge text-indigo-500 text-sm"></i>
+              <span>NIT: <strong class="text-zinc-900 dark:text-white">{{ t.nit || 'Sin NIT' }}</strong></span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i class="ph ph-map-pin text-indigo-500 text-sm"></i>
+              <span>Sede: <strong class="text-zinc-900 dark:text-white">{{ t.ciudad }}</strong></span>
+            </div>
+          </div>
+
+          <!-- Métricas Resumidas del Tenant -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
+            <div class="p-3 bg-stone-50 dark:bg-zinc-900/60 rounded-2xl border border-stone-100 dark:border-zinc-800/80 text-center">
+              <div class="text-[10px] uppercase font-bold text-zinc-400">Sucursales</div>
+              <div class="text-lg font-black text-indigo-600 dark:text-indigo-400 mt-0.5">{{ t.total_sucursales }}</div>
+            </div>
+
+            <div class="p-3 bg-stone-50 dark:bg-zinc-900/60 rounded-2xl border border-stone-100 dark:border-zinc-800/80 text-center">
+              <div class="text-[10px] uppercase font-bold text-zinc-400">Stock Disp.</div>
+              <div class="text-lg font-black text-emerald-600 dark:text-emerald-400 mt-0.5">{{ t.total_stock_disponible }}</div>
+            </div>
+
+            <div class="p-3 bg-stone-50 dark:bg-zinc-900/60 rounded-2xl border border-stone-100 dark:border-zinc-800/80 text-center">
+              <div class="text-[10px] uppercase font-bold text-zinc-400">Prendas</div>
+              <div class="text-lg font-black text-zinc-900 dark:text-white mt-0.5">{{ t.total_productos }}</div>
+            </div>
+
+            <div class="p-3 bg-stone-50 dark:bg-zinc-900/60 rounded-2xl border border-stone-100 dark:border-zinc-800/80 text-center">
+              <div class="text-[10px] uppercase font-bold text-zinc-400">Ventas</div>
+              <div class="text-lg font-black text-violet-600 dark:text-violet-400 mt-0.5">{{ t.total_ventas_cantidad }}</div>
+            </div>
+          </div>
+
+          <!-- Sucursales de esta tienda -->
+          <div *ngIf="t.sucursales && t.sucursales.length > 0" class="space-y-1.5 pt-1">
+            <div class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+              <i class="ph ph-storefront text-xs text-indigo-500"></i>
+              Sedes operativas:
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              <span *ngFor="let s of t.sucursales" class="px-2.5 py-1 text-[11px] font-medium rounded-xl bg-stone-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-stone-200/60 dark:border-zinc-800">
+                {{ s.nombre }} ({{ s.ciudad }})
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón de Selección -->
+        <button (click)="seleccionarTienda(t)"
+          class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-2xl shadow-md shadow-indigo-600/20 hover:shadow-indigo-600/35 transition-all flex items-center justify-center gap-2 cursor-pointer group-hover:scale-[1.01] active:scale-[0.99]">
+          <span>Ver Dashboard & Detalles de esta Tienda</span>
+          <i class="ph ph-arrow-right text-sm font-bold"></i>
+        </button>
+
+      </div>
+
+      <div *ngIf="tenantsFiltrados.length === 0 && !cargandoTenants" class="col-span-full p-12 text-center bg-white dark:bg-zinc-950 rounded-3xl border border-stone-200 dark:border-zinc-800 text-zinc-400">
+        No se encontraron tiendas que coincidan con "{{ filtroBusquedaTienda }}".
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- ========================================================================= -->
+  <!-- VISTA B: DETALLES DE LA TIENDA SELECCIONADA -->
+  <!-- ========================================================================= -->
+  <div *ngIf="tiendaSeleccionada" class="space-y-6">
+
+    <!-- BANNER DE IDENTIDAD DE LA TIENDA SELECCIONADA -->
+    <div class="bg-gradient-to-r from-indigo-900/90 via-zinc-900 to-violet-950 text-white p-6 sm:p-7 rounded-3xl shadow-xl border border-indigo-500/30 flex flex-col md:flex-row md:items-center justify-between gap-5 relative overflow-hidden">
+      <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl"></div>
+      
+      <div class="flex items-center gap-4 relative">
+        <div class="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white font-black text-xl flex items-center justify-center shadow-lg">
+          {{ tiendaSeleccionada.nombre_empresa.substring(0, 2).toUpperCase() }}
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              ● Tienda Activa
+            </span>
+            <span class="text-xs text-indigo-200">ID #{{ tiendaSeleccionada.id_empresa }}</span>
+          </div>
+          <h2 class="text-xl sm:text-2xl font-black tracking-tight text-white mt-1">
+            {{ tiendaSeleccionada.nombre_empresa }}
+          </h2>
+          <p class="text-xs text-indigo-200/80 font-light mt-0.5">
+            {{ tiendaSeleccionada.razon_social }} • NIT: {{ tiendaSeleccionada.nit || 'Sin NIT' }} • Sede Central: {{ tiendaSeleccionada.ciudad }}
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5 shrink-0 relative">
+        <button (click)="deseleccionarTienda()"
+          class="px-4 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 transition-all cursor-pointer flex items-center gap-2">
+          <i class="ph ph-arrow-left text-sm"></i>
+          <span>Elegir otra Tienda</span>
+        </button>
+
+        <button (click)="abrirReporteEnMotor('ventas')"
+          class="px-4 py-2.5 rounded-2xl bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-bold shadow-lg shadow-indigo-500/30 transition-all cursor-pointer flex items-center gap-2">
+          <i class="ph ph-lightning text-sm"></i>
+          <span>Reportes Dinámicos</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- PESTAÑAS DE NAVEGACIÓN DE LA TIENDA -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-1 border-b border-stone-200 dark:border-zinc-800">
+      
+      <button (click)="cambiarPestana('indicadores')"
+        [class.bg-indigo-600]="pestanaActiva === 'indicadores'"
+        [class.text-white]="pestanaActiva === 'indicadores'"
+        [class.shadow-md]="pestanaActiva === 'indicadores'"
+        [class.text-zinc-600]="pestanaActiva !== 'indicadores'"
+        [class.dark:text-zinc-400]="pestanaActiva !== 'indicadores'"
+        [class.hover:bg-stone-100]="pestanaActiva !== 'indicadores'"
+        [class.dark:hover:bg-zinc-900]="pestanaActiva !== 'indicadores'"
+        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer shrink-0">
+        <i class="ph ph-chart-line-up text-sm"></i>
+        <span>Indicadores & Ventas</span>
+      </button>
+
+      <button (click)="cambiarPestana('inventario')"
+        [class.bg-indigo-600]="pestanaActiva === 'inventario'"
+        [class.text-white]="pestanaActiva === 'inventario'"
+        [class.shadow-md]="pestanaActiva === 'inventario'"
+        [class.text-zinc-600]="pestanaActiva !== 'inventario'"
+        [class.dark:text-zinc-400]="pestanaActiva !== 'inventario'"
+        [class.hover:bg-stone-100]="pestanaActiva !== 'inventario'"
+        [class.dark:hover:bg-zinc-900]="pestanaActiva !== 'inventario'"
+        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer shrink-0">
+        <i class="ph ph-package text-sm"></i>
+        <span>Inventario Físico & Stock</span>
+        <span *ngIf="(kpisResumen?.inventario?.productos_agotados || 0) > 0" class="w-2 h-2 rounded-full bg-rose-500"></span>
+      </button>
+
+      <button (click)="cambiarPestana('satisfaccion')"
+        [class.bg-indigo-600]="pestanaActiva === 'satisfaccion'"
+        [class.text-white]="pestanaActiva === 'satisfaccion'"
+        [class.shadow-md]="pestanaActiva === 'satisfaccion'"
+        [class.text-zinc-600]="pestanaActiva !== 'satisfaccion'"
+        [class.dark:text-zinc-400]="pestanaActiva !== 'satisfaccion'"
+        [class.hover:bg-stone-100]="pestanaActiva !== 'satisfaccion'"
+        [class.dark:hover:bg-zinc-900]="pestanaActiva !== 'satisfaccion'"
+        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer shrink-0">
+        <i class="ph ph-star text-sm"></i>
+        <span>Satisfacción & Calidad</span>
+        <span *ngIf="(kpisResumen?.satisfaccion?.alertas_criticas_pendientes || 0) > 0" class="px-1.5 py-0.5 rounded-full text-[9px] bg-rose-500 text-white font-black animate-pulse">
+          {{ kpisResumen?.satisfaccion?.alertas_criticas_pendientes }}
+        </span>
+      </button>
+
+      <button (click)="cambiarPestana('reportes')"
+        [class.bg-indigo-600]="pestanaActiva === 'reportes'"
+        [class.text-white]="pestanaActiva === 'reportes'"
+        [class.shadow-md]="pestanaActiva === 'reportes'"
+        [class.text-zinc-600]="pestanaActiva !== 'reportes'"
+        [class.dark:text-zinc-400]="pestanaActiva !== 'reportes'"
+        [class.hover:bg-stone-100]="pestanaActiva !== 'reportes'"
+        [class.dark:hover:bg-zinc-900]="pestanaActiva !== 'reportes'"
+        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer shrink-0">
+        <i class="ph ph-file-text text-sm"></i>
+        <span>Reportes de la Tienda</span>
+      </button>
+
+      <button (click)="cambiarPestana('sucursales')"
+        [class.bg-indigo-600]="pestanaActiva === 'sucursales'"
+        [class.text-white]="pestanaActiva === 'sucursales'"
+        [class.shadow-md]="pestanaActiva === 'sucursales'"
+        [class.text-zinc-600]="pestanaActiva !== 'sucursales'"
+        [class.dark:text-zinc-400]="pestanaActiva !== 'sucursales'"
+        [class.hover:bg-stone-100]="pestanaActiva !== 'sucursales'"
+        [class.dark:hover:bg-zinc-900]="pestanaActiva !== 'sucursales'"
+        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer shrink-0">
+        <i class="ph ph-buildings text-sm"></i>
+        <span>Sucursales ({{ tiendaSeleccionada.sucursales.length }})</span>
+      </button>
+
+    </div>
+
+    <!-- BARRA DE FILTROS DINÁMICOS W32 -->
+    <div
+      class="bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 p-5 sm:p-6 rounded-3xl shadow-sm space-y-4">
+
+      <!-- Fila 1: Presets Rápidos de Período -->
+      <div
+        class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-100 dark:border-zinc-900">
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+          <span
+            class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-1.5 mr-1 shrink-0">
+            <i class="ph ph-clock-counter-clockwise text-sm text-indigo-500"></i>
+            Período:
+          </span>
+          <div
+            class="inline-flex items-center p-1 rounded-2xl bg-stone-100 dark:bg-zinc-900 border border-stone-200/60 dark:border-zinc-800 text-xs font-medium">
+            <button (click)="aplicarPreset('hoy')" [class.bg-indigo-600]="presetSeleccionado === 'hoy'"
+              [class.text-white]="presetSeleccionado === 'hoy'" [class.shadow-sm]="presetSeleccionado === 'hoy'"
+              [class.text-zinc-600]="presetSeleccionado !== 'hoy'"
+              [class.dark:text-zinc-400]="presetSeleccionado !== 'hoy'"
+              class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer">
+              Hoy
+            </button>
+            <button (click)="aplicarPreset('7dias')" [class.bg-indigo-600]="presetSeleccionado === '7dias'"
+              [class.text-white]="presetSeleccionado === '7dias'" [class.shadow-sm]="presetSeleccionado === '7dias'"
+              [class.text-zinc-600]="presetSeleccionado !== '7dias'"
+              [class.dark:text-zinc-400]="presetSeleccionado !== '7dias'"
+              class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer">
+              Últimos 7 Días
+            </button>
+            <button (click)="aplicarPreset('mes')" [class.bg-indigo-600]="presetSeleccionado === 'mes'"
+              [class.text-white]="presetSeleccionado === 'mes'" [class.shadow-sm]="presetSeleccionado === 'mes'"
+              [class.text-zinc-600]="presetSeleccionado !== 'mes'"
+              [class.dark:text-zinc-400]="presetSeleccionado !== 'mes'"
+              class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer">
+              Este Mes
+            </button>
+            <button (click)="aplicarPreset('historico')" [class.bg-indigo-600]="presetSeleccionado === 'historico'"
+              [class.text-white]="presetSeleccionado === 'historico'"
+              [class.shadow-sm]="presetSeleccionado === 'historico'"
+              [class.text-zinc-600]="presetSeleccionado !== 'historico'"
+              [class.dark:text-zinc-400]="presetSeleccionado !== 'historico'"
+              class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer">
+              Histórico Completo
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fila 2: Filtros Específicos -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3.5 items-end">
+
+        <!-- Desde -->
+        <div class="lg:col-span-3 space-y-1.5">
+          <label
+            class="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="ph ph-calendar text-xs text-indigo-500"></i>
+            <span>Fecha Desde</span>
+          </label>
+          <div class="relative flex items-center">
+            <input type="date" [(ngModel)]="fechaInicio"
+              class="w-full h-10 px-3 text-xs bg-stone-50 dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all cursor-pointer">
+          </div>
+        </div>
+
+        <!-- Hasta -->
+        <div class="lg:col-span-3 space-y-1.5">
+          <label
+            class="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="ph ph-calendar text-xs text-indigo-500"></i>
+            <span>Fecha Hasta</span>
+          </label>
+          <div class="relative flex items-center">
+            <input type="date" [(ngModel)]="fechaFin"
+              class="w-full h-10 px-3 text-xs bg-stone-50 dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all cursor-pointer">
+          </div>
+        </div>
+
+        <!-- Sucursal (filtrada por la tienda seleccionada o fija según alcance) -->
+        <div class="lg:col-span-4 space-y-1.5">
+          <label
+            class="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="ph ph-storefront text-xs text-indigo-500"></i>
+            <span>{{ alcance === 'SUCURSAL' ? 'Sucursal Asignada' : (tiendaSeleccionada ? 'Sucursal de ' + tiendaSeleccionada.nombre_empresa : 'Sucursal') }}</span>
+          </label>
+          <div class="relative flex items-center" *ngIf="alcance !== 'SUCURSAL'">
+            <select [(ngModel)]="sucursalSeleccionada"
+              class="w-full h-10 px-3 text-xs bg-stone-50 dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all cursor-pointer">
+              <option [ngValue]="null">Todas las Sucursales (Consolidado)</option>
+              <option *ngFor="let s of sucursalesDisponibles" [ngValue]="s.id">
+                {{ s.nombre }} ({{ s.ciudad }})
+              </option>
+            </select>
+          </div>
+          <div class="relative flex items-center" *ngIf="alcance === 'SUCURSAL'">
+            <div class="w-full h-10 px-3 text-xs bg-stone-100 dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-xl text-zinc-800 dark:text-zinc-200 flex items-center font-bold">
+              <span>📍 {{ authService.getUserBranchName() }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón Filtrar -->
+        <div class="lg:col-span-2">
+          <button (click)="cargarTodosLosIndicadores()" [disabled]="cargando"
+            class="w-full h-10 px-4 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-xs font-bold rounded-xl shadow-sm hover:shadow-md shadow-indigo-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]">
+            <div *ngIf="cargando"
+              class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <i *ngIf="!cargando" class="ph ph-funnel text-sm"></i>
+            <span>{{ cargando ? 'Filtrando...' : 'Aplicar Filtros' }}</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- ========================================================================= -->
+    <!-- PESTAÑA 1: INDICADORES & VENTAS -->
+    <!-- ========================================================================= -->
+    <div *ngIf="pestanaActiva === 'indicadores'" class="space-y-6">
+
+      <!-- TARJETAS PRINCIPALES DE KPIS (W32) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+        <!-- KPI 1: Ventas Totales -->
+        <div
+          class="p-6 rounded-3xl bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 shadow-sm flex flex-col justify-between space-y-3 relative overflow-hidden group hover:border-indigo-500/40 transition-all">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Ventas Totales</span>
+            <div
+              class="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-500/20">
+              <i class="ph ph-currency-dollar text-lg"></i>
+            </div>
+          </div>
+          <div>
+            <h2 class="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
+              Bs. {{ (kpisResumen?.ventas?.ventas_totales || 0) | number:'1.2-2' }}
+            </h2>
+            <div class="flex items-center gap-2 mt-2">
+              <span *ngIf="kpisResumen?.comparacion?.periodo_anterior_disponible"
+                class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full"
+                [ngClass]="(kpisResumen?.comparacion?.ventas_crecimiento_pct || 0) >= 0 ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/15 text-rose-600 dark:text-rose-400'">
+                <span>{{ (kpisResumen?.comparacion?.ventas_crecimiento_pct || 0) >= 0 ? '+' : '' }}{{
+                  kpisResumen?.comparacion?.ventas_crecimiento_pct }}%</span>
+                <span class="font-normal text-[10px] text-zinc-500">vs período anterior</span>
+              </span>
+              <span *ngIf="!kpisResumen?.comparacion?.periodo_anterior_disponible" class="text-[11px] text-zinc-500">
+                Monto neto facturado
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI 2: Ticket Promedio -->
+        <div
+          class="p-6 rounded-3xl bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 shadow-sm flex flex-col justify-between space-y-3 relative overflow-hidden group hover:border-violet-500/40 transition-all">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Ticket Promedio</span>
+            <div
+              class="w-9 h-9 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center border border-violet-500/20">
+              <i class="ph ph-receipt text-lg"></i>
+            </div>
+          </div>
+          <div>
+            <h2 class="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
+              Bs. {{ (kpisResumen?.ventas?.ticket_promedio || 0) | number:'1.2-2' }}
+            </h2>
+            <p class="text-[11px] text-zinc-500 mt-2">
+              Min: Bs. {{ (kpisResumen?.ventas?.ticket_minimo || 0) | number:'1.0-0' }} • Max: Bs. {{
+              (kpisResumen?.ventas?.ticket_maximo || 0) | number:'1.0-0' }}
+            </p>
+          </div>
+        </div>
+
+        <!-- KPI 3: Transacciones / Ventas -->
+        <div
+          class="p-6 rounded-3xl bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 shadow-sm flex flex-col justify-between space-y-3 relative overflow-hidden group hover:border-amber-500/40 transition-all">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Transacciones</span>
+            <div
+              class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-500/20">
+              <i class="ph ph-shopping-bag text-lg"></i>
+            </div>
+          </div>
+          <div>
+            <h2 class="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
+              {{ kpisResumen?.ventas?.cantidad_ventas || 0 }}
+            </h2>
+            <p class="text-[11px] text-zinc-500 mt-2">
+              Órdenes completadas con éxito
+            </p>
+          </div>
+        </div>
+
+        <!-- KPI 4: Inventario y Stock Crítico -->
+        <div
+          class="p-6 rounded-3xl bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 shadow-sm flex flex-col justify-between space-y-3 relative overflow-hidden group hover:border-emerald-500/40 transition-all">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Stock en Tienda</span>
+            <div
+              class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+              <i class="ph ph-package text-lg"></i>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-baseline gap-2">
+              <h2 class="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
+                {{ kpisResumen?.inventario?.stock_total || 0 }}
+              </h2>
+              <span class="text-xs text-zinc-500 font-semibold">unidades</span>
+            </div>
+            <div class="flex items-center gap-2 mt-2">
+              <span *ngIf="(kpisResumen?.inventario?.productos_agotados || 0) > 0"
+                class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/15 text-rose-600 dark:text-rose-400">
+                {{ kpisResumen?.inventario?.productos_agotados }} Agotados
+              </span>
+              <span *ngIf="(kpisResumen?.inventario?.productos_stock_bajo || 0) > 0"
+                class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400">
+                {{ kpisResumen?.inventario?.productos_stock_bajo }} Bajo Mínimo
+              </span>
+              <span
+                *ngIf="(kpisResumen?.inventario?.productos_agotados || 0) === 0 && (kpisResumen?.inventario?.productos_stock_bajo || 0) === 0"
+                class="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                ✓ Existencias en nivel óptimo
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FILA 2 DE KPIS ESTRATÉGICOS: SATISFACCIÓN CSAT, CANALES, LOGÍSTICA Y VALORIZACIÓN -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+        <!-- KPI 5: Satisfacción del Cliente / CSAT -->
+        <div
+          class="p-6 rounded-3xl bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 shadow-sm flex flex-col justify-between space-y-3 relative overflow-hidden group hover:border-amber-500/40 transition-all">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Satisfacción / CSAT</span>
+            <div
+              class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center border border-amber-500/20">
+              <i class="ph ph-star text-lg"></i>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-baseline gap-2">
+              <h2 class="text-3xl font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-1.5">
+                <span>{{ (kpisResumen?.satisfaccion?.calificacion_promedio || 0) | number:'1.1-1' }}</span>
+                <span class="text-amber-500 text-2xl">★</span>
+              </h2>
+              <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                {{ (kpisResumen?.satisfaccion?.tasa_satisfaccion_pct || 0) | number:'1.0-0' }}% CSAT
+              </span>
+            </div>
+            <div class="flex items-center justify-between text-[11px] text-zinc-500 mt-2">
+              <span>{{ kpisResumen?.satisfaccion?.total_valoraciones || 0 }} opiniones recibidas</span>
+              <span *ngIf="(kpisResumen?.satisfaccion?.alertas_criticas_pendientes || 0) > 0"
+                class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/15 text-rose-600 dark:text-rose-400">
+                {{ kpisResumen?.satisfaccion?.alertas_criticas_pendientes }} quejas 1★
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI 6: Canales de Venta (Online vs POS) -->
+        <div
+          class="p-6 rounded-3xl bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 shadow-sm flex flex-col justify-between space-y-3 relative overflow-hidden group hover:border-indigo-500/40 transition-all">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Canal: Online vs. POS</span>
+            <div
+              class="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-500/20">
+              <i class="ph ph-device-mobile text-lg"></i>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between text-xs font-bold text-zinc-800 dark:text-zinc-200 mb-1.5">
+              <span class="text-indigo-600 dark:text-indigo-400">📱 Web/Móvil {{ kpisResumen?.canales?.porcentaje_online || 0 }}%</span>
+              <span class="text-zinc-500">🏢 Mostrador {{ kpisResumen?.canales?.porcentaje_pos || 0 }}%</span>
+            </div>
+            <div class="w-full bg-stone-100 dark:bg-zinc-900 rounded-full h-2.5 overflow-hidden flex">
+              <div class="bg-indigo-600 h-2.5 transition-all duration-500" [style.width.%]="kpisResumen?.canales?.porcentaje_online || 0"></div>
+              <div class="bg-stone-300 dark:bg-zinc-700 h-2.5 transition-all duration-500" [style.width.%]="kpisResumen?.canales?.porcentaje_pos || 0"></div>
+            </div>
+            <div class="flex items-center justify-between text-[11px] text-zinc-500 mt-2">
+              <span>Bs. {{ (kpisResumen?.canales?.ventas_online_total || 0) | number:'1.0-0' }}</span>
+              <span>Bs. {{ (kpisResumen?.canales?.ventas_pos_total || 0) | number:'1.0-0' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI 7: Modalidad de Despacho (Delivery vs Retiro) -->
+        <div
+          class="p-6 rounded-3xl bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 shadow-sm flex flex-col justify-between space-y-3 relative overflow-hidden group hover:border-violet-500/40 transition-all">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Despacho de Pedidos</span>
+            <div
+              class="w-9 h-9 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center border border-violet-500/20">
+              <i class="ph ph-moped text-lg"></i>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-baseline gap-2">
+              <h2 class="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
+                {{ kpisResumen?.canales?.total_pedidos || 0 }}
+              </h2>
+              <span class="text-xs text-zinc-500 font-semibold">pedidos totales</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-[11px] text-zinc-600 dark:text-zinc-400 mt-2 pt-2 border-t border-stone-100 dark:border-zinc-900">
+              <div>
+                <span class="font-bold text-zinc-800 dark:text-zinc-200">🛵 {{ kpisResumen?.canales?.pedidos_delivery_cantidad || 0 }}</span> Delivery
+              </div>
+              <div class="text-right">
+                <span class="font-bold text-zinc-800 dark:text-zinc-200">🏬 {{ kpisResumen?.canales?.pedidos_retiro_cantidad || 0 }}</span> Retiro
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI 8: Valorización del Inventario en Bs. -->
+        <div
+          class="p-6 rounded-3xl bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 shadow-sm flex flex-col justify-between space-y-3 relative overflow-hidden group hover:border-emerald-500/40 transition-all">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Valuación Inventario</span>
+            <div
+              class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+              <i class="ph ph-bank text-lg"></i>
+            </div>
+          </div>
+          <div>
+            <h2 class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
+              Bs. {{ (kpisResumen?.inventario?.valoracion_inventario_disponible || 0) | number:'1.2-2' }}
+            </h2>
+            <div class="flex items-center justify-between text-[11px] text-zinc-500 mt-2">
+              <span>{{ kpisResumen?.inventario?.stock_disponible || 0 }} unidades disponibles</span>
+              <span class="font-bold text-emerald-600 dark:text-emerald-400">
+                {{ (kpisResumen?.inventario?.tasa_disponibilidad_stock || 0) | number:'1.0-0' }}% disponible
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- GRÁFICOS PRINCIPALES: TENDENCIA TEMPORAL Y COMPARATIVA SUCURSALES -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Gráfico 1: Ventas por Período (Línea SVG Responsiva) -->
+        <div
+          class="lg:col-span-2 bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-base font-bold text-zinc-900 dark:text-white">Tendencia de Ventas de {{ tiendaSeleccionada.nombre_empresa }}</h3>
+              <p class="text-xs text-zinc-500">Monto acumulado por fecha de facturación</p>
+            </div>
+            <span
+              class="text-xs font-mono px-2.5 py-1 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-lg font-bold">
+              {{ ventasTimeline.length }} fechas registradas
+            </span>
+          </div>
+
+          <!-- Contenedor del Gráfico SVG -->
+          <div
+            class="relative w-full h-64 bg-stone-50/50 dark:bg-zinc-900/30 rounded-2xl p-3 border border-stone-100 dark:border-zinc-800/80 flex items-center justify-center overflow-hidden">
+
+            <svg *ngIf="ventasTimeline.length > 0" viewBox="0 0 800 220" class="w-full h-full overflow-visible">
+              <defs>
+                <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#6366f1" stop-opacity="0.35" />
+                  <stop offset="100%" stop-color="#6366f1" stop-opacity="0.0" />
+                </linearGradient>
+              </defs>
+
+              <line x1="40" y1="30" x2="760" y2="30" stroke="#e2e8f0" stroke-width="0.7" stroke-dasharray="4,4"
+                class="dark:stroke-zinc-800" />
+              <line x1="40" y1="110" x2="760" y2="110" stroke="#e2e8f0" stroke-width="0.7" stroke-dasharray="4,4"
+                class="dark:stroke-zinc-800" />
+              <line x1="40" y1="190" x2="760" y2="190" stroke="#e2e8f0" stroke-width="1" class="dark:stroke-zinc-800" />
+
+              <polygon *ngIf="svgAreaPoligono" [attr.points]="svgAreaPoligono" fill="url(#areaGradient)" />
+
+              <polyline *ngIf="svgPuntosLinea" [attr.points]="svgPuntosLinea" fill="none" stroke="#6366f1"
+                stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+
+              <g *ngFor="let item of ventasTimeline; let i = index">
+                <circle [attr.cx]="getPuntoCoordenadas(item, i).x" [attr.cy]="getPuntoCoordenadas(item, i).y" r="5"
+                  fill="#ffffff" stroke="#4f46e5" stroke-width="2.5"
+                  class="cursor-pointer transition-transform hover:scale-150" (mouseenter)="onHoverPunto(item, i)"
+                  (mouseleave)="onLeavePunto()" />
+              </g>
+            </svg>
+
+            <!-- Tooltip flotante interactivo -->
+            <div *ngIf="puntoHover"
+              class="absolute pointer-events-none bg-zinc-900 text-white text-xs px-3 py-2 rounded-xl shadow-xl border border-zinc-700 space-y-1 transform -translate-x-1/2 -translate-y-full"
+              [style.left.px]="(posicionHoverX / 800) * 100 + '%'" [style.top.px]="(posicionHoverY / 220) * 100 + '%'">
+              <div class="font-bold text-indigo-300">{{ puntoHover.fecha }}</div>
+              <div>Total: <span class="font-mono font-bold text-emerald-400">Bs. {{ puntoHover.total | number:'1.2-2'
+                  }}</span></div>
+              <div class="text-[10px] text-zinc-400">{{ puntoHover.cantidad }} transacciones</div>
+            </div>
+
+            <div *ngIf="ventasTimeline.length === 0 && !cargando" class="text-xs text-zinc-500 text-center py-10">
+              No hay registros de ventas para {{ tiendaSeleccionada.nombre_empresa }} en el período seleccionado.
+            </div>
+          </div>
+        </div>
+
+        <!-- Gráfico 2: Ventas por Sucursal de la Tienda -->
+        <div
+          class="bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-base font-bold text-zinc-900 dark:text-white">Rendimiento por Sucursal</h3>
+              <p class="text-xs text-zinc-500">Ingresos comparativos</p>
+            </div>
+            <span
+              class="text-xs font-mono px-2 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-md font-bold">
+              {{ ventasPorSucursal.length }} sedes
+            </span>
+          </div>
+
+          <div class="space-y-4">
+            <div *ngFor="let suc of ventasPorSucursal" class="space-y-1.5">
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-bold text-zinc-800 dark:text-zinc-200 truncate max-w-[160px]">
+                  {{ suc.nombre_sucursal }}
+                </span>
+                <span class="font-mono font-bold text-zinc-900 dark:text-white">
+                  Bs. {{ suc.total_ingresos | number:'1.0-0' }}
+                </span>
+              </div>
+
+              <div class="w-full bg-stone-100 dark:bg-zinc-900 rounded-full h-3 overflow-hidden">
+                <div class="bg-gradient-to-r from-indigo-500 to-violet-600 h-3 rounded-full transition-all duration-500"
+                  [style.width.%]="getAnchoBarraSucursal(suc.total_ingresos)"></div>
+              </div>
+
+              <div class="flex items-center justify-between text-[11px] text-zinc-500">
+                <span>{{ suc.ciudad }}</span>
+                <span>{{ suc.cantidad_ventas }} ventas • {{ suc.total_unidades }} prendas</span>
+              </div>
+            </div>
+
+            <div *ngFor="let _ of (ventasPorSucursal.length === 0 && !cargando ? [1] : [])"
+              class="text-xs text-zinc-500 text-center py-8">
+              Sin datos de sucursales para esta tienda.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN DE RANKING DE PRENDAS -->
+      <div
+        class="bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-base font-bold text-zinc-900 dark:text-white">Prendas y Modelos Más Vendidos</h3>
+            <p class="text-xs text-zinc-500">Rotación e ingresos generados para {{ tiendaSeleccionada.nombre_empresa }}</p>
+          </div>
+          <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400">Top {{ productosTop.length }}</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr
+                class="border-b border-stone-200 dark:border-zinc-800 text-zinc-500 uppercase tracking-wider font-semibold">
+                <th class="py-2.5 px-3">Prenda</th>
+                <th class="py-2.5 px-3">Categoría</th>
+                <th class="py-2.5 px-3 text-center">Unidades</th>
+                <th class="py-2.5 px-3 text-right">Recaudación</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-stone-100 dark:divide-zinc-900 font-medium">
+              <tr *ngFor="let p of productosTop" class="hover:bg-stone-50/50 dark:hover:bg-zinc-900/40 transition-colors">
+                <td class="py-3 px-3">
+                  <div class="flex items-center gap-3">
+                    <img *ngIf="p.imagen_url" [src]="p.imagen_url"
+                      class="w-9 h-9 rounded-lg object-cover border border-stone-200 dark:border-zinc-800 shrink-0">
+                    <div *ngIf="!p.imagen_url"
+                      class="w-9 h-9 rounded-lg bg-stone-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 text-zinc-400">
+                      <i class="ph ph-t-shirt text-base"></i>
+                    </div>
+                    <span class="font-bold text-zinc-900 dark:text-white truncate max-w-[200px]">{{ p.nombre }}</span>
+                  </div>
+                </td>
+                <td class="py-3 px-3 text-zinc-500">{{ p.categoria }}</td>
+                <td class="py-3 px-3 text-center font-bold text-indigo-600 dark:text-indigo-400">{{ p.unidades_vendidas }}
+                </td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-zinc-900 dark:text-white">Bs. {{ p.total_ingresos
+                  | number:'1.2-2' }}</td>
+              </tr>
+              <tr *ngIf="productosTop.length === 0 && !cargando">
+                <td colspan="4" class="py-6 text-center text-zinc-400">No hay ventas registradas con los filtros actuales.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SECCIÓN OPERATIVA ADICIONAL: PROBADOR VIRTUAL & DEVOLUCIONES LEY 453 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- Citas de Probador Virtual -->
+        <div class="bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                <i class="ph ph-sparkle text-xl"></i>
+              </div>
+              <div>
+                <h3 class="text-sm font-bold text-zinc-900 dark:text-white">Citas de Probador Virtual & Asistencia</h3>
+                <p class="text-[11px] text-zinc-500">Reservas agendadas en sucursales físicas</p>
+              </div>
+            </div>
+            <span class="text-xs font-mono font-bold px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              {{ kpisResumen?.reservas_probador?.tasa_asistencia_pct || 0 }}% Asistencia
+            </span>
+          </div>
+
+          <div class="grid grid-cols-4 gap-2 pt-2 border-t border-stone-100 dark:border-zinc-900 text-center">
+            <div class="p-2.5 rounded-2xl bg-stone-50 dark:bg-zinc-900/60">
+              <div class="text-base font-black text-zinc-900 dark:text-white">{{ kpisResumen?.reservas_probador?.total_reservas || 0 }}</div>
+              <div class="text-[10px] text-zinc-500">Totales</div>
+            </div>
+            <div class="p-2.5 rounded-2xl bg-emerald-500/10">
+              <div class="text-base font-black text-emerald-600 dark:text-emerald-400">{{ kpisResumen?.reservas_probador?.reservas_atendidas || 0 }}</div>
+              <div class="text-[10px] text-emerald-600/80">Atendidas</div>
+            </div>
+            <div class="p-2.5 rounded-2xl bg-stone-50 dark:bg-zinc-900/60">
+              <div class="text-base font-black text-amber-500">{{ kpisResumen?.reservas_probador?.reservas_activas || 0 }}</div>
+              <div class="text-[10px] text-zinc-500">Activas</div>
+            </div>
+            <div class="p-2.5 rounded-2xl bg-rose-500/10">
+              <div class="text-base font-black text-rose-600 dark:text-rose-400">{{ (kpisResumen?.reservas_probador?.reservas_canceladas || 0) + (kpisResumen?.reservas_probador?.reservas_vencidas || 0) }}</div>
+              <div class="text-[10px] text-rose-600/80">No asistieron</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Post-Venta y Devoluciones (Ley N° 453) -->
+        <div class="bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+                <i class="ph ph-arrow-u-down-left text-xl"></i>
+              </div>
+              <div>
+                <h3 class="text-sm font-bold text-zinc-900 dark:text-white">Garantías & Devoluciones (Ley N° 453)</h3>
+                <p class="text-[11px] text-zinc-500">Resolución de garantías y post-venta retail</p>
+              </div>
+            </div>
+            <span class="text-xs font-mono font-bold px-2.5 py-1 rounded-xl bg-stone-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300">
+              {{ kpisResumen?.devoluciones?.total_solicitudes || 0 }} Casos
+            </span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 pt-2 border-t border-stone-100 dark:border-zinc-900 text-center">
+            <div class="p-2.5 rounded-2xl bg-stone-50 dark:bg-zinc-900/60">
+              <div class="text-base font-black text-zinc-900 dark:text-white">Bs. {{ (kpisResumen?.devoluciones?.monto_total_reembolsado || 0) | number:'1.0-0' }}</div>
+              <div class="text-[10px] text-zinc-500">Reembolsado</div>
+            </div>
+            <div class="p-2.5 rounded-2xl bg-emerald-500/10">
+              <div class="text-base font-black text-emerald-600 dark:text-emerald-400">{{ kpisResumen?.devoluciones?.devoluciones_completadas || 0 }}</div>
+              <div class="text-[10px] text-emerald-600/80">Completadas</div>
+            </div>
+            <div class="p-2.5 rounded-2xl bg-indigo-500/10">
+              <div class="text-base font-black text-indigo-600 dark:text-indigo-400">{{ kpisResumen?.devoluciones?.casos_ley_453 || 0 }}</div>
+              <div class="text-[10px] text-indigo-600/80">Amparo Ley 453</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- ========================================================================= -->
+    <!-- PESTAÑA NUEVA: SATISFACCIÓN DEL CLIENTE & CALIDAD (CSAT + VALORACIONES) -->
+    <!-- ========================================================================= -->
+    <div *ngIf="pestanaActiva === 'satisfaccion'" class="space-y-6">
+
+      <!-- BANNER DE SATISFACCIÓN Y MÉTRICAS CSAT -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+        <!-- CSAT General -->
+        <div class="p-6 rounded-3xl bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 shadow-sm space-y-2">
+          <div class="flex items-center justify-between text-xs font-mono uppercase text-zinc-500">
+            <span>Calificación Promedio</span>
+            <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+              <i class="ph ph-star text-base"></i>
+            </div>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <span class="text-3xl font-black text-zinc-900 dark:text-white">
+              {{ (kpisResumen?.satisfaccion?.calificacion_promedio || 0) | number:'1.1-1' }}
+            </span>
+            <span class="text-amber-500 text-2xl font-bold">★</span>
+            <span class="text-xs text-zinc-500">/ 5.0</span>
+          </div>
+          <p class="text-[11px] text-zinc-500">Basado en {{ kpisResumen?.satisfaccion?.total_valoraciones || 0 }} opiniones de clientes</p>
+        </div>
+
+        <!-- CSAT Porcentaje -->
+        <div class="p-6 rounded-3xl bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 shadow-sm space-y-2">
+          <div class="flex items-center justify-between text-xs font-mono uppercase text-zinc-500">
+            <span>Índice CSAT Positivo</span>
+            <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+              <i class="ph ph-thumbs-up text-base"></i>
+            </div>
+          </div>
+          <div class="text-3xl font-black text-emerald-600 dark:text-emerald-400">
+            {{ (kpisResumen?.satisfaccion?.tasa_satisfaccion_pct || 0) | number:'1.0-0' }}%
+          </div>
+          <p class="text-[11px] text-zinc-500">{{ kpisResumen?.satisfaccion?.valoraciones_positivas || 0 }} calificaciones de 4★ y 5★</p>
+        </div>
+
+        <!-- Promedio Prendas vs Servicio -->
+        <div class="p-6 rounded-3xl bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 shadow-sm space-y-2">
+          <div class="flex items-center justify-between text-xs font-mono uppercase text-zinc-500">
+            <span>Prendas vs. Servicio</span>
+            <div class="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+              <i class="ph ph-t-shirt text-base"></i>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2 pt-1 text-xs font-bold text-zinc-800 dark:text-zinc-200">
+            <div>
+              <div class="text-lg font-black text-indigo-600 dark:text-indigo-400">{{ (kpisResumen?.satisfaccion?.promedio_prendas || 0) | number:'1.1-1' }} ★</div>
+              <div class="text-[10px] text-zinc-500 font-normal">Prendas ({{ kpisResumen?.satisfaccion?.valoraciones_prendas || 0 }})</div>
+            </div>
+            <div>
+              <div class="text-lg font-black text-violet-600 dark:text-violet-400">{{ (kpisResumen?.satisfaccion?.promedio_servicio || 0) | number:'1.1-1' }} ★</div>
+              <div class="text-[10px] text-zinc-500 font-normal">Servicio ({{ kpisResumen?.satisfaccion?.valoraciones_servicio || 0 }})</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alertas Críticas 1 Estrella -->
+        <div class="p-6 rounded-3xl bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 shadow-sm space-y-2">
+          <div class="flex items-center justify-between text-xs font-mono uppercase text-zinc-500">
+            <span>Quejas Críticas (1★)</span>
+            <div class="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+              <i class="ph ph-warning-octagon text-base"></i>
+            </div>
+          </div>
+          <div class="text-3xl font-black text-rose-600 dark:text-rose-400">
+            {{ kpisResumen?.satisfaccion?.alertas_criticas_pendientes || 0 }}
+          </div>
+          <p class="text-[11px] text-zinc-500">Requieren revisión administrativa</p>
+        </div>
+
+      </div>
+
+      <!-- DISTRIBUCIÓN DE ESTRELLAS (1★ A 5★) -->
+      <div class="bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm space-y-4">
+        <h3 class="text-base font-bold text-zinc-900 dark:text-white">Desglose de Calificaciones por Estrellas</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+          <!-- 5 Estrellas -->
+          <div class="p-4 rounded-2xl bg-stone-50 dark:bg-zinc-900/60 border border-stone-100 dark:border-zinc-800/80 space-y-2">
+            <div class="flex items-center justify-between text-xs font-bold">
+              <span class="text-amber-500">★★★★★</span>
+              <span class="text-zinc-900 dark:text-white font-mono">{{ kpisResumen?.satisfaccion?.estrellas_distribucion?.[5] || 0 }}</span>
+            </div>
+            <div class="w-full bg-stone-200 dark:bg-zinc-800 rounded-full h-2 overflow-hidden">
+              <div class="bg-emerald-500 h-2 rounded-full"
+                [style.width.%]="(kpisResumen?.satisfaccion?.total_valoraciones || 0) > 0 ? ((kpisResumen?.satisfaccion?.estrellas_distribucion?.[5] || 0) / (kpisResumen?.satisfaccion?.total_valoraciones || 1) * 100) : 0"></div>
+            </div>
+            <div class="text-[10px] text-zinc-500">Excelente</div>
+          </div>
+
+          <!-- 4 Estrellas -->
+          <div class="p-4 rounded-2xl bg-stone-50 dark:bg-zinc-900/60 border border-stone-100 dark:border-zinc-800/80 space-y-2">
+            <div class="flex items-center justify-between text-xs font-bold">
+              <span class="text-amber-500">★★★★☆</span>
+              <span class="text-zinc-900 dark:text-white font-mono">{{ kpisResumen?.satisfaccion?.estrellas_distribucion?.[4] || 0 }}</span>
+            </div>
+            <div class="w-full bg-stone-200 dark:bg-zinc-800 rounded-full h-2 overflow-hidden">
+              <div class="bg-emerald-400 h-2 rounded-full"
+                [style.width.%]="(kpisResumen?.satisfaccion?.total_valoraciones || 0) > 0 ? ((kpisResumen?.satisfaccion?.estrellas_distribucion?.[4] || 0) / (kpisResumen?.satisfaccion?.total_valoraciones || 1) * 100) : 0"></div>
+            </div>
+            <div class="text-[10px] text-zinc-500">Muy Bueno</div>
+          </div>
+
+          <!-- 3 Estrellas -->
+          <div class="p-4 rounded-2xl bg-stone-50 dark:bg-zinc-900/60 border border-stone-100 dark:border-zinc-800/80 space-y-2">
+            <div class="flex items-center justify-between text-xs font-bold">
+              <span class="text-amber-500">★★★☆☆</span>
+              <span class="text-zinc-900 dark:text-white font-mono">{{ kpisResumen?.satisfaccion?.estrellas_distribucion?.[3] || 0 }}</span>
+            </div>
+            <div class="w-full bg-stone-200 dark:bg-zinc-800 rounded-full h-2 overflow-hidden">
+              <div class="bg-amber-400 h-2 rounded-full"
+                [style.width.%]="(kpisResumen?.satisfaccion?.total_valoraciones || 0) > 0 ? ((kpisResumen?.satisfaccion?.estrellas_distribucion?.[3] || 0) / (kpisResumen?.satisfaccion?.total_valoraciones || 1) * 100) : 0"></div>
+            </div>
+            <div class="text-[10px] text-zinc-500">Neutro</div>
+          </div>
+
+          <!-- 2 Estrellas -->
+          <div class="p-4 rounded-2xl bg-stone-50 dark:bg-zinc-900/60 border border-stone-100 dark:border-zinc-800/80 space-y-2">
+            <div class="flex items-center justify-between text-xs font-bold">
+              <span class="text-amber-500">★★☆☆☆</span>
+              <span class="text-zinc-900 dark:text-white font-mono">{{ kpisResumen?.satisfaccion?.estrellas_distribucion?.[2] || 0 }}</span>
+            </div>
+            <div class="w-full bg-stone-200 dark:bg-zinc-800 rounded-full h-2 overflow-hidden">
+              <div class="bg-amber-600 h-2 rounded-full"
+                [style.width.%]="(kpisResumen?.satisfaccion?.total_valoraciones || 0) > 0 ? ((kpisResumen?.satisfaccion?.estrellas_distribucion?.[2] || 0) / (kpisResumen?.satisfaccion?.total_valoraciones || 1) * 100) : 0"></div>
+            </div>
+            <div class="text-[10px] text-zinc-500">Regular</div>
+          </div>
+
+          <!-- 1 Estrella -->
+          <div class="p-4 rounded-2xl bg-stone-50 dark:bg-zinc-900/60 border border-stone-100 dark:border-zinc-800/80 space-y-2">
+            <div class="flex items-center justify-between text-xs font-bold">
+              <span class="text-rose-500">★☆☆☆☆</span>
+              <span class="text-rose-600 dark:text-rose-400 font-mono font-bold">{{ kpisResumen?.satisfaccion?.estrellas_distribucion?.[1] || 0 }}</span>
+            </div>
+            <div class="w-full bg-stone-200 dark:bg-zinc-800 rounded-full h-2 overflow-hidden">
+              <div class="bg-rose-500 h-2 rounded-full"
+                [style.width.%]="(kpisResumen?.satisfaccion?.total_valoraciones || 0) > 0 ? ((kpisResumen?.satisfaccion?.estrellas_distribucion?.[1] || 0) / (kpisResumen?.satisfaccion?.total_valoraciones || 1) * 100) : 0"></div>
+            </div>
+            <div class="text-[10px] text-rose-500 font-semibold">Crítico</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABLA 1: RANKING DE PRENDAS MEJOR VALORADAS -->
+      <div class="bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-base font-bold text-zinc-900 dark:text-white">Prendas con Mejor Calificación de Clientes</h3>
+            <p class="text-xs text-zinc-500">Modelos con mayor puntuación y opiniones verificadas de compra</p>
+          </div>
+          <span class="text-xs font-bold text-amber-500 flex items-center gap-1">
+            <i class="ph ph-trophy"></i>
+            Top Calidad
+          </span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="border-b border-stone-200 dark:border-zinc-800 text-zinc-500 uppercase tracking-wider font-semibold">
+                <th class="py-2.5 px-3">Prenda</th>
+                <th class="py-2.5 px-3">Categoría</th>
+                <th class="py-2.5 px-3 text-center">Calificación</th>
+                <th class="py-2.5 px-3 text-center">Opiniones</th>
+                <th class="py-2.5 px-3 text-center">Quejas 1★</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-stone-100 dark:divide-zinc-900 font-medium">
+              <tr *ngFor="let p of rankingSatisfaccion" class="hover:bg-stone-50/50 dark:hover:bg-zinc-900/40 transition-colors">
+                <td class="py-3 px-3">
+                  <div class="flex items-center gap-3">
+                    <img *ngIf="p.imagen_url" [src]="p.imagen_url"
+                      class="w-9 h-9 rounded-lg object-cover border border-stone-200 dark:border-zinc-800 shrink-0">
+                    <div *ngIf="!p.imagen_url"
+                      class="w-9 h-9 rounded-lg bg-stone-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 text-zinc-400">
+                      <i class="ph ph-t-shirt text-base"></i>
+                    </div>
+                    <span class="font-bold text-zinc-900 dark:text-white truncate max-w-[200px]">{{ p.nombre }}</span>
+                  </div>
+                </td>
+                <td class="py-3 px-3 text-zinc-500">{{ p.categoria }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-black bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                    <span>{{ p.calificacion_promedio | number:'1.1-1' }}</span>
+                    <span>★</span>
+                  </span>
+                </td>
+                <td class="py-3 px-3 text-center font-bold text-zinc-800 dark:text-zinc-200">
+                  {{ p.total_opiniones }}
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                    [ngClass]="p.quejas_1_estrella > 0 ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400' : 'text-zinc-400'">
+                    {{ p.quejas_1_estrella }}
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="rankingSatisfaccion.length === 0 && !cargando">
+                <td colspan="5" class="py-8 text-center text-zinc-400">
+                  No hay valoraciones registradas para prendas de esta tienda aún.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TABLA 2: ALERTAS DE CALIDAD Y QUEJAS CRÍTICAS (1 ESTRELLA) -->
+      <div class="bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-base font-bold text-zinc-900 dark:text-white">Alertas Críticas de Calidad & Quejas (1★)</h3>
+            <p class="text-xs text-zinc-500">Opiniones desfavorables con motivos y observaciones detalladas por clientes</p>
+          </div>
+          <span class="px-3 py-1 text-xs font-bold rounded-xl"
+            [ngClass]="alertasCalidad.length > 0 ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' : 'bg-emerald-500/10 text-emerald-600'">
+            {{ alertasCalidad.length }} Casos Críticos
+          </span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="border-b border-stone-200 dark:border-zinc-800 text-zinc-500 uppercase tracking-wider font-semibold">
+                <th class="py-2.5 px-3">Fecha</th>
+                <th class="py-2.5 px-3">Cliente</th>
+                <th class="py-2.5 px-3">Prenda / Referencia</th>
+                <th class="py-2.5 px-3 text-center">Estrellas</th>
+                <th class="py-2.5 px-3">Motivo Reportado</th>
+                <th class="py-2.5 px-3">Comentario</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-stone-100 dark:divide-zinc-900 font-medium">
+              <tr *ngFor="let a of alertasCalidad" class="hover:bg-rose-50/30 dark:hover:bg-rose-950/10 transition-colors">
+                <td class="py-3 px-3 text-zinc-500 text-[11px] whitespace-nowrap">
+                  {{ a.fecha_creacion | date:'dd/MM/yyyy HH:mm' }}
+                </td>
+                <td class="py-3 px-3 font-bold text-zinc-900 dark:text-white">
+                  {{ a.nombre_cliente }}
+                </td>
+                <td class="py-3 px-3 text-zinc-700 dark:text-zinc-300">
+                  <div class="font-semibold">{{ a.nombre_producto }}</div>
+                  <div *ngIf="a.codigo_pedido" class="text-[10px] font-mono text-zinc-400">Pedido #{{ a.codigo_pedido }}</div>
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500/15 text-rose-600 dark:text-rose-400">
+                    {{ a.puntuacion }} ★
+                  </span>
+                </td>
+                <td class="py-3 px-3 text-rose-600 dark:text-rose-400 font-bold text-[11px]">
+                  {{ a.motivo_negativo }}
+                </td>
+                <td class="py-3 px-3 text-zinc-600 dark:text-zinc-400 text-[11px] max-w-[280px] italic">
+                  "{{ a.comentario || 'Sin comentario adicional' }}"
+                </td>
+              </tr>
+              <tr *ngIf="alertasCalidad.length === 0 && !cargando">
+                <td colspan="6" class="py-8 text-center text-emerald-600 dark:text-emerald-400 font-semibold space-y-1">
+                  <i class="ph ph-check-circle text-2xl block mx-auto"></i>
+                  <div>✓ Excelente: No existen quejas críticas ni valoraciones de 1 estrella pendientes de revisión.</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- ========================================================================= -->
+    <!-- PESTAÑA 2: INVENTARIO FÍSICO & STOCK CRÍTICO -->
+    <!-- ========================================================================= -->
+    <div *ngIf="pestanaActiva === 'inventario'" class="space-y-6">
+
+      <!-- Métricas Resumen de Inventario -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="p-6 rounded-3xl bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 shadow-sm space-y-2">
+          <div class="flex items-center justify-between text-xs font-mono uppercase text-zinc-500">
+            <span>Stock Disponible</span>
+            <i class="ph ph-check-circle text-emerald-500 text-base"></i>
+          </div>
+          <div class="text-3xl font-black text-emerald-600 dark:text-emerald-400">
+            {{ kpisResumen?.inventario?.stock_disponible || 0 }}
+          </div>
+          <p class="text-[11px] text-zinc-500">Unidades listas para venta inmediata</p>
+        </div>
+
+        <div class="p-6 rounded-3xl bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 shadow-sm space-y-2">
+          <div class="flex items-center justify-between text-xs font-mono uppercase text-zinc-500">
+            <span>Stock Reservado</span>
+            <i class="ph ph-clock text-amber-500 text-base"></i>
+          </div>
+          <div class="text-3xl font-black text-amber-600 dark:text-amber-400">
+            {{ kpisResumen?.inventario?.stock_reservado || 0 }}
+          </div>
+          <p class="text-[11px] text-zinc-500">Prendas apartadas por clientes</p>
+        </div>
+
+        <div class="p-6 rounded-3xl bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 shadow-sm space-y-2">
+          <div class="flex items-center justify-between text-xs font-mono uppercase text-zinc-500">
+            <span>Bajo Nivel Mínimo</span>
+            <i class="ph ph-warning text-amber-500 text-base"></i>
+          </div>
+          <div class="text-3xl font-black text-amber-500">
+            {{ kpisResumen?.inventario?.productos_stock_bajo || 0 }}
+          </div>
+          <p class="text-[11px] text-zinc-500">Requieren reabastecimiento pronto</p>
+        </div>
+
+        <div class="p-6 rounded-3xl bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 shadow-sm space-y-2">
+          <div class="flex items-center justify-between text-xs font-mono uppercase text-zinc-500">
+            <span>Agotados Totales</span>
+            <i class="ph ph-x-circle text-rose-500 text-base"></i>
+          </div>
+          <div class="text-3xl font-black text-rose-600 dark:text-rose-400">
+            {{ kpisResumen?.inventario?.productos_agotados || 0 }}
+          </div>
+          <p class="text-[11px] text-zinc-500">Sin existencias en sucursales</p>
+        </div>
+      </div>
+
+      <!-- Tabla de Alertas de Inventario Crítico -->
+      <div
+        class="bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-base font-bold text-zinc-900 dark:text-white">Alertas de Existencias Críticas de {{ tiendaSeleccionada.nombre_empresa }}</h3>
+            <p class="text-xs text-zinc-500">Variantes con stock por debajo del mínimo o agotadas en almacén</p>
+          </div>
+          <span class="px-3 py-1 text-xs font-bold rounded-xl"
+            [ngClass]="alertasInventario.length > 0 ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' : 'bg-emerald-500/10 text-emerald-600'">
+            {{ alertasInventario.length }} Alertas Críticas
+          </span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr
+                class="border-b border-stone-200 dark:border-zinc-800 text-zinc-500 uppercase tracking-wider font-semibold">
+                <th class="py-2.5 px-3">Prenda / SKU</th>
+                <th class="py-2.5 px-3">Sucursal</th>
+                <th class="py-2.5 px-3 text-center">Disponible</th>
+                <th class="py-2.5 px-3 text-center">Mínimo</th>
+                <th class="py-2.5 px-3 text-center">Estado de Alerta</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-stone-100 dark:divide-zinc-900 font-medium">
+              <tr *ngFor="let a of alertasInventario"
+                class="hover:bg-stone-50/50 dark:hover:bg-zinc-900/40 transition-colors">
+                <td class="py-2.5 px-3">
+                  <div class="font-bold text-zinc-900 dark:text-white">{{ a.producto_nombre }}</div>
+                  <div class="text-[10px] font-mono text-zinc-400">{{ a.sku }} ({{ a.talla }} / {{ a.color }})</div>
+                </td>
+                <td class="py-2.5 px-3 text-zinc-500 text-[11px]">{{ a.sucursal_nombre }}</td>
+                <td class="py-2.5 px-3 text-center font-bold font-mono"
+                  [ngClass]="a.stock_disponible === 0 ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400'">
+                  {{ a.stock_disponible }}
+                </td>
+                <td class="py-2.5 px-3 text-center text-zinc-400">{{ a.stock_minimo }}</td>
+                <td class="py-2.5 px-3 text-center">
+                  <span class="px-2.5 py-1 rounded-full text-[10px] font-bold"
+                    [ngClass]="a.estado_alerta === 'AGOTADO' ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400' : 'bg-amber-500/15 text-amber-600 dark:text-amber-400'">
+                    {{ a.estado_alerta === 'AGOTADO' ? 'AGOTADO' : 'BAJO STOCK' }}
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="alertasInventario.length === 0 && !cargando">
+                <td colspan="5" class="py-8 text-center text-emerald-600 dark:text-emerald-400 font-semibold space-y-1">
+                  <i class="ph ph-check-circle text-2xl block mx-auto"></i>
+                  <div>✓ No existen prendas en nivel crítico para esta tienda. Existencias óptimas.</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- ========================================================================= -->
+    <!-- PESTAÑA 3: REPORTES DE LA TIENDA & ACCESO AL MOTOR DE REPORTES -->
+    <!-- ========================================================================= -->
+    <div *ngIf="pestanaActiva === 'reportes'" class="space-y-6">
+
+      <!-- Card Destacada: Motor de Reportes por Voz para este Tenant -->
+      <div class="bg-gradient-to-br from-indigo-900 via-indigo-950 to-zinc-950 p-6 sm:p-8 rounded-3xl text-white shadow-lg border border-indigo-500/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
+        <div class="space-y-2 max-w-xl">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+            <i class="ph ph-microphone text-xs"></i>
+            Motor Determinista Inteligente
+          </span>
+          <h3 class="text-xl font-black">Generador Dinámico y Asistente de Voz para {{ tiendaSeleccionada.nombre_empresa }}</h3>
+          <p class="text-xs text-indigo-200/80 leading-relaxed">
+            Puedes solicitar reportes usando comandos de voz como: <em>"Ventas de esta semana por sucursal"</em>, <em>"Inventario de productos agotados"</em> o generar exportaciones directas en PDF y Excel para esta tienda.
+          </p>
+        </div>
+
+        <button (click)="abrirReporteEnMotor('ventas')"
+          class="px-5 py-3 rounded-2xl bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-bold shadow-lg shadow-indigo-500/30 transition-all cursor-pointer flex items-center gap-2 shrink-0">
+          <i class="ph ph-microphone text-base"></i>
+          <span>Abrir Motor de Reportes</span>
+        </button>
+      </div>
+
+      <!-- Cuadrícula de Reportes Bajo Demanda para esta Tienda -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+
+        <!-- Reporte 1: Ventas por Sucursal -->
+        <div class="bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm hover:border-indigo-500/40 transition-all flex flex-col justify-between space-y-4">
+          <div class="space-y-2">
+            <div class="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+              <i class="ph ph-chart-bar text-xl"></i>
+            </div>
+            <h4 class="text-sm font-bold text-zinc-900 dark:text-white">Reporte de Ventas por Sucursal</h4>
+            <p class="text-xs text-zinc-500 leading-relaxed">
+              Desglose detallado de órdenes, ingresos totales y ticket promedio de cada sucursal de {{ tiendaSeleccionada.nombre_empresa }}.
+            </p>
+          </div>
+          <button (click)="abrirReporteEnMotor('ventas')"
+            class="w-full py-2.5 px-4 bg-stone-100 hover:bg-indigo-600 hover:text-white dark:bg-zinc-900 dark:hover:bg-indigo-600 text-zinc-800 dark:text-zinc-200 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <i class="ph ph-file-pdf text-sm"></i>
+            <span>Generar Reporte</span>
+          </button>
+        </div>
+
+        <!-- Reporte 2: Inventario y Stock Crítico -->
+        <div class="bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm hover:border-indigo-500/40 transition-all flex flex-col justify-between space-y-4">
+          <div class="space-y-2">
+            <div class="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+              <i class="ph ph-package text-xl"></i>
+            </div>
+            <h4 class="text-sm font-bold text-zinc-900 dark:text-white">Reporte de Inventario Físico</h4>
+            <p class="text-xs text-zinc-500 leading-relaxed">
+              Existencias por variante, talla, color y estado de alerta de stock en los depósitos de la tienda.
+            </p>
+          </div>
+          <button (click)="abrirReporteEnMotor('inventario')"
+            class="w-full py-2.5 px-4 bg-stone-100 hover:bg-indigo-600 hover:text-white dark:bg-zinc-900 dark:hover:bg-indigo-600 text-zinc-800 dark:text-zinc-200 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <i class="ph ph-file-pdf text-sm"></i>
+            <span>Generar Reporte</span>
+          </button>
+        </div>
+
+        <!-- Reporte 3: Catálogo de Prendas -->
+        <div class="bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm hover:border-indigo-500/40 transition-all flex flex-col justify-between space-y-4">
+          <div class="space-y-2">
+            <div class="w-10 h-10 rounded-2xl bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center">
+              <i class="ph ph-t-shirt text-xl"></i>
+            </div>
+            <h4 class="text-sm font-bold text-zinc-900 dark:text-white">Reporte de Catálogo de Prendas</h4>
+            <p class="text-xs text-zinc-500 leading-relaxed">
+              Lista completa de modelos registrados, precios base, categorías y temporadas activas.
+            </p>
+          </div>
+          <button (click)="abrirReporteEnMotor('productos')"
+            class="w-full py-2.5 px-4 bg-stone-100 hover:bg-indigo-600 hover:text-white dark:bg-zinc-900 dark:hover:bg-indigo-600 text-zinc-800 dark:text-zinc-200 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <i class="ph ph-file-pdf text-sm"></i>
+            <span>Generar Reporte</span>
+          </button>
+        </div>
+
+        <!-- Reporte 4: Transacciones y Pagos -->
+        <div class="bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm hover:border-indigo-500/40 transition-all flex flex-col justify-between space-y-4">
+          <div class="space-y-2">
+            <div class="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+              <i class="ph ph-credit-card text-xl"></i>
+            </div>
+            <h4 class="text-sm font-bold text-zinc-900 dark:text-white">Reporte de Métodos de Pago</h4>
+            <p class="text-xs text-zinc-500 leading-relaxed">
+              Consolidación de transacciones por QR, tarjeta, efectivo o transferencias bancarias.
+            </p>
+          </div>
+          <button (click)="abrirReporteEnMotor('pagos')"
+            class="w-full py-2.5 px-4 bg-stone-100 hover:bg-indigo-600 hover:text-white dark:bg-zinc-900 dark:hover:bg-indigo-600 text-zinc-800 dark:text-zinc-200 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <i class="ph ph-file-pdf text-sm"></i>
+            <span>Generar Reporte</span>
+          </button>
+        </div>
+
+        <!-- Reporte 5: Arqueo y Caja -->
+        <div class="bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm hover:border-indigo-500/40 transition-all flex flex-col justify-between space-y-4">
+          <div class="space-y-2">
+            <div class="w-10 h-10 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+              <i class="ph ph-vault text-xl"></i>
+            </div>
+            <h4 class="text-sm font-bold text-zinc-900 dark:text-white">Reporte de Arqueos de Caja</h4>
+            <p class="text-xs text-zinc-500 leading-relaxed">
+              Aperturas, cierres, saldos iniciales y discrepancias registradas por los cajeros de la tienda.
+            </p>
+          </div>
+          <button (click)="abrirReporteEnMotor('caja')"
+            class="w-full py-2.5 px-4 bg-stone-100 hover:bg-indigo-600 hover:text-white dark:bg-zinc-900 dark:hover:bg-indigo-600 text-zinc-800 dark:text-zinc-200 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <i class="ph ph-file-pdf text-sm"></i>
+            <span>Generar Reporte</span>
+          </button>
+        </div>
+
+        <!-- Reporte 6: Valoraciones y Satisfacción CSAT -->
+        <div class="bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm hover:border-indigo-500/40 transition-all flex flex-col justify-between space-y-4">
+          <div class="space-y-2">
+            <div class="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+              <i class="ph ph-star text-xl"></i>
+            </div>
+            <h4 class="text-sm font-bold text-zinc-900 dark:text-white">Valoraciones y Calidad CSAT</h4>
+            <p class="text-xs text-zinc-500 leading-relaxed">
+              Satisfacción de clientes, quejas sobre prendas adquiridas y desglose de calificaciones por estrellas.
+            </p>
+          </div>
+          <button (click)="abrirReporteEnMotor('valoraciones')"
+            class="w-full py-2.5 px-4 bg-stone-100 hover:bg-indigo-600 hover:text-white dark:bg-zinc-900 dark:hover:bg-indigo-600 text-zinc-800 dark:text-zinc-200 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <i class="ph ph-file-pdf text-sm"></i>
+            <span>Generar Reporte</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- ========================================================================= -->
+    <!-- PESTAÑA 4: SUCURSALES DE LA TIENDA -->
+    <!-- ========================================================================= -->
+    <div *ngIf="pestanaActiva === 'sucursales'" class="space-y-6">
+
+      <div class="bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-base font-bold text-zinc-900 dark:text-white">Sedes y Sucursales Registradas</h3>
+            <p class="text-xs text-zinc-500">Puntos de venta habilitados para {{ tiendaSeleccionada.nombre_empresa }}</p>
+          </div>
+          <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+            {{ tiendaSeleccionada.sucursales.length }} sucursales activas
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+          <div *ngFor="let s of tiendaSeleccionada.sucursales"
+            class="p-5 rounded-2xl bg-stone-50 dark:bg-zinc-900/60 border border-stone-200/80 dark:border-zinc-800 space-y-3">
+            <div class="flex items-start justify-between">
+              <div class="space-y-1">
+                <div class="text-sm font-bold text-zinc-900 dark:text-white">{{ s.nombre }}</div>
+                <div class="text-xs text-zinc-500 flex items-center gap-1">
+                  <i class="ph ph-map-pin text-indigo-500"></i>
+                  <span>{{ s.ciudad || 'Bolivia' }}</span>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600">Activa</span>
+            </div>
+
+            <div class="text-[11px] text-zinc-400 border-t border-stone-200/40 dark:border-zinc-800/60 pt-2">
+              Dirección: <span class="text-zinc-600 dark:text-zinc-300">{{ s.direccion || 'Sin dirección registrada' }}</span>
+            </div>
+
+            <button (click)="sucursalSeleccionada = s.id; cambiarPestana('indicadores'); cargarTodosLosIndicadores();"
+              class="w-full py-2 px-3 bg-white dark:bg-zinc-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 border border-stone-200 dark:border-zinc-700 text-indigo-600 dark:text-indigo-400 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5">
+              <span>Filtrar Dashboard por esta Sucursal</span>
+              <i class="ph ph-arrow-right text-xs"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

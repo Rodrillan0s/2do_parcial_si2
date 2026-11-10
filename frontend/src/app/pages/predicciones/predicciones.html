@@ -1,0 +1,347 @@
+<div class="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto min-h-screen bg-slate-50 dark:bg-slate-950 font-sans text-slate-800 dark:text-slate-200">
+
+  <!-- ENCABEZADO PRINCIPAL -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-400">
+          CU23W • Inteligencia Predictiva
+        </span>
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-400">
+          Backtesting Validado
+        </span>
+      </div>
+      <h1 class="text-2xl font-black text-slate-900 dark:text-white mt-2">Predicción de Demanda & Reposición IA</h1>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+        Modelos de series temporales con intervalos de confianza al 95% y abastecimiento inteligente por sucursal.
+      </p>
+    </div>
+
+    <!-- PESTAÑAS DE NAVEGACIÓN -->
+    <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
+      <button (click)="cambiarPestana('demanda')"
+        [class]="pestanaActiva === 'demanda' ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'"
+        class="px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer">
+        📈 Proyección de Demanda
+      </button>
+      <button (click)="cambiarPestana('reposicion')"
+        [class]="pestanaActiva === 'reposicion' ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'"
+        class="px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer">
+        📦 Reposición & Stockout
+      </button>
+      <button (click)="cambiarPestana('evaluacion')"
+        [class]="pestanaActiva === 'evaluacion' ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'"
+        class="px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer">
+        🎯 Precisión & Backtesting
+      </button>
+    </div>
+  </div>
+
+  <!-- FILTROS GLOBALES -->
+  <div class="flex flex-wrap items-center justify-between gap-4 mb-6 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+    <div class="flex flex-wrap items-center gap-3">
+      <!-- Selector de Tienda / Tenant para Administrador Global -->
+      <div *ngIf="authService.isGlobalAdmin()" class="flex items-center gap-2">
+        <label class="text-xs font-bold text-slate-500 uppercase">Tienda:</label>
+        <select [(ngModel)]="empresaSeleccionada" (change)="onCambiarEmpresa()"
+          class="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <option *ngIf="!tenants || tenants.length === 0" [ngValue]="empresaSeleccionada">
+            🏢 {{ authService.getEffectiveCompanyName() }}
+          </option>
+          <option *ngFor="let t of tenants" [ngValue]="t.id_empresa">🏢 {{ t.nombre_empresa }}</option>
+        </select>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <label class="text-xs font-bold text-slate-500 uppercase">Sucursal:</label>
+        <select [(ngModel)]="sucursalSeleccionada" (change)="cargarDatos()"
+          class="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <option [ngValue]="null">Consolidado Todas las Sucursales</option>
+          <option *ngFor="let s of sucursalesDisponibles" [ngValue]="s.id">{{ s.nombre }} ({{ s.ciudad }})</option>
+        </select>
+      </div>
+
+      <div *ngIf="pestanaActiva === 'demanda'" class="flex items-center gap-2">
+        <label class="text-xs font-bold text-slate-500 uppercase">Horizonte:</label>
+        <select [(ngModel)]="diasProyeccion" (change)="cargarDatos()"
+          class="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <option [ngValue]="7">7 Días Adelante</option>
+          <option [ngValue]="14">14 Días Adelante</option>
+          <option [ngValue]="30">30 Días Adelante</option>
+        </select>
+      </div>
+
+      <div *ngIf="pestanaActiva === 'reposicion'" class="flex items-center gap-2">
+        <label class="text-xs font-bold text-slate-500 uppercase">Lead Time Proveedor:</label>
+        <select [(ngModel)]="leadTimeDias" (change)="cargarDatos()"
+          class="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <option [ngValue]="3">3 Días (Rápido)</option>
+          <option [ngValue]="7">7 Días (Estándar)</option>
+          <option [ngValue]="14">14 Días (Importación / Taller)</option>
+        </select>
+      </div>
+
+      <div *ngIf="pestanaActiva === 'reposicion'" class="flex items-center gap-2">
+        <label class="text-xs font-bold text-slate-500 uppercase">Riesgo:</label>
+        <select [(ngModel)]="filtroRiesgo"
+          class="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <option value="TODOS">Todos los Niveles</option>
+          <option value="CRITICO">⚠️ Crítico (Agotado)</option>
+          <option value="ALTO">🟠 Alto (Quiebre Inminente)</option>
+          <option value="MODERADO">🟡 Moderado</option>
+        </select>
+      </div>
+    </div>
+
+    <button (click)="cargarDatos()" [disabled]="cargando"
+      class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm disabled:opacity-50 cursor-pointer">
+      <svg *ngIf="!cargando" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M5.5 15.5A7.5 7.5 0 0118.3 7.7L20 9.4M18.5 8.5A7.5 7.5 0 015.7 16.3L4 14.6"></path></svg>
+      <div *ngIf="cargando" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+      <span>{{ cargando ? 'Calculando...' : 'Actualizar' }}</span>
+    </button>
+  </div>
+
+  <!-- ALERTA DE ERROR -->
+  <div *ngIf="mensajeError" class="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 font-semibold flex items-center gap-2">
+    <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <span>{{ mensajeError }}</span>
+  </div>
+
+  <!-- SPINNER -->
+  <div *ngIf="cargando" class="py-20 flex flex-col items-center justify-center">
+    <div class="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+    <p class="text-xs text-slate-500 mt-3 font-semibold">Procesando serie temporal y calculando modelos matemáticos...</p>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- VISTA 1: PROYECCIÓN DE DEMANDA                                            -->
+  <!-- ========================================================================= -->
+  <div *ngIf="!cargando && pestanaActiva === 'demanda' && datosDemanda" class="space-y-6">
+
+    <!-- KPI CHIPS SUPERIORES -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tendencia Proyectada</p>
+        <div class="flex items-center gap-2 mt-2">
+          <span *ngIf="datosDemanda.tendencia === 'ALCISTA'" class="text-emerald-600 text-xl font-black">↗ ALCISTA</span>
+          <span *ngIf="datosDemanda.tendencia === 'BAJISTA'" class="text-rose-600 text-xl font-black">↘ BAJISTA</span>
+          <span *ngIf="datosDemanda.tendencia === 'ESTABLE'" class="text-blue-600 text-xl font-black">→ ESTABLE</span>
+        </div>
+        <p class="text-[10px] text-slate-500 mt-1">Holt Linear Trend</p>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tasa Crecimiento Diario</p>
+        <h3 class="text-2xl font-black text-slate-900 dark:text-white mt-1">
+          {{ datosDemanda.tasa_crecimiento_diario > 0 ? '+' : '' }}{{ datosDemanda.tasa_crecimiento_diario }} <span class="text-xs font-semibold text-slate-500">u/día</span>
+        </h3>
+        <p class="text-[10px] text-slate-500 mt-1">Variación diaria esperada</p>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Desviación Típica (&sigma;)</p>
+        <h3 class="text-2xl font-black text-slate-900 dark:text-white mt-1">&plusmn;{{ datosDemanda.sigma }} <span class="text-xs font-semibold text-slate-500">unidades</span></h3>
+        <p class="text-[10px] text-slate-500 mt-1">Varianza de error residual</p>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Intervalo de Confianza</p>
+        <h3 class="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-1">95.0%</h3>
+        <p class="text-[10px] text-slate-500 mt-1">&plusmn;1.96 &sigma; &radic;h</p>
+      </div>
+    </div>
+
+    <!-- TABLA DE PROYECCIONES FUTURAS CON BANDAS DE CONFIANZA -->
+    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+      <div class="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+        <div>
+          <h2 class="text-sm font-bold text-slate-900 dark:text-white">Proyección Diaria de Unidades (Próximos {{ datosDemanda.dias_proyectados }} Días)</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Demanda esperada y límites probabilísticos calculados</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 font-bold border-b border-slate-200 dark:border-slate-700">
+              <th class="py-3 px-4">Fecha Futura</th>
+              <th class="py-3 px-4 text-right">Límite Inferior (95%)</th>
+              <th class="py-3 px-4 text-right font-black text-indigo-600 dark:text-indigo-400">Demanda Proyectada</th>
+              <th class="py-3 px-4 text-right">Límite Superior (95%)</th>
+              <th class="py-3 px-4 text-center">Banda Visual</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            <tr *ngFor="let p of datosDemanda.proyecciones" class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+              <td class="py-3 px-4 font-semibold text-slate-800 dark:text-slate-200">{{ p.fecha }}</td>
+              <td class="py-3 px-4 text-right text-slate-500">{{ p.limite_inferior }} u.</td>
+              <td class="py-3 px-4 text-right font-black text-indigo-600 dark:text-indigo-400 text-sm">{{ p.prediccion }} u.</td>
+              <td class="py-3 px-4 text-right text-slate-500">{{ p.limite_superior }} u.</td>
+              <td class="py-3 px-4">
+                <div class="w-32 mx-auto bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden flex">
+                  <div class="bg-indigo-300 dark:bg-indigo-900 h-full" [style.width.%]="calcularPorcentajeAltura(p.limite_inferior, p.limite_superior)"></div>
+                  <div class="bg-indigo-600 h-full" [style.width.%]="calcularPorcentajeAltura(p.prediccion - p.limite_inferior, p.limite_superior)"></div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- VISTA 2: REPOSICIÓN & RIESGO DE STOCKOUT                                  -->
+  <!-- ========================================================================= -->
+  <div *ngIf="!cargando && pestanaActiva === 'reposicion' && datosReposicion" class="space-y-6">
+
+    <!-- KPI CHIPS REPOSICIÓN -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm border-l-4 border-l-rose-500">
+        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Alertas Críticas (Agotadas)</p>
+        <h3 class="text-3xl font-black text-rose-600 mt-1">{{ datosReposicion.resumen.alertas_criticas }}</h3>
+        <p class="text-[10px] text-slate-500 mt-1">Prendas con stock físico en 0</p>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm border-l-4 border-l-amber-500">
+        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Alertas Altas (Quiebre Inminente)</p>
+        <h3 class="text-3xl font-black text-amber-600 mt-1">{{ datosReposicion.resumen.alertas_altas }}</h3>
+        <p class="text-[10px] text-slate-500 mt-1">Cobertura menor al lead time ({{ datosReposicion.lead_time_dias }} días)</p>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm border-l-4 border-l-indigo-500">
+        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Inversión Estimada Sugerida</p>
+        <h3 class="text-3xl font-black text-indigo-600 dark:text-indigo-400 mt-1">Bs. {{ datosReposicion.resumen.inversion_sugerida_bs | number:'1.2-2' }}</h3>
+        <p class="text-[10px] text-slate-500 mt-1">Costo de reposición preventivo</p>
+      </div>
+    </div>
+
+    <!-- TABLA DE RECOMENDACIONES -->
+    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+      <div class="p-5 border-b border-slate-100 dark:border-slate-800">
+        <h2 class="text-sm font-bold text-slate-900 dark:text-white">Plan de Reabastecimiento Sugerido</h2>
+        <p class="text-xs text-slate-500 mt-0.5">Priorización por criticidad de quiebre de stock y ritmo de venta</p>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 font-bold border-b border-slate-200 dark:border-slate-700">
+              <th class="py-3 px-4">Prenda / SKU</th>
+              <th class="py-3 px-4">Sucursal</th>
+              <th class="py-3 px-4 text-center">Talla / Color</th>
+              <th class="py-3 px-4 text-right">Disponible</th>
+              <th class="py-3 px-4 text-right">Ritmo Diario</th>
+              <th class="py-3 px-4 text-right">Cobertura</th>
+              <th class="py-3 px-4 text-center">Nivel Riesgo</th>
+              <th class="py-3 px-4 text-right font-black text-indigo-600">Sugerido</th>
+              <th class="py-3 px-4 text-right">Costo Est.</th>
+              <th class="py-3 px-4">Explicación Racional</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            <tr *ngFor="let r of recomendacionesFiltradas" class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+              <td class="py-3 px-4">
+                <p class="font-bold text-slate-900 dark:text-white">{{ r.producto }}</p>
+                <p class="text-[10px] text-slate-400 font-mono">{{ r.sku }}</p>
+              </td>
+              <td class="py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">{{ r.sucursal }}</td>
+              <td class="py-3 px-4 text-center font-medium">{{ r.talla }} / {{ r.color }}</td>
+              <td class="py-3 px-4 text-right font-bold" [class.text-rose-600]="r.stock_disponible === 0">{{ r.stock_disponible }} u.</td>
+              <td class="py-3 px-4 text-right text-slate-500">{{ r.ritmo_diario_estimado }} u/d</td>
+              <td class="py-3 px-4 text-right font-bold" [class.text-rose-600]="r.dias_cobertura <= 3" [class.text-amber-600]="r.dias_cobertura > 3 && r.dias_cobertura <= 7">
+                {{ r.dias_cobertura }} días
+              </td>
+              <td class="py-3 px-4 text-center">
+                <span *ngIf="r.riesgo_rotura === 'CRITICO'" class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-400">CRÍTICO</span>
+                <span *ngIf="r.riesgo_rotura === 'ALTO'" class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400">ALTO</span>
+                <span *ngIf="r.riesgo_rotura === 'MODERADO'" class="px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400">MODERADO</span>
+                <span *ngIf="r.riesgo_rotura === 'OPTIMO'" class="px-2 py-0.5 rounded-full text-[10px] font-black bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400">ÓPTIMO</span>
+              </td>
+              <td class="py-3 px-4 text-right font-black text-indigo-600 dark:text-indigo-400 text-sm">
+                +{{ r.reposicion_sugerida }} u.
+              </td>
+              <td class="py-3 px-4 text-right font-semibold text-slate-700 dark:text-slate-300">
+                Bs. {{ r.inversion_estimada_bs | number:'1.2-2' }}
+              </td>
+              <td class="py-3 px-4 text-[11px] text-slate-500 max-w-xs">
+                {{ r.explicacion }}
+              </td>
+            </tr>
+            <tr *ngIf="recomendacionesFiltradas.length === 0">
+              <td colspan="10" class="py-8 text-center text-slate-400 font-semibold italic">
+                No se registran alertas de reposición para el filtro seleccionado.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- VISTA 3: EVALUACIÓN DE BACKTESTING & PRECISIÓN                             -->
+  <!-- ========================================================================= -->
+  <div *ngIf="!cargando && pestanaActiva === 'evaluacion' && datosEvaluacion" class="space-y-6">
+
+    <!-- KPI CHIPS BACKTESTING -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm border-l-4 border-l-emerald-500">
+        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Precisión General</p>
+        <h3 class="text-3xl font-black text-emerald-600 mt-1">{{ datosEvaluacion.evaluacion.precision_pct }}%</h3>
+        <p class="text-[10px] text-slate-500 mt-1">100 - MAPE</p>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">MAE (Error Absoluto Medio)</p>
+        <h3 class="text-3xl font-black text-slate-900 dark:text-white mt-1">{{ datosEvaluacion.evaluacion.mae }} <span class="text-xs font-semibold text-slate-500">u.</span></h3>
+        <p class="text-[10px] text-slate-500 mt-1">Desviación promedio real</p>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">RMSE (Error Cuadrático)</p>
+        <h3 class="text-3xl font-black text-slate-900 dark:text-white mt-1">{{ datosEvaluacion.evaluacion.rmse }}</h3>
+        <p class="text-[10px] text-slate-500 mt-1">Penalización de picos atípicos</p>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">MAPE (Porcentaje de Error)</p>
+        <h3 class="text-3xl font-black text-indigo-600 dark:text-indigo-400 mt-1">{{ datosEvaluacion.evaluacion.mape }}%</h3>
+        <p class="text-[10px] text-slate-500 mt-1">Error porcentual relativo</p>
+      </div>
+    </div>
+
+    <!-- TABLA DE COMPARATIVA REAL VS PREDICHO EN PARTICIÓN DE TEST -->
+    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+      <div class="p-5 border-b border-slate-100 dark:border-slate-800">
+        <h2 class="text-sm font-bold text-slate-900 dark:text-white">Partición de Prueba: Comparativa Real vs. Modelo</h2>
+        <p class="text-xs text-slate-500 mt-0.5">El modelo fue entrenado en datos anteriores y evaluado en los {{ datosEvaluacion.evaluacion.puntos_evaluados }} días de prueba ciegos.</p>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 font-bold border-b border-slate-200 dark:border-slate-700">
+              <th class="py-3 px-4">Fecha de Prueba</th>
+              <th class="py-3 px-4 text-right">Venta Real</th>
+              <th class="py-3 px-4 text-right">Predicción Modelo</th>
+              <th class="py-3 px-4 text-right font-bold text-indigo-600">Error Absoluto</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            <tr *ngFor="let c of datosEvaluacion.evaluacion.comparativa" class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
+              <td class="py-3 px-4 font-semibold text-slate-800 dark:text-slate-200">{{ c.fecha }}</td>
+              <td class="py-3 px-4 text-right font-bold text-slate-900 dark:text-white">{{ c.real }} u.</td>
+              <td class="py-3 px-4 text-right text-indigo-600 dark:text-indigo-400 font-bold">{{ c.predicho }} u.</td>
+              <td class="py-3 px-4 text-right font-semibold text-slate-500">{{ c.error_absoluto }} u.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+</div>

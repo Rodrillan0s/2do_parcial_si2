@@ -1,0 +1,254 @@
+<div class="min-h-screen py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 transition-colors">
+  
+  <!-- ========================================================================= -->
+  <!-- BANNER DE TRANSPARENCIA OFFLINE (CU04W / CU05W / Fase F4)                 -->
+  <!-- ========================================================================= -->
+  <div
+    *ngIf="catalogoService.lastCatalogMeta().fromCache"
+    role="status"
+    class="p-4 rounded-2xl bg-amber-50/90 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-900 dark:text-amber-200">
+    <div class="space-y-1">
+      <p class="font-bold flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+        <span>Mostrando catálogo desde almacenamiento local (IndexedDB)</span>
+        <span *ngIf="catalogoService.lastCatalogMeta().fetchedAt" class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-200 dark:bg-amber-900/60 font-semibold">
+          Sincronizado: {{ catalogoService.lastCatalogMeta().fetchedAt | date:'short' }}
+        </span>
+      </p>
+      <p class="text-[11px] opacity-90 leading-relaxed">
+        <span *ngIf="catalogoService.lastCatalogMeta().isPartial">
+          Búsqueda y filtros aplicados sobre los productos precargados localmente en tu dispositivo.
+        </span>
+        <span *ngIf="!catalogoService.lastCatalogMeta().isPartial">
+          Estás consultando una copia guardada en tu dispositivo mientras no hay conexión con el servidor.
+        </span>
+        <span class="block mt-0.5 text-amber-800 dark:text-amber-300 font-medium">
+          ⚠️ Aviso: Los precios, ofertas y disponibilidad de stock corresponden a la última descarga local y pueden haber variado respecto al servidor.
+        </span>
+      </p>
+    </div>
+    <button
+      type="button"
+      (click)="aplicarFiltros()"
+      class="px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 font-semibold shrink-0 transition cursor-pointer self-start sm:self-auto text-amber-900 dark:text-amber-100">
+      Reintentar en línea
+    </button>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- LAYOUT PRINCIPAL DE 2 COLUMNAS (SIDEBAR FILTROS + GRID DE PRODUCTOS)     -->
+  <!-- ========================================================================= -->
+  <div class="flex flex-col lg:flex-row gap-8 items-start">
+    
+    <!-- COLUMNA IZQUIERDA: SIDEBAR DE FILTROS DESKTOP -->
+    <aside class="w-full lg:w-64 xl:w-72 shrink-0">
+      <app-catalogo-filtros
+        [filtrosDisponibles]="filtrosDisponibles"
+        [totalProductos]="totalProductos"
+        [searchQuery]="searchQuery"
+        [selectedCategory]="selectedCategory"
+        [selectedPublico]="selectedPublico"
+        [selectedSucursal]="selectedSucursal"
+        [selectedTalla]="selectedTalla"
+        [selectedColor]="selectedColor"
+        [selectedTemporada]="selectedTemporada"
+        [selectedColeccion]="selectedColeccion"
+        [selectedSort]="selectedSort"
+        [precioMin]="precioMin"
+        [precioMax]="precioMax"
+        [tenants]="tenants"
+        [selectedTenantId]="selectedTenantId"
+        (busquedaChange)="onBusquedaChange($event)"
+        (categoriaChange)="onCategoriaChange($event)"
+        (publicoChange)="onPublicoChange($event)"
+        (sucursalChange)="onSucursalChange($event)"
+        (tallaChange)="onTallaChange($event)"
+        (colorChange)="onColorChange($event)"
+        (temporadaChange)="onTemporadaChange($event)"
+        (coleccionChange)="onColeccionChange($event)"
+        (ordenChange)="onOrdenChange($event)"
+        (precioMinChange)="onPrecioMinChange($event)"
+        (precioMaxChange)="onPrecioMaxChange($event)"
+        (tenantChange)="cambiarTenant($event)"
+        (limpiar)="limpiarFiltros()">
+      </app-catalogo-filtros>
+    </aside>
+
+    <!-- COLUMNA DERECHA: RESULTADOS, ORDENAMIENTO Y CUADRÍCULA -->
+    <main class="flex-1 min-w-0 w-full space-y-6">
+
+      <!-- Barra Superior de Resultados & Ordenamiento -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-200 dark:border-zinc-800">
+        
+        <div class="space-y-1">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+              🏬 {{ selectedTenant?.nombre_empresa || 'Tienda Oficial' }}
+            </span>
+            <span *ngIf="selectedSucursal" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-stone-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-stone-200 dark:border-zinc-700">
+              📍 {{ getSucursalNombre() }}
+              <button type="button" (click)="onSucursalChange(null)" class="ml-1 hover:text-rose-500 cursor-pointer font-bold text-xs" title="Quitar filtro de sucursal">✕</button>
+            </span>
+          </div>
+          <h1 class="text-xl sm:text-2xl font-editorial font-bold text-zinc-900 dark:text-white">
+            Resultados para "{{ searchQuery || getCategoriaNombre() || 'Catálogo de Prendas' }}"
+          </h1>
+          <p class="text-xs text-zinc-500 dark:text-zinc-400 font-mono">
+            {{ totalProductos }} productos encontrados
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 self-start sm:self-auto">
+          <!-- Pestañas rápidas de Tiendas si hay más de una -->
+          <div *ngIf="tenants && tenants.length > 1" class="flex items-center gap-1.5 bg-stone-100 dark:bg-zinc-950 p-1 rounded-xl border border-stone-200 dark:border-zinc-800">
+            <button 
+              *ngFor="let t of tenants" 
+              type="button" 
+              (click)="cambiarTenant(t.id_empresa)"
+              class="px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer"
+              [ngClass]="selectedTenantId === t.id_empresa 
+                ? 'bg-amber-600 text-white shadow-xs' 
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'">
+              {{ t.nombre_empresa }}
+            </button>
+          </div>
+
+          <!-- Botón de Filtros para Móviles -->
+          <button 
+            type="button" 
+            (click)="filtrosComponentRef?.toggleDrawer()" 
+            class="lg:hidden px-3.5 py-1.5 rounded-xl bg-stone-100 dark:bg-zinc-800 border border-stone-300 dark:border-zinc-700 text-xs font-semibold text-zinc-800 dark:text-zinc-200 flex items-center space-x-1.5 cursor-pointer">
+            <i class="ph ph-funnel text-amber-500"></i>
+            <span>Filtros</span>
+          </button>
+
+          <div class="flex items-center space-x-1.5">
+            <span class="text-xs text-zinc-500 dark:text-zinc-400 font-medium">Ordenar:</span>
+            <select 
+              [ngModel]="selectedSort" 
+              (ngModelChange)="onOrdenChange($event)"
+              class="bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 shadow-xs cursor-pointer">
+              <option value="destacados">Más relevantes</option>
+              <option value="precio_asc">Menor precio</option>
+              <option value="precio_desc">Mayor precio</option>
+              <option value="nombre_asc">Nombre: A - Z</option>
+              <option value="nombre_desc">Nombre: Z - A</option>
+              <option value="recientes">Más recientes</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Skeletons de Carga Shimmer -->
+      <div *ngIf="cargando" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 animate-pulse">
+        <div *ngFor="let i of [1,2,3,4,5,6,7,8,9,10]" class="rounded-2xl bg-white dark:bg-zinc-900/60 border border-stone-200 dark:border-zinc-800 p-3 space-y-3 shadow-xs">
+          <div class="aspect-[3/4] rounded-xl bg-stone-200 dark:bg-zinc-800/60"></div>
+          <div class="h-4 bg-stone-200 dark:bg-zinc-800/70 rounded w-3/4"></div>
+          <div class="h-3 bg-stone-100 dark:bg-zinc-800/40 rounded w-1/2"></div>
+        </div>
+      </div>
+
+      <!-- Cuadrícula de 5 Columnas (Exacta a la Maqueta) -->
+      <div *ngIf="!cargando && productos.length > 0" class="space-y-8">
+        <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          <app-producto-card
+            *ngFor="let prod of productos"
+            [prenda]="prod"
+            (clickPrenda)="abrirDetalle($event)">
+          </app-producto-card>
+        </div>
+
+        <!-- Barra de Paginación Responsive -->
+        <div class="p-4 rounded-2xl bg-white dark:bg-zinc-900/80 border border-stone-200 dark:border-zinc-800 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+          
+          <div class="text-xs text-zinc-500 dark:text-zinc-400 font-mono">
+            Mostrando <strong class="text-zinc-800 dark:text-zinc-200">{{ ((paginaActual - 1) * limitePorPagina) + 1 }}</strong> - 
+            <strong class="text-zinc-800 dark:text-zinc-200">{{ ((paginaActual - 1) * limitePorPagina) + productos.length }}</strong> de 
+            <strong class="text-amber-600 dark:text-amber-400 font-bold">{{ totalProductos }}</strong> productos
+          </div>
+
+          <!-- Botones de Paginación -->
+          <div class="flex items-center space-x-1 font-mono text-xs">
+            <button 
+              (click)="cambiarPagina(paginaActual - 1)"
+              [disabled]="paginaActual <= 1"
+              class="px-3 py-1.5 rounded-lg border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 disabled:opacity-40 disabled:cursor-not-allowed hover:border-amber-500/60 transition-colors cursor-pointer">
+              ← Prev
+            </button>
+
+            <button *ngFor="let p of getPaginasVisibles()"
+                    (click)="cambiarPagina(p)"
+                    [class.bg-amber-600]="paginaActual === p"
+                    [class.text-white]="paginaActual === p"
+                    [class.font-bold]="paginaActual === p"
+                    [class.bg-stone-50]="paginaActual !== p"
+                    [class.dark:bg-zinc-950]="paginaActual !== p"
+                    [class.text-zinc-700]="paginaActual !== p"
+                    [class.dark:text-zinc-300]="paginaActual !== p"
+                    class="w-8 h-8 rounded-lg border border-stone-200 dark:border-zinc-800 flex items-center justify-center transition-all cursor-pointer hover:border-amber-500">
+              {{ p }}
+            </button>
+
+            <button 
+              (click)="cambiarPagina(paginaActual + 1)"
+              [disabled]="paginaActual >= totalPaginas"
+              class="px-3 py-1.5 rounded-lg border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 disabled:opacity-40 disabled:cursor-not-allowed hover:border-amber-500/60 transition-colors cursor-pointer">
+              Next →
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Estado Vacío Honestidad Sin Conexión -->
+      <div *ngIf="!cargando && productos.length === 0 && !networkStatus.isOnline()" 
+           class="py-16 text-center rounded-2xl bg-white dark:bg-zinc-900/40 border border-amber-500/30 p-8 space-y-4 max-w-lg mx-auto shadow-sm">
+        <div class="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-500 flex items-center justify-center mx-auto text-2xl">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 010 12.728M5.636 5.636a9 9 0 000 12.728M12 9v4m0 4h.01" />
+          </svg>
+        </div>
+        <div class="space-y-1">
+          <h3 class="text-base font-bold text-zinc-900 dark:text-white">Catálogo no disponible sin conexión</h3>
+          <p class="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+            No se encontraron registros almacenados localmente para esta selección. Conéctate a internet para sincronizar las prendas.
+          </p>
+        </div>
+        <button (click)="aplicarFiltros()" 
+                class="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer shadow-sm">
+          Reintentar Conexión
+        </button>
+      </div>
+
+      <!-- Estado Vacío (Sin Resultados Conectado) -->
+      <div *ngIf="!cargando && productos.length === 0 && networkStatus.isOnline()" 
+           class="py-16 text-center rounded-2xl bg-white dark:bg-zinc-900/40 border border-stone-200 dark:border-zinc-800 p-8 space-y-4 max-w-lg mx-auto shadow-sm">
+        <div class="w-14 h-14 rounded-full bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-400 flex items-center justify-center mx-auto text-xl">
+          🔍
+        </div>
+        <div class="space-y-1">
+          <h3 class="text-base font-bold text-zinc-900 dark:text-white">No se encontraron productos</h3>
+          <p class="text-xs text-zinc-500 dark:text-zinc-400">
+            No hay prendas que coincidan con los criterios de búsqueda o filtros seleccionados.
+          </p>
+        </div>
+        <button (click)="limpiarFiltros()" 
+                class="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer shadow-sm">
+          Ver Todo el Catálogo
+        </button>
+      </div>
+
+    </main>
+
+  </div>
+
+</div>
+
+<!-- Detalle de Prenda Modal -->
+<app-product-detail-modal 
+  *ngIf="selectedProductForModal" 
+  [producto]="selectedProductForModal" 
+  [modoInicial]="modoModalInicial"
+  (close)="cerrarModalDetalle()">
+</app-product-detail-modal>

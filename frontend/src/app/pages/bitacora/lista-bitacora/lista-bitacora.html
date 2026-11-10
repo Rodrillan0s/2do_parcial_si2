@@ -1,0 +1,511 @@
+<div class="min-h-[90vh] py-6 px-4 sm:px-6 lg:px-8 space-y-6 text-zinc-100 animate-fade-in relative">
+
+  <!-- Subtle Atmospheric Lighting Effect -->
+  <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[850px] h-[300px] bg-gradient-to-b from-amber-600/10 via-amber-900/5 to-transparent blur-3xl pointer-events-none -z-10"></div>
+
+  <!-- ======================================================== -->
+  <!-- 1. ENCABEZADO Y MÉTRICAS DE AUDITORÍA                     -->
+  <!-- ======================================================== -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800/80 pb-6">
+    <div class="space-y-1.5">
+      <div class="flex items-center gap-2 flex-wrap">
+        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300 font-mono tracking-wider">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>AURORA Sentinel • Sistema de Auditoría & Trazabilidad</span>
+        </div>
+
+        <!-- Badge de Empresa Activa o Visión Global -->
+        <span *ngIf="empresaActivaNombre" 
+              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+          <span>🏪 {{ empresaActivaNombre }}</span>
+        </span>
+        <span *ngIf="!empresaActivaNombre && esSuperAdmin" 
+              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-zinc-800 text-zinc-300 border border-zinc-700">
+          <span>🌐 Visión Global (Toda la Plataforma)</span>
+        </span>
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-editorial font-bold text-white tracking-tight flex items-center gap-2.5">
+        <i class="ph ph-clock-counter-clockwise text-amber-400"></i>
+        <span>Bitácora de Auditoría</span>
+      </h1>
+      <p class="text-xs text-zinc-400 font-light max-w-2xl">
+        Registro inmutable y cronológico de todas las operaciones, autenticaciones y modificaciones en la plataforma AURORA.
+      </p>
+    </div>
+
+    <!-- Quick Stats Chips -->
+    <div class="flex items-center gap-3">
+      <div class="px-4 py-2 rounded-2xl bg-zinc-900/80 border border-zinc-800 text-center">
+        <span class="block text-[10px] uppercase font-mono tracking-wider text-zinc-500 font-semibold">Total Eventos</span>
+        <span class="block text-lg font-mono font-bold text-amber-300">{{ total }}</span>
+      </div>
+      <div class="px-4 py-2 rounded-2xl bg-zinc-900/80 border border-zinc-800 text-center">
+        <span class="block text-[10px] uppercase font-mono tracking-wider text-zinc-500 font-semibold">Página</span>
+        <span class="block text-lg font-mono font-bold text-white">{{ page }} <span class="text-xs text-zinc-500 font-normal">/ {{ pages || 1 }}</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- 2. PANEL DE FILTROS AVANZADOS                           -->
+  <!-- ======================================================== -->
+  <div class="rounded-3xl bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/90 p-5 sm:p-6 shadow-xl shadow-black/40 relative overflow-hidden">
+    
+    <!-- Gold Top Line -->
+    <div class="absolute top-0 inset-x-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-500/40 to-transparent"></div>
+
+    <div class="flex items-center justify-between mb-4 border-b border-zinc-800/50 pb-3">
+      <div class="flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider text-zinc-300">
+        <i class="ph ph-funnel text-amber-400 text-sm"></i>
+        <span>Filtros de Búsqueda</span>
+      </div>
+      <div class="flex items-center space-x-2">
+        <span class="text-[11px] text-zinc-500">Filas por página:</span>
+        <div class="flex items-center bg-zinc-950 rounded-lg p-0.5 border border-zinc-800 text-xs">
+          <button (click)="cambiarLimite(10)" [class.bg-amber-500]="limit === 10" [class.text-zinc-950]="limit === 10" [class.font-bold]="limit === 10" class="px-2 py-0.5 rounded text-zinc-400 hover:text-white transition-all">10</button>
+          <button (click)="cambiarLimite(25)" [class.bg-amber-500]="limit === 25" [class.text-zinc-950]="limit === 25" [class.font-bold]="limit === 25" class="px-2 py-0.5 rounded text-zinc-400 hover:text-white transition-all">25</button>
+          <button (click)="cambiarLimite(50)" [class.bg-amber-500]="limit === 50" [class.text-zinc-950]="limit === 50" [class.font-bold]="limit === 50" class="px-2 py-0.5 rounded text-zinc-400 hover:text-white transition-all">50</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulario de Filtros -->
+    <form (ngSubmit)="aplicarFiltros()" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      
+      <!-- Búsqueda inteligente -->
+      <div class="lg:col-span-2">
+        <label class="block text-[11px] uppercase tracking-wider font-semibold text-zinc-400 mb-1.5">Búsqueda Inteligente</label>
+        <div class="relative">
+          <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 text-sm"></i>
+          <input type="text" [(ngModel)]="filtros.search" name="search" placeholder="Usuario, acción, descripción o IP..."
+                 class="w-full bg-zinc-950/80 border border-zinc-800 focus:border-amber-400/80 rounded-2xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-amber-400/30 transition-all font-mono" />
+        </div>
+      </div>
+
+      <!-- Módulo -->
+      <div>
+        <label class="block text-[11px] uppercase tracking-wider font-semibold text-zinc-400 mb-1.5">Módulo</label>
+        <select [(ngModel)]="filtros.modulo" name="modulo"
+                class="w-full bg-zinc-950/80 border border-zinc-800 focus:border-amber-400/80 rounded-2xl px-3 py-2.5 text-xs text-white focus:outline-none transition-all">
+          <option value="">Todos los módulos</option>
+          <option value="AUTENTICACION">Autenticación / Login</option>
+          <option value="PERFIL">Gestión de Perfil</option>
+          <option value="USUARIOS">Usuarios</option>
+          <option value="ROLES">Roles y Permisos</option>
+          <option value="PRODUCTOS">Productos / Prendas</option>
+          <option value="COMPRAS">Compras / Insumos</option>
+          <option value="INVENTARIO">Inventario</option>
+          <option value="SUCURSALES">Sucursales</option>
+          <option value="EMPRESAS">Empresas / Tiendas</option>
+        </select>
+      </div>
+
+      <!-- Nivel / Criticidad -->
+      <div>
+        <label class="block text-[11px] uppercase tracking-wider font-semibold text-zinc-400 mb-1.5">Nivel de Criticidad</label>
+        <select [(ngModel)]="filtros.nivel" name="nivel"
+                class="w-full bg-zinc-950/80 border border-zinc-800 focus:border-amber-400/80 rounded-2xl px-3 py-2.5 text-xs text-white focus:outline-none transition-all">
+          <option value="">Todos los niveles</option>
+          <option value="INFO">Información (INFO)</option>
+          <option value="WARNING">Advertencia (WARNING)</option>
+          <option value="CRITICAL">Crítico (CRITICAL)</option>
+        </select>
+      </div>
+
+      <!-- Resultado -->
+      <div>
+        <label class="block text-[11px] uppercase tracking-wider font-semibold text-zinc-400 mb-1.5">Resultado</label>
+        <select [(ngModel)]="filtros.resultado" name="resultado"
+                class="w-full bg-zinc-950/80 border border-zinc-800 focus:border-amber-400/80 rounded-2xl px-3 py-2.5 text-xs text-white focus:outline-none transition-all">
+          <option value="">Todos los resultados</option>
+          <option value="EXITO">Éxito</option>
+          <option value="ERROR">Error / Fallido</option>
+        </select>
+      </div>
+
+      <!-- Fecha Desde -->
+      <div>
+        <label class="block text-[11px] uppercase tracking-wider font-semibold text-zinc-400 mb-1.5">Fecha Desde</label>
+        <input type="date" [(ngModel)]="filtros.fecha_desde" name="fecha_desde"
+               class="w-full bg-zinc-950/80 border border-zinc-800 focus:border-amber-400/80 rounded-2xl px-3 py-2.5 text-xs text-white focus:outline-none transition-all font-mono" />
+      </div>
+
+      <!-- Fecha Hasta -->
+      <div>
+        <label class="block text-[11px] uppercase tracking-wider font-semibold text-zinc-400 mb-1.5">Fecha Hasta</label>
+        <input type="date" [(ngModel)]="filtros.fecha_hasta" name="fecha_hasta"
+               class="w-full bg-zinc-950/80 border border-zinc-800 focus:border-amber-400/80 rounded-2xl px-3 py-2.5 text-xs text-white focus:outline-none transition-all font-mono" />
+      </div>
+
+      <!-- Empresa / Tienda (para Administrador Global) -->
+      <div *ngIf="esSuperAdmin">
+        <label class="block text-[11px] uppercase tracking-wider font-semibold text-zinc-400 mb-1.5">Empresa / Tienda</label>
+        <select [(ngModel)]="filtros.id_empresa" name="id_empresa" (change)="aplicarFiltros()"
+                class="w-full bg-zinc-950/80 border border-zinc-800 focus:border-amber-400/80 rounded-2xl px-3 py-2.5 text-xs text-white focus:outline-none transition-all">
+          <option value="">Todas las Empresas (Global)</option>
+          <option *ngFor="let emp of empresasDisponibles" [value]="emp.id_empresa">
+            {{ emp.nombre_empresa }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="flex items-end space-x-2">
+        <button type="button" (click)="limpiarFiltros()"
+                class="flex-1 py-2.5 rounded-2xl bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white text-xs uppercase tracking-wider font-semibold transition-all">
+          Limpiar
+        </button>
+        <button type="submit"
+                class="flex-1 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:brightness-110 text-zinc-950 text-xs uppercase tracking-wider font-bold transition-all shadow-md shadow-amber-500/20 flex items-center justify-center space-x-1.5">
+          <i class="ph ph-magnifying-glass font-bold"></i>
+          <span>Filtrar</span>
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- 3. TABLA DE REGISTROS DE AUDITORÍA (DARK LUXURY)         -->
+  <!-- ======================================================== -->
+  <div class="rounded-3xl bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/90 shadow-2xl shadow-black/60 overflow-hidden relative">
+    
+    <!-- Table Top Subtle Gold Accent Line -->
+    <div class="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400/50 to-transparent"></div>
+
+    <!-- Table Header Info Bar -->
+    <div class="px-6 py-4 border-b border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-950/40">
+      <div class="flex items-center space-x-2.5">
+        <i class="ph ph-list-dashes text-amber-400 text-base"></i>
+        <span class="text-xs uppercase tracking-wider font-bold text-white">Eventos Registrados</span>
+        <span class="px-2.5 py-0.5 rounded-full bg-zinc-800 text-[10px] font-mono font-semibold text-amber-300 border border-zinc-700/60">
+          {{ eventos.length }} de {{ total }}
+        </span>
+      </div>
+
+      <!-- Quick Page Navigation in Table Header -->
+      <div *ngIf="pages > 1" class="flex items-center space-x-2 text-xs">
+        <button (click)="paginaAnterior()" [disabled]="page === 1 || cargando"
+                class="px-2.5 py-1 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-amber-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+          <i class="ph ph-caret-left text-xs"></i>
+        </button>
+        <span class="text-zinc-400 font-mono text-[11px]">Página <strong class="text-white">{{ page }}</strong> de {{ pages }}</span>
+        <button (click)="paginaSiguiente()" [disabled]="page === pages || cargando"
+                class="px-2.5 py-1 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-amber-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+          <i class="ph ph-caret-right text-xs"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading Skeleton Shimmer -->
+    <div *ngIf="cargando && !cargandoMas" class="p-6 space-y-3">
+      <div *ngFor="let i of [1,2,3,4,5]" class="h-14 rounded-2xl bg-zinc-900/60 border border-zinc-800/60 animate-pulse flex items-center px-4 space-x-4">
+        <div class="w-24 h-4 bg-zinc-800/80 rounded"></div>
+        <div class="w-32 h-4 bg-zinc-800/80 rounded"></div>
+        <div class="w-28 h-4 bg-zinc-800/80 rounded"></div>
+        <div class="flex-1 h-4 bg-zinc-800/80 rounded"></div>
+        <div class="w-16 h-6 bg-zinc-800/80 rounded-full"></div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!cargando && eventos.length === 0" class="py-20 text-center space-y-3">
+      <div class="w-14 h-14 rounded-full bg-zinc-900 border border-amber-500/20 flex items-center justify-center mx-auto text-amber-400 text-2xl">
+        <i class="ph ph-magnifying-glass"></i>
+      </div>
+      <h3 class="text-base font-editorial font-bold text-white">No se encontraron registros</h3>
+      <p class="text-xs text-zinc-400 max-w-sm mx-auto font-light">
+        No hay eventos que coincidan con los filtros aplicados. Intenta ajustar los parámetros de búsqueda.
+      </p>
+      <button (click)="limpiarFiltros()" class="mt-2 px-5 py-2 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold uppercase tracking-wider transition-all">
+        Restablecer Filtros
+      </button>
+    </div>
+
+    <!-- Data Table Container -->
+    <div *ngIf="eventos.length > 0 && (!cargando || cargandoMas)" class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-zinc-800/80 text-[10px] uppercase font-mono tracking-widest text-zinc-400 bg-zinc-950/60">
+            <th class="py-3 px-5 whitespace-nowrap">Fecha & Hora</th>
+            <th class="py-3 px-4 whitespace-nowrap">Usuario</th>
+            <th class="py-3 px-4 whitespace-nowrap">Módulo</th>
+            <th class="py-3 px-4 whitespace-nowrap">Acción & Detalle</th>
+            <th class="py-3 px-4 whitespace-nowrap text-center">Nivel</th>
+            <th class="py-3 px-4 whitespace-nowrap text-center">Resultado</th>
+            <th class="py-3 px-5 whitespace-nowrap text-center">Detalle</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-zinc-800/40 text-xs font-light">
+          <tr *ngFor="let evento of eventos" class="hover:bg-zinc-800/30 transition-colors group">
+            
+            <!-- Fecha y Hora -->
+            <td class="py-3.5 px-5 whitespace-nowrap font-mono text-zinc-300 text-[11px]">
+              <span class="text-amber-300/90 font-medium">{{ (evento.fecha_hora || evento.fecha_evento) | date:'dd/MM/yyyy' }}</span>
+              <span class="text-zinc-500 ml-1.5">{{ (evento.fecha_hora || evento.fecha_evento) | date:'HH:mm:ss' }}</span>
+            </td>
+
+            <!-- Usuario -->
+            <td class="py-3.5 px-4 whitespace-nowrap">
+              <div class="flex items-center space-x-2.5">
+                <div class="w-7 h-7 rounded-full bg-zinc-950 border border-amber-500/20 flex items-center justify-center text-[10px] font-mono font-bold text-amber-300 shrink-0">
+                  {{ (evento.usuario_nombre ? evento.usuario_nombre.substring(0, 2) : 'AU').toUpperCase() }}
+                </div>
+                <div>
+                  <div class="font-medium text-white group-hover:text-amber-300 transition-colors">
+                    {{ evento.usuario_nombre || 'Sistema' }}
+                  </div>
+                  <div *ngIf="evento.id_usuario" class="text-[10px] text-zinc-500 font-mono">
+                    ID: {{ evento.id_usuario }}
+                  </div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Módulo -->
+            <td class="py-3.5 px-4 whitespace-nowrap">
+              <span class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-zinc-950 border border-zinc-800 text-[11px] font-mono text-zinc-300">
+                <i [class]="getModuloIcon(evento.modulo)" class="text-amber-400"></i>
+                <span>{{ evento.modulo }}</span>
+              </span>
+            </td>
+
+            <!-- Acción & Descripción -->
+            <td class="py-3.5 px-4 max-w-sm">
+              <div class="font-semibold text-white font-mono text-[11px] tracking-tight">
+                {{ evento.accion }}
+              </div>
+              <div class="text-[11px] text-zinc-400 truncate mt-0.5" [title]="evento.descripcion">
+                {{ evento.descripcion || 'Sin descripción adicional' }}
+              </div>
+            </td>
+
+            <!-- Nivel / Criticidad -->
+            <td class="py-3.5 px-4 whitespace-nowrap text-center">
+              <span [class]="getNivelBadgeClass(evento.nivel)"
+                    class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono font-semibold uppercase border tracking-wider">
+                <span [class]="getNivelDotClass(evento.nivel)" class="w-1.5 h-1.5 rounded-full"></span>
+                <span>{{ evento.nivel }}</span>
+              </span>
+            </td>
+
+            <!-- Resultado -->
+            <td class="py-3.5 px-4 whitespace-nowrap text-center">
+              <span *ngIf="evento.resultado === 'EXITO'" 
+                    class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono font-semibold uppercase">
+                <i class="ph ph-check-circle text-xs"></i>
+                <span>Éxito</span>
+              </span>
+              <span *ngIf="evento.resultado !== 'EXITO'" 
+                    class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[10px] font-mono font-semibold uppercase">
+                <i class="ph ph-x-circle text-xs"></i>
+                <span>Error</span>
+              </span>
+            </td>
+
+            <!-- Acción Ver Detalle -->
+            <td class="py-3.5 px-5 whitespace-nowrap text-center">
+              <button (click)="verDetalles(evento)" 
+                      class="px-3 py-1.5 rounded-xl bg-zinc-950 hover:bg-amber-500/10 border border-zinc-800 hover:border-amber-500/40 text-zinc-400 hover:text-amber-300 text-xs font-semibold transition-all flex items-center space-x-1.5 mx-auto active:scale-95"
+                      title="Inspeccionar evento">
+                <i class="ph ph-eye text-sm"></i>
+                <span>Detalle</span>
+              </button>
+            </td>
+
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- 4. CONTROLES DE PAGINACIÓN & CARGA INCREMENTAL           -->
+    <!-- ======================================================== -->
+    <div *ngIf="eventos.length > 0" class="px-6 py-5 border-t border-zinc-800/80 bg-zinc-950/60 flex flex-col sm:flex-row items-center justify-between gap-4">
+      
+      <!-- Contador de registros actual -->
+      <div class="text-xs text-zinc-400 font-mono">
+        Mostrando <span class="font-bold text-white">{{ (page - 1) * limit + 1 }}</span> a 
+        <span class="font-bold text-white">{{ Math.min(page * limit, total) }}</span> de 
+        <span class="font-bold text-amber-300">{{ total }}</span> eventos
+      </div>
+
+      <!-- Barra de navegación con botón Siguiente (->) -->
+      <div class="flex items-center space-x-3">
+        
+        <!-- Botón Cargar Más Registros (Acumulativo) -->
+        <button *ngIf="page < pages" (click)="cargarMasRegistros()" [disabled]="cargandoMas"
+                class="px-4 py-2 rounded-full bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-semibold uppercase tracking-wider transition-all flex items-center space-x-1.5 active:scale-95 shadow-sm">
+          <i *ngIf="!cargandoMas" class="ph ph-plus-circle text-sm"></i>
+          <div *ngIf="cargandoMas" class="w-3.5 h-3.5 border-2 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
+          <span>Cargar +{{ Math.min(limit, total - eventos.length) }} más</span>
+        </button>
+
+        <!-- Paginador Estándar Anterior / Siguiente -->
+        <div class="flex items-center space-x-1.5 bg-zinc-900 border border-zinc-800 rounded-full p-1 shadow-inner">
+          <button (click)="paginaAnterior()" [disabled]="page === 1 || cargando"
+                  class="px-3.5 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider text-zinc-300 hover:text-white hover:bg-zinc-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center space-x-1">
+            <i class="ph ph-arrow-left"></i>
+            <span class="hidden sm:inline">Anterior</span>
+          </button>
+
+          <span class="px-3 py-1 text-xs font-mono font-bold text-amber-300">
+            {{ page }} / {{ pages || 1 }}
+          </span>
+
+          <button (click)="paginaSiguiente()" [disabled]="page === pages || cargando"
+                  class="px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-amber-500 text-zinc-950 font-bold hover:brightness-110 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center space-x-1 shadow-md shadow-amber-500/20">
+            <span>Siguiente</span>
+            <i class="ph ph-arrow-right font-bold"></i>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- 5. MODAL DE DETALLE DEL EVENTO (LUXURY AUDIT VIEWER)      -->
+  <!-- ======================================================== -->
+  <div *ngIf="eventoSeleccionado" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity animate-fade-in" 
+         (click)="cerrarModal()"></div>
+
+    <!-- Modal Card -->
+    <div class="relative w-full max-w-4xl max-h-[90vh] bg-zinc-900/95 border border-amber-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/95 overflow-hidden flex flex-col animate-scale-up z-10">
+      
+      <!-- Top Gold Line -->
+      <div class="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent"></div>
+
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-4 border-b border-zinc-800 shrink-0">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-xl">
+            <i class="ph ph-shield-check"></i>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h3 class="text-lg font-editorial font-bold text-white tracking-wide">
+                Evento de Auditoría #{{ eventoSeleccionado.id_bitacora }}
+              </h3>
+              <span [class]="getNivelBadgeClass(eventoSeleccionado.nivel)" class="px-2 py-0.5 rounded-full text-[10px] font-mono uppercase font-bold border">
+                {{ eventoSeleccionado.nivel }}
+              </span>
+            </div>
+            <p class="text-[11px] text-zinc-400 font-mono mt-0.5">
+              {{ (eventoSeleccionado.fecha_hora || eventoSeleccionado.fecha_evento) | date:'EEEE, dd MMMM yyyy • HH:mm:ss' }}
+            </p>
+          </div>
+        </div>
+
+        <button (click)="cerrarModal()" class="text-zinc-400 hover:text-white p-1.5 rounded-lg hover:bg-white/5 transition-colors">
+          <i class="ph ph-x text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="overflow-y-auto py-5 space-y-6 flex-1 pr-1">
+        
+        <!-- Loading Detail State -->
+        <div *ngIf="cargandoDetalle" class="py-16 flex flex-col items-center justify-center space-y-3">
+          <div class="w-8 h-8 border-2 border-amber-400/20 border-t-amber-400 rounded-full animate-spin"></div>
+          <span class="text-xs font-mono uppercase tracking-widest text-zinc-400">Recuperando metadatos y payloads...</span>
+        </div>
+
+        <div *ngIf="!cargandoDetalle" class="space-y-6 animate-fade-in">
+          
+          <!-- Context Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            <div class="p-4 rounded-2xl bg-zinc-950/80 border border-zinc-800/80 space-y-1">
+              <span class="block text-[10px] uppercase font-mono tracking-wider text-zinc-500 font-semibold">Usuario Responsable</span>
+              <span class="block text-sm font-medium text-white">{{ eventoSeleccionado.usuario_nombre || 'Sistema Interno' }}</span>
+              <span class="block text-[10px] text-zinc-400 font-mono" *ngIf="eventoSeleccionado.id_usuario">ID Usuario: {{ eventoSeleccionado.id_usuario }}</span>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-zinc-950/80 border border-zinc-800/80 space-y-1">
+              <span class="block text-[10px] uppercase font-mono tracking-wider text-zinc-500 font-semibold">Módulo & Acción</span>
+              <span class="block text-sm font-medium text-amber-300">{{ eventoSeleccionado.modulo }}</span>
+              <span class="block text-[10px] text-white font-mono font-bold">{{ eventoSeleccionado.accion }}</span>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-zinc-950/80 border border-zinc-800/80 space-y-1">
+              <span class="block text-[10px] uppercase font-mono tracking-wider text-zinc-500 font-semibold">Dirección IP & Red</span>
+              <span class="block text-sm font-mono text-white">{{ eventoSeleccionado.ip || '127.0.0.1 (Local)' }}</span>
+              <span class="block text-[10px] text-emerald-400 font-mono" *ngIf="eventoSeleccionado.resultado === 'EXITO'">● Operación Exitosa</span>
+              <span class="block text-[10px] text-rose-400 font-mono" *ngIf="eventoSeleccionado.resultado !== 'EXITO'">● Fallo Registrado</span>
+            </div>
+
+          </div>
+
+          <!-- Descripción del Evento -->
+          <div class="p-4 rounded-2xl bg-zinc-950/80 border border-zinc-800/80 space-y-1">
+            <span class="block text-[10px] uppercase font-mono tracking-wider text-zinc-500 font-semibold">Descripción del Evento</span>
+            <p class="text-xs text-zinc-200 leading-relaxed font-light">
+              {{ eventoSeleccionado.descripcion || 'Sin descripción adicional para este registro.' }}
+            </p>
+          </div>
+
+          <!-- Payloads Comparativos (Datos Anteriores vs Datos Nuevos) -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            
+            <!-- Datos Anteriores -->
+            <div class="rounded-2xl bg-zinc-950/90 border border-zinc-800/80 overflow-hidden flex flex-col">
+              <div class="px-4 py-2.5 bg-zinc-900/80 border-b border-zinc-800/80 flex items-center justify-between">
+                <span class="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-bold">Datos Anteriores</span>
+                <button *ngIf="eventoSeleccionado.datos_anteriores" (click)="copiarJSON(eventoSeleccionado.datos_anteriores)" class="text-[10px] text-amber-400 hover:text-amber-300 flex items-center space-x-1">
+                  <i class="ph ph-copy"></i>
+                  <span>Copiar</span>
+                </button>
+              </div>
+              <pre class="p-4 text-[11px] font-mono text-zinc-300 overflow-x-auto max-h-60 scrollbar-thin whitespace-pre-wrap">{{ formatearJSON(eventoSeleccionado.datos_anteriores) }}</pre>
+            </div>
+
+            <!-- Datos Nuevos -->
+            <div class="rounded-2xl bg-zinc-950/90 border border-zinc-800/80 overflow-hidden flex flex-col">
+              <div class="px-4 py-2.5 bg-zinc-900/80 border-b border-zinc-800/80 flex items-center justify-between">
+                <span class="text-[11px] font-mono uppercase tracking-wider text-amber-300 font-bold">Datos Nuevos / Modificados</span>
+                <button *ngIf="eventoSeleccionado.datos_nuevos" (click)="copiarJSON(eventoSeleccionado.datos_nuevos)" class="text-[10px] text-amber-400 hover:text-amber-300 flex items-center space-x-1">
+                  <i class="ph ph-copy"></i>
+                  <span>Copiar</span>
+                </button>
+              </div>
+              <pre class="p-4 text-[11px] font-mono text-emerald-300/90 overflow-x-auto max-h-60 scrollbar-thin whitespace-pre-wrap">{{ formatearJSON(eventoSeleccionado.datos_nuevos) }}</pre>
+            </div>
+
+          </div>
+
+          <!-- User Agent & Trace -->
+          <div *ngIf="eventoSeleccionado.user_agent" class="p-3.5 rounded-2xl bg-zinc-950/60 border border-zinc-800/60 text-[11px] font-mono text-zinc-400 break-all space-y-1">
+            <span class="text-[10px] uppercase tracking-wider text-zinc-500 font-bold block">User Agent del Navegador</span>
+            <span>{{ eventoSeleccionado.user_agent }}</span>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="pt-4 border-t border-zinc-800 flex items-center justify-between shrink-0">
+        <span *ngIf="copiadoExitoso" class="text-xs text-emerald-400 font-mono animate-fade-in">
+          ✓ JSON copiado al portapapeles
+        </span>
+        <span *ngIf="!copiadoExitoso" class="text-xs text-zinc-500 font-mono">
+          Registro inmutable protegido por hashing
+        </span>
+
+        <button type="button" (click)="cerrarModal()"
+                class="px-6 py-2 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold uppercase tracking-wider transition-all">
+          Cerrar
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

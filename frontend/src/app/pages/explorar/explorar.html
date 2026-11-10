@@ -1,0 +1,446 @@
+<!-- ========================================================================= -->
+<!-- STOREFRONT MULTITENANT CONFIGURABLE (SIN SUPUESTOS FIJOS POR GÉNERO)     -->
+<!-- ========================================================================= -->
+
+<!-- Estado: Tienda No Encontrada -->
+<section *ngIf="tenantContext.tenantNoEncontrado()" class="max-w-3xl mx-auto px-4 py-20 text-center space-y-5">
+  <div class="w-16 h-16 rounded-2xl bg-stone-200 dark:bg-zinc-900 flex items-center justify-center mx-auto text-2xl text-zinc-500">
+    <i class="ph ph-storefront"></i>
+  </div>
+  <h1 class="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white">Tienda no disponible</h1>
+  <p class="text-sm text-zinc-600 dark:text-zinc-400 max-w-md mx-auto">
+    El identificador de tienda solicitado no existe o aún se encuentra en proceso de activación.
+  </p>
+  <div class="flex flex-wrap justify-center gap-3 pt-2">
+    <a routerLink="/explorar" [queryParams]="{ empresa: 1 }"
+       class="px-5 py-2.5 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-bold">
+      Explorar tienda principal
+    </a>
+    <a routerLink="/saas"
+       class="px-5 py-2.5 rounded-full border border-stone-300 dark:border-zinc-700 text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+      Ir a AuroraStore SaaS
+    </a>
+  </div>
+</section>
+
+<ng-container *ngIf="!tenantContext.tenantNoEncontrado()">
+
+  <!-- ======================================================================= -->
+  <!-- 1. BANNER PRINCIPAL CONFIGURABLE POR TENANT                             -->
+  <!-- ======================================================================= -->
+  <section *ngIf="tenantContext.seccionVisible('banner')" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4">
+    <div class="relative rounded-3xl overflow-hidden bg-stone-100 dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-md min-h-[420px] sm:min-h-[480px] flex items-center">
+      
+      <!-- Imagen de Banner del Tenant o Imagen Neutra de Tienda -->
+      <img 
+        [src]="tenantContext.configStorefront().banner_imagen_url || defaultBannerImg" 
+        [alt]="tenantContext.configStorefront().nombre_comercial" 
+        class="absolute right-0 top-0 bottom-0 w-full md:w-3/5 h-full object-cover object-center filter brightness-[0.95] contrast-105" 
+      />
+
+      <!-- Máscara de Contraste -->
+      <div class="absolute inset-0 bg-gradient-to-r from-stone-50 via-stone-50/95 to-transparent dark:from-zinc-950 dark:via-zinc-950/92 dark:to-transparent/40 w-full md:w-3/4 pointer-events-none"></div>
+
+      <!-- Contenido Principal del Banner -->
+      <div class="relative z-10 max-w-xl px-6 sm:px-12 py-12 space-y-5">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-[11px] font-mono uppercase tracking-[0.2em] font-bold shadow-xs border border-white/20"
+             [style.backgroundColor]="tenantContext.configStorefront().color_secundario"
+             [style.color]="tenantContext.colorTextoSobreSecundario()">
+          <span>{{ tenantContext.configStorefront().nombre_comercial }}</span>
+        </div>
+
+        <h1 class="text-3xl sm:text-5xl lg:text-6xl font-bold text-zinc-950 dark:text-white leading-[1.1] tracking-tight"
+            [style.fontFamily]="tenantContext.obtenerFamiliaTipografica()">
+          {{ tenantContext.configStorefront().banner_titulo }}
+        </h1>
+
+        <p class="text-sm sm:text-base text-zinc-800 dark:text-zinc-200 max-w-md leading-relaxed font-normal">
+          {{ tenantContext.configStorefront().banner_subtitulo }}
+        </p>
+
+        <!-- Públicos rápidos dentro del hero si existen -->
+        <div *ngIf="tenantContext.publicosDisponibles().length > 0" class="flex flex-wrap items-center gap-2 pt-1">
+          <span class="text-[11px] text-zinc-500 dark:text-zinc-400 font-semibold">Para:</span>
+          <a *ngFor="let pub of tenantContext.publicosDisponibles()"
+             routerLink="/catalogo"
+             [queryParams]="{ empresa: tenantContext.idEmpresaActual(), publico: pub.nombre }"
+             class="px-3 py-1 rounded-full bg-white/90 dark:bg-zinc-800/90 border border-stone-200 dark:border-zinc-700 text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:scale-105 transition-all shadow-xs">
+            {{ pub.nombre }}
+          </a>
+        </div>
+
+        <div class="pt-2 flex flex-wrap items-center gap-3">
+          <a routerLink="/catalogo"
+             [queryParams]="{ empresa: tenantContext.idEmpresaActual() }"
+             class="px-7 py-3.5 rounded-full font-semibold text-xs sm:text-sm inline-flex items-center space-x-2 shadow-md hover:shadow-xl transition-all cursor-pointer"
+             [style.backgroundColor]="tenantContext.configStorefront().color_secundario"
+             [style.color]="tenantContext.colorTextoSobreSecundario()">
+            <span>{{ tenantContext.configStorefront().banner_cta_texto || 'Explorar catálogo' }}</span>
+            <span class="text-base font-normal">→</span>
+          </a>
+
+          <a *ngIf="authService.currentUser()" 
+             routerLink="/mis-pedidos" 
+             class="px-5 py-3 rounded-full bg-white/90 dark:bg-zinc-800/90 border border-stone-300 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 font-medium text-xs sm:text-sm transition-colors shadow-sm">
+            📦 Mis Compras
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================= -->
+  <!-- 2. PÚBLICOS OBJETIVO DISPONIBLES (Mujer, Hombre, Unisex, Niños, Bebés)  -->
+  <!-- ======================================================================= -->
+  <section *ngIf="tenantContext.seccionVisible('publicos') && tenantContext.publicosDisponibles().length > 0"
+           class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="p-5 sm:p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <span class="text-[10px] font-mono uppercase tracking-widest text-zinc-400 font-bold">Navegación por Público Objetivo</span>
+          <h2 class="text-lg sm:text-xl font-bold text-zinc-900 dark:text-white"
+              [style.fontFamily]="tenantContext.obtenerFamiliaTipografica()">
+            ¿Para quién buscas prendas hoy?
+          </h2>
+        </div>
+        <a routerLink="/catalogo" [queryParams]="{ empresa: tenantContext.idEmpresaActual() }"
+           class="text-xs font-semibold hover:underline"
+           [style.color]="tenantContext.configStorefront().color_secundario">
+          Ver todo el catálogo →
+        </a>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+        <a *ngFor="let pub of tenantContext.publicosDisponibles()"
+           routerLink="/catalogo"
+           [queryParams]="{ empresa: tenantContext.idEmpresaActual(), publico: pub.nombre }"
+           class="group p-4 rounded-2xl bg-stone-50 dark:bg-zinc-950 border border-stone-200/80 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all flex items-center justify-between gap-3 cursor-pointer shadow-xs">
+          <div>
+            <div class="text-sm font-bold text-zinc-900 dark:text-white group-hover:translate-x-0.5 transition-transform">
+              {{ pub.nombre }}
+            </div>
+            <div class="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono mt-0.5">
+              {{ pub.total_prendas }} prenda(s)
+            </div>
+          </div>
+          <!-- Icono sutil y armónico (evita bloque negro tosco) -->
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-xs border transition-transform group-hover:scale-105"
+               [style.backgroundColor]="tenantContext.colorSecundarioSuave()"
+               [style.borderColor]="tenantContext.colorSecundarioBorde()"
+               [style.color]="tenantContext.configStorefront().color_secundario">
+            <i class="ph text-lg" [ngClass]="iconoPublico(pub.nombre)"></i>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================= -->
+  <!-- 3. CATEGORÍAS DE PRODUCTO ACTIVAS EN EL TENANT (DISEÑO EDITORIAL REFINADO) -->
+  <!-- ======================================================================= -->
+  <section *ngIf="tenantContext.seccionVisible('categorias') && tenantContext.filtrosActuales().categorias.length > 0"
+           class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <div class="p-5 sm:p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm space-y-4">
+      <div class="flex items-center justify-between border-b border-stone-100 dark:border-zinc-800/80 pb-3">
+        <div>
+          <span class="text-[10px] font-mono uppercase tracking-widest text-zinc-400 font-bold">Explorar por Tipo de Prenda</span>
+          <h3 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white"
+              [style.fontFamily]="tenantContext.obtenerFamiliaTipografica()">
+            Categorías Disponibles
+          </h3>
+        </div>
+        <a routerLink="/catalogo" [queryParams]="{ empresa: tenantContext.idEmpresaActual() }"
+           class="text-xs font-semibold hover:underline"
+           [style.color]="tenantContext.configStorefront().color_secundario">
+          Ver todas →
+        </a>
+      </div>
+
+      <!-- Carrusel / Fila de Categorías con Estética de Alta Costura -->
+      <div class="overflow-x-auto scrollbar-none pb-2 pt-1">
+        <div class="flex items-start gap-4 sm:gap-6 px-1 min-w-max">
+          <a *ngFor="let cat of tenantContext.filtrosActuales().categorias" 
+             [routerLink]="['/catalogo']" 
+             [queryParams]="{ empresa: tenantContext.idEmpresaActual(), categoria: cat.id_categoria }"
+             class="flex flex-col items-center space-y-2.5 group cursor-pointer text-center shrink-0 min-w-[80px] sm:min-w-[92px]">
+            
+            <!-- Contenedor Avatar / Icono Editorial -->
+            <div class="relative w-16 h-16 sm:w-18 sm:h-18 rounded-2xl p-1 bg-stone-100 dark:bg-zinc-800/80 border transition-all duration-300 shadow-xs group-hover:scale-105 group-hover:shadow-md flex items-center justify-center overflow-hidden"
+                 [style.borderColor]="tenantContext.colorSecundarioBorde()">
+              
+              <!-- Imagen real si existe -->
+              <img *ngIf="cat.imagen_url"
+                   [src]="cat.imagen_url" 
+                   [alt]="cat.nombre" 
+                   class="w-full h-full rounded-xl object-cover" />
+
+              <!-- Icono + Inicial refinada de alta costura si no tiene foto -->
+              <div *ngIf="!cat.imagen_url"
+                   class="w-full h-full rounded-xl flex flex-col items-center justify-center transition-colors"
+                   [style.backgroundColor]="tenantContext.colorSecundarioSuave()"
+                   [style.color]="tenantContext.configStorefront().color_secundario">
+                <i class="ph text-2xl" [ngClass]="iconoCategoria(cat.nombre)"></i>
+              </div>
+            </div>
+            
+            <!-- Nombre y Conteo Nítidos -->
+            <div class="w-full">
+              <span class="text-xs font-bold text-zinc-900 dark:text-zinc-100 block truncate max-w-[100px] group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                {{ cat.nombre }}
+              </span>
+              <span class="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium block mt-0.5">
+                {{ cat.total_prendas }} {{ cat.total_prendas === 1 ? 'item' : 'items' }}
+              </span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================= -->
+  <!-- 4. PRODUCTOS DESTACADOS DEL TENANT                                      -->
+  <!-- ======================================================================= -->
+  <section *ngIf="tenantContext.seccionVisible('destacados') && productosDestacados.length > 0"
+           class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    
+    <div class="flex items-center justify-between border-b border-stone-200 dark:border-zinc-800/80 pb-4">
+      <div>
+        <span class="text-[10px] font-mono uppercase tracking-widest text-zinc-400 font-bold">Selección de la Tienda</span>
+        <h2 class="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white"
+            [style.fontFamily]="tenantContext.obtenerFamiliaTipografica()">
+          Productos destacados
+        </h2>
+      </div>
+      
+      <a routerLink="/catalogo"
+         [queryParams]="{ empresa: tenantContext.idEmpresaActual() }"
+         class="text-xs sm:text-sm font-semibold flex items-center space-x-1 transition-colors"
+         [style.color]="tenantContext.configStorefront().color_secundario">
+        <span>Ver todo</span>
+        <span>→</span>
+      </a>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-5">
+      <div *ngFor="let prod of productosDestacados" 
+           (click)="openQuickView(prod)"
+           class="group bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 p-2.5 transition-all duration-300 shadow-sm hover:shadow-md flex flex-col justify-between cursor-pointer"
+           [ngClass]="{
+             'rounded-2xl': tenantContext.configStorefront().estilo_tarjetas === 'editorial',
+             'rounded-lg': tenantContext.configStorefront().estilo_tarjetas === 'minimal',
+             'rounded-3xl p-3': tenantContext.configStorefront().estilo_tarjetas === 'borde_suave'
+           }">
+        
+        <div class="relative aspect-[3/4] rounded-xl overflow-hidden bg-stone-100 dark:bg-zinc-950 mb-2.5">
+          <img 
+            [src]="prod.imagenPrincipal" 
+            [alt]="prod.nombre" 
+            class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500" 
+          />
+
+          <!-- Público objetivo badge -->
+          <span *ngIf="prod.genero"
+                class="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-xs text-white text-[9px] font-semibold uppercase tracking-wider">
+            {{ prod.genero }}
+          </span>
+          
+          <button 
+            type="button" 
+            (click)="toggleFavorito(prod, $event)" 
+            [title]="esFavorito(prod.id) ? 'Quitar de favoritos' : 'Guardar en mi lista de deseos'"
+            class="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/90 dark:bg-zinc-900/90 shadow-sm border border-stone-200 dark:border-zinc-700 flex items-center justify-center text-zinc-500 hover:text-rose-500 transition-colors cursor-pointer z-10">
+            <svg *ngIf="esFavorito(prod.id)" class="w-4 h-4 text-rose-500 fill-rose-500" viewBox="0 0 24 24">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+            <svg *ngIf="!esFavorito(prod.id)" class="w-4 h-4 text-zinc-500 hover:text-rose-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="space-y-1">
+          <div class="text-[10px] text-zinc-400 uppercase tracking-wider truncate">{{ prod.categoria }}</div>
+          <h3 class="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+            {{ prod.nombre }}
+          </h3>
+          <div class="text-xs font-bold font-mono text-zinc-900 dark:text-zinc-100">
+            Bs. {{ prod.precio | number:'1.0-0' }}
+          </div>
+        </div>
+
+        <div *ngIf="prod.colores.length > 0 || prod.tallas.length > 0"
+             class="pt-2 mt-1.5 border-t border-stone-100 dark:border-zinc-800 flex items-center justify-between text-[10px]">
+          <div class="flex items-center space-x-1">
+            <span 
+              *ngFor="let col of prod.colores.slice(0, 3)" 
+              class="w-2.5 h-2.5 rounded-full border border-black/15 dark:border-white/20" 
+              [style.backgroundColor]="col.hex"
+              [title]="col.nombre">
+            </span>
+          </div>
+          <div *ngIf="prod.tallas.length > 0" class="text-zinc-400 font-mono truncate max-w-[70px]">
+            {{ prod.tallas.slice(0, 3).join(' · ') }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================= -->
+  <!-- 5. COLECCIONES DINÁMICAS DEL TENANT                                     -->
+  <!-- ======================================================================= -->
+  <section *ngIf="tenantContext.seccionVisible('colecciones') && coleccionesParaMostrar.length > 0"
+           id="colecciones"
+           class="py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-stone-200 dark:border-zinc-800 pb-4">
+      <div>
+        <span class="text-[10px] font-mono uppercase tracking-[0.25em] font-bold"
+              [style.color]="tenantContext.configStorefront().color_secundario">
+          Colecciones de {{ tenantContext.configStorefront().nombre_comercial }}
+        </span>
+        <h2 class="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white"
+            [style.fontFamily]="tenantContext.obtenerFamiliaTipografica()">
+          Líneas y Temporadas Disponibles
+        </h2>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <a *ngFor="let col of coleccionesParaMostrar; let idx = index"
+         routerLink="/catalogo"
+         [queryParams]="{ empresa: tenantContext.idEmpresaActual(), coleccion: col }"
+         class="group relative overflow-hidden rounded-2xl p-6 border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:shadow-lg transition-all flex flex-col justify-between min-h-[140px]">
+        <div class="flex items-center justify-between">
+          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wider font-bold shadow-xs border border-white/20"
+                [style.backgroundColor]="idx % 2 === 0 ? tenantContext.configStorefront().color_primario : tenantContext.configStorefront().color_secundario"
+                [style.color]="idx % 2 === 0 ? tenantContext.colorTextoSobrePrimario() : tenantContext.colorTextoSobreSecundario()">
+            Colección #0{{ idx + 1 }}
+          </span>
+          <i class="ph ph-arrow-up-right text-lg text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors"></i>
+        </div>
+        <div class="mt-4">
+          <h3 class="text-lg font-bold text-zinc-900 dark:text-white"
+              [style.fontFamily]="tenantContext.obtenerFamiliaTipografica()">
+            {{ col }}
+          </h3>
+          <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+            Explorar prendas disponibles en esta colección →
+          </p>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ======================================================================= -->
+  <!-- 6. RECOMENDACIONES PERSONALIZADAS (MACHINE LEARNING)                    -->
+  <!-- ======================================================================= -->
+  <section *ngIf="tenantContext.seccionVisible('recomendaciones') && recomendacionesML.length > 0"
+           class="py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    <div class="flex items-center justify-between border-b border-stone-200 dark:border-zinc-800/80 pb-4">
+      <div class="space-y-1">
+        <span class="px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 text-[10px] font-mono uppercase tracking-wider font-bold border border-amber-500/30 inline-flex items-center space-x-1">
+          <span>★</span>
+          <span>Sugerencias según tus preferencias</span>
+        </span>
+        <h2 class="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white"
+            [style.fontFamily]="tenantContext.obtenerFamiliaTipografica()">
+          Recomendado para ti
+        </h2>
+      </div>
+      <a routerLink="/catalogo" [queryParams]="{ empresa: tenantContext.idEmpresaActual() }"
+         class="text-xs sm:text-sm font-semibold flex items-center space-x-1"
+         [style.color]="tenantContext.configStorefront().color_secundario">
+        <span>Ver catálogo</span>
+        <span>→</span>
+      </a>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+      <div *ngFor="let rec of recomendacionesML"
+           (click)="openQuickView({ id: rec.id_producto, nombre: rec.nombre, precio: rec.precio, categoria: rec.categoria, imagenPrincipal: rec.imagen_url, descripcion: rec.descripcion })"
+           class="group cursor-pointer rounded-2xl bg-white dark:bg-zinc-900 border border-stone-200/90 dark:border-zinc-800 p-3 sm:p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative">
+        <div class="relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-stone-100 dark:bg-zinc-800 mb-3">
+          <img [src]="rec.imagen_url" [alt]="rec.nombre" class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+          <span class="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full bg-zinc-900/85 text-amber-300 text-[10px] font-mono font-bold">
+            ★ {{ rec.afinidad_porcentaje }}% afinidad
+          </span>
+        </div>
+        <div class="space-y-1.5 flex-1 flex flex-col justify-between">
+          <div>
+            <span class="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold block">{{ rec.categoria }}</span>
+            <h3 class="text-sm font-bold text-zinc-900 dark:text-white line-clamp-1">{{ rec.nombre }}</h3>
+            <p class="text-[11px] text-zinc-500 dark:text-zinc-400 italic line-clamp-2 mt-1">"{{ rec.motivo }}"</p>
+          </div>
+          <div class="pt-2 border-t border-stone-100 dark:border-zinc-800 flex items-center justify-between">
+            <span class="text-sm font-bold text-zinc-900 dark:text-white">Bs. {{ rec.precio | number:'1.0-0' }}</span>
+            <span class="text-[10px] font-bold" [style.color]="tenantContext.configStorefront().color_secundario">Ver detalle →</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================= -->
+  <!-- 7. SUCURSALES FÍSICAS REALES DEL TENANT                                 -->
+  <!-- ======================================================================= -->
+  <section *ngIf="(tenantContext.filtrosActuales().sucursales?.length || 0) > 0"
+           id="sucursales"
+           class="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-stone-200 dark:border-zinc-800 pb-6">
+      <div class="space-y-1">
+        <span class="text-[10px] font-mono uppercase tracking-[0.25em] font-bold"
+              [style.color]="tenantContext.configStorefront().color_secundario">
+          Disponibilidad en Tienda Física
+        </span>
+        <h2 class="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white"
+            [style.fontFamily]="tenantContext.obtenerFamiliaTipografica()">
+          Sucursales de {{ tenantContext.configStorefront().nombre_comercial }}
+        </h2>
+      </div>
+      <p class="max-w-md text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+        Consulta el stock real por sucursal, realiza reservas para probar tus prendas en tienda o recoge tus pedidos.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div *ngFor="let suc of tenantContext.filtrosActuales().sucursales; let i = index"
+           class="rounded-3xl bg-white dark:bg-zinc-900/90 border border-stone-200 dark:border-zinc-800 p-6 space-y-4 shadow-sm flex flex-col justify-between">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-mono text-[10px] uppercase font-bold tracking-wider border border-emerald-500/30">
+              ● Sucursal Activa
+            </span>
+            <span class="text-xs font-mono text-zinc-400">0{{ i + 1 }}</span>
+          </div>
+          <h3 class="text-lg font-bold text-zinc-900 dark:text-white">{{ suc.nombre }}</h3>
+          <p *ngIf="suc.ciudad" class="text-xs font-semibold" [style.color]="tenantContext.configStorefront().color_secundario">{{ suc.ciudad }}</p>
+          <div class="space-y-1.5 text-xs text-zinc-600 dark:text-zinc-400 pt-2 border-t border-stone-100 dark:border-zinc-800">
+            <div *ngIf="suc.direccion" class="flex items-start space-x-2">
+              <span>📍</span>
+              <span>{{ suc.direccion }}</span>
+            </div>
+            <div *ngIf="suc.horario" class="flex items-center space-x-2">
+              <span>🕒</span>
+              <span>{{ suc.horario }}</span>
+            </div>
+            <div *ngIf="suc.telefono" class="flex items-center space-x-2">
+              <span>📞</span>
+              <span>{{ suc.telefono }}</span>
+            </div>
+          </div>
+        </div>
+        <a routerLink="/catalogo"
+           [queryParams]="{ empresa: tenantContext.idEmpresaActual(), sucursal: suc.id_sucursal }"
+           class="w-full py-2.5 rounded-xl bg-stone-100 dark:bg-zinc-800 hover:opacity-90 text-xs font-bold uppercase tracking-wider text-center transition-colors text-zinc-800 dark:text-zinc-200">
+          Ver stock en {{ suc.nombre }}
+        </a>
+      </div>
+    </div>
+  </section>
+
+</ng-container>
+
+<!-- Quick View Modal Component -->
+<app-product-detail-modal [producto]="selectedProductForModal" (close)="closeQuickView()">
+</app-product-detail-modal>

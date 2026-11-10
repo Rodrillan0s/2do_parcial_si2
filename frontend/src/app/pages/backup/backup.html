@@ -1,0 +1,683 @@
+<div class="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-6 text-zinc-900 dark:text-zinc-100">
+
+  <!-- ========================================================================= -->
+  <!-- CABECERA PRINCIPAL: GESTOR ORACLE CLOUD                                   -->
+  <!-- ========================================================================= -->
+  <div class="p-6 rounded-3xl bg-gradient-to-br from-white via-zinc-50 to-red-50/20 dark:from-zinc-900 dark:via-zinc-900 dark:to-red-950/20 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-5">
+    
+    <div class="flex items-start space-x-4">
+      <div class="p-3.5 rounded-2xl bg-red-600/10 dark:bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/20 shrink-0 shadow-sm">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+        </svg>
+      </div>
+
+      <div class="space-y-1">
+        <div class="flex flex-wrap items-center gap-2">
+          <h1 class="text-xl sm:text-2xl font-serif font-bold text-zinc-900 dark:text-white tracking-tight">
+            Gestor de Copias de Seguridad & Restauración
+          </h1>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-red-600 text-white shadow-sm font-mono tracking-wide">
+            Oracle Cloud
+          </span>
+        </div>
+        <p class="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-2xl">
+          Administración de volcados de base de datos (.dump), políticas de respaldo periódico y entorno de recuperación con infraestructura en la nube.
+        </p>
+      </div>
+    </div>
+
+    <!-- Badge de Estado del Gestor Oracle Cloud -->
+    <div class="flex flex-wrap items-center gap-2 sm:gap-3 p-3.5 rounded-2xl bg-zinc-100/80 dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800 text-xs shrink-0 font-mono">
+      <div>
+        <span class="text-[10px] text-zinc-400 block uppercase font-sans">Gestor Cloud</span>
+        <span class="font-bold text-red-600 dark:text-red-400 flex items-center space-x-1.5">
+          <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+          <span>Oracle Cloud (OCI)</span>
+        </span>
+      </div>
+      <div class="h-8 w-px bg-zinc-200 dark:bg-zinc-800 hidden sm:block"></div>
+      <div>
+        <span class="text-[10px] text-zinc-400 block uppercase font-sans">Región</span>
+        <span class="font-semibold text-zinc-800 dark:text-zinc-200">sa-saopaulo-1</span>
+      </div>
+      <div class="h-8 w-px bg-zinc-200 dark:bg-zinc-800 hidden sm:block"></div>
+      <div>
+        <span class="text-[10px] text-zinc-400 block uppercase font-sans">Estado</span>
+        <span class="text-emerald-600 dark:text-emerald-400 font-bold">● Operativo</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Toast / Alertas -->
+  <div *ngIf="mensaje" 
+       [ngClass]="{
+         'bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border-emerald-500/30': tipoMensaje === 'exito',
+         'bg-rose-500/10 text-rose-800 dark:text-rose-300 border-rose-500/30': tipoMensaje === 'error',
+         'bg-cyan-500/10 text-cyan-800 dark:text-cyan-300 border-cyan-500/30': tipoMensaje === 'info'
+       }"
+       class="p-4 rounded-2xl border text-xs font-medium flex items-center justify-between shadow-sm animate-fade-in">
+    <div class="flex items-center space-x-2.5">
+      <span>{{ tipoMensaje === 'exito' ? '✓' : (tipoMensaje === 'error' ? '⚠️' : 'ℹ️') }}</span>
+      <span>{{ mensaje }}</span>
+    </div>
+    <button (click)="mensaje = ''" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200">✕</button>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- NAVEGACIÓN POR PESTAÑAS                                                   -->
+  <!-- ========================================================================= -->
+  <div class="flex flex-wrap gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-2">
+    
+    <button (click)="pestanaActiva = 'manual'"
+            [ngClass]="pestanaActiva === 'manual' 
+              ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-bold shadow-sm' 
+              : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800/80 dark:text-zinc-300 dark:hover:bg-zinc-800'"
+            class="px-4 py-2 rounded-xl text-xs flex items-center space-x-2 transition-all cursor-pointer">
+      <span>⬇️</span>
+      <span>Respaldo Manual (.dump)</span>
+    </button>
+
+    <button (click)="pestanaActiva = 'automatico'"
+            [ngClass]="pestanaActiva === 'automatico' 
+              ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-bold shadow-sm' 
+              : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800/80 dark:text-zinc-300 dark:hover:bg-zinc-800'"
+            class="px-4 py-2 rounded-xl text-xs flex items-center space-x-2 transition-all cursor-pointer">
+      <span>⏰</span>
+      <span>Respaldo Automático Programado</span>
+    </button>
+
+    <button (click)="pestanaActiva = 'historial'"
+            [ngClass]="pestanaActiva === 'historial' 
+              ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-bold shadow-sm' 
+              : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800/80 dark:text-zinc-300 dark:hover:bg-zinc-800'"
+            class="px-4 py-2 rounded-xl text-xs flex items-center space-x-2 transition-all cursor-pointer">
+      <span>📋</span>
+      <span>Historial de Respaldos</span>
+      <span class="px-1.5 py-0.5 rounded-full text-[10px] font-mono bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300">
+        {{ historial.length }}
+      </span>
+    </button>
+
+    <button (click)="pestanaActiva = 'restauracion'"
+            [ngClass]="pestanaActiva === 'restauracion' 
+              ? 'bg-red-600 text-white font-bold shadow-sm' 
+              : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800/80 dark:text-zinc-300 dark:hover:bg-zinc-800'"
+            class="px-4 py-2 rounded-xl text-xs flex items-center space-x-2 transition-all cursor-pointer">
+      <span>⚡</span>
+      <span>Restauración (Time Lapse)</span>
+    </button>
+
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- PESTAÑA 1: RESPALDO MANUAL CON DESCARGA DE .DUMP                          -->
+  <!-- ========================================================================= -->
+  <div *ngIf="pestanaActiva === 'manual'" class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
+    
+    <!-- Formulario de Extracción Manual -->
+    <div class="lg:col-span-2 p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-5">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-zinc-800">
+        <div>
+          <h3 class="text-base font-bold text-zinc-900 dark:text-white flex items-center space-x-2">
+            <span>💾</span>
+            <span>Generación de Respaldo On-Demand (.dump)</span>
+          </h3>
+          <p class="text-xs text-zinc-500">Selecciona la base de datos o empresa registrada para el volcado.</p>
+        </div>
+        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-500/10 text-red-600 dark:text-red-400 font-mono">
+          Oracle Cloud Dump
+        </span>
+      </div>
+
+      <!-- Selector Escalable de Empresas Registradas -->
+      <div class="space-y-1.5">
+        <label class="block text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+          Base de Datos / Empresa Objetivo:
+        </label>
+        <div class="relative">
+          <select [(ngModel)]="idEmpresaManual" 
+                  class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-xs text-zinc-900 dark:text-white font-medium focus:outline-none focus:border-red-500 cursor-pointer shadow-sm">
+            <option [ngValue]="null">🌐 Base de Datos Global (Todas las Empresas - Multi-Tenant)</option>
+            <option *ngFor="let emp of empresas" [ngValue]="emp.id_empresa">
+              🏢 {{ emp.nombre_empresa }} — {{ emp.razon_social }} (NIT: {{ emp.nit }} • Ciudad: {{ emp.ciudad }})
+            </option>
+          </select>
+        </div>
+        <span class="text-[11px] text-zinc-400 block font-mono">
+          * Consulta dinámica a la base de datos: {{ empresas.length }} empresas registradas disponibles.
+        </span>
+      </div>
+
+      <!-- Comentario o Nota de Auditoría -->
+      <div class="space-y-1.5">
+        <label class="block text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+          Motivo o Etiqueta del Respaldo (Opcional):
+        </label>
+        <input type="text" [(ngModel)]="comentarioManual" 
+               placeholder="Ej: Respaldo previo a cierre contable mensual o auditoría..." 
+               class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-red-500" />
+      </div>
+
+      <!-- Cuadro Informativo de Formato .dump -->
+      <div class="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800 space-y-2 text-xs">
+        <span class="font-bold text-zinc-800 dark:text-zinc-200 flex items-center space-x-1.5">
+          <span>📦</span>
+          <span>Especificación del Archivo de Salida:</span>
+        </span>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 font-mono text-[11px] text-zinc-600 dark:text-zinc-400">
+          <div>Extensión: <strong class="text-zinc-900 dark:text-white">.dump</strong></div>
+          <div>Formato: <strong class="text-zinc-900 dark:text-white">OCI Data Pump Archive</strong></div>
+          <div>Compresión: <strong class="text-zinc-900 dark:text-white">Zstandard High</strong></div>
+          <div>Cifrado: <strong class="text-zinc-900 dark:text-white">AES-256 Cloud Vault</strong></div>
+          <div>Tablas: <strong class="text-zinc-900 dark:text-white">64 Tablas y Secuencias</strong></div>
+          <div>Gestor: <strong class="text-red-600 dark:text-red-400">Oracle Cloud</strong></div>
+        </div>
+      </div>
+
+      <!-- Botón de Descarga -->
+      <div class="pt-2">
+        <button (click)="descargarBackupManual()" 
+                [disabled]="cargandoManual"
+                class="w-full sm:w-auto px-6 py-3 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs uppercase tracking-wider disabled:opacity-50 transition-colors shadow-md flex items-center justify-center space-x-2 cursor-pointer">
+          <svg *ngIf="cargandoManual" class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>{{ cargandoManual ? 'Generando volcado en Oracle Cloud...' : '⬇️ Generar y Descargar Respaldo (.dump)' }}</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Panel Lateral: Detalles de Oracle Cloud Infrastructure -->
+    <div class="p-6 rounded-3xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-4 text-xs">
+      <h4 class="font-bold text-zinc-900 dark:text-white uppercase tracking-wider font-mono flex items-center space-x-2">
+        <span>☁️</span>
+        <span>Infraestructura Oracle Cloud</span>
+      </h4>
+
+      <div class="space-y-3 font-mono text-[11px]">
+        <div class="p-3 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+          <span class="text-[10px] text-zinc-400 uppercase font-sans block">Gestor de Base de Datos</span>
+          <span class="font-bold text-red-600 dark:text-red-400">Oracle Cloud</span>
+        </div>
+
+        <div class="p-3 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+          <span class="text-[10px] text-zinc-400 uppercase font-sans block">Destino de Almacenamiento</span>
+          <span class="font-bold text-zinc-800 dark:text-zinc-200 truncate block">OCI Object Storage</span>
+          <span class="text-[10px] text-zinc-500 truncate block">{{ gestorInfo.bucket_principal }}</span>
+        </div>
+
+        <div class="p-3 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+          <span class="text-[10px] text-zinc-400 uppercase font-sans block">SLA y Disponibilidad</span>
+          <span class="font-bold text-emerald-600 dark:text-emerald-400">99.99% Cloud Durability</span>
+        </div>
+      </div>
+
+      <div class="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-300 text-[11px] leading-relaxed">
+        <strong>Aviso Operativo:</strong> La descarga entrega un archivo <code>.dump</code> listo para verificación. Los respaldos se archivan de forma redundante en los buckets de Oracle Cloud.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- PESTAÑA 2: RESPALDO AUTOMÁTICO PROGRAMADO                                 -->
+  <!-- ========================================================================= -->
+  <div *ngIf="pestanaActiva === 'automatico'" class="max-w-3xl mx-auto p-6 sm:p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-6 animate-fade-in">
+    
+    <div class="flex items-center justify-between pb-4 border-b border-zinc-200 dark:border-zinc-800">
+      <div class="space-y-0.5">
+        <h3 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white flex items-center space-x-2">
+          <span>⏰</span>
+          <span>Programador de Respaldos Periódicos</span>
+        </h3>
+        <p class="text-xs text-zinc-500">Configura la frecuencia automática en Oracle Cloud: hora, día, semana o mes.</p>
+      </div>
+      <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-red-600 text-white font-mono">
+        Oracle Cloud
+      </span>
+    </div>
+
+    <!-- Toggle de Habilitación -->
+    <div class="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+      <div>
+        <span class="block text-xs font-bold text-zinc-900 dark:text-white">Estado del Servicio Automático</span>
+        <span class="block text-[11px] text-zinc-500">Activa o pausa la generación periódica de copias en Oracle Cloud.</span>
+      </div>
+      <label class="relative inline-flex items-center cursor-pointer">
+        <input type="checkbox" [(ngModel)]="configAutomatica.habilitado" class="sr-only peer">
+        <div class="w-11 h-6 bg-zinc-300 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+      </label>
+    </div>
+
+    <!-- Opciones de Programación -->
+    <div class="space-y-4" [class.opacity-50]="!configAutomatica.habilitado">
+      
+      <!-- Frecuencia Principal -->
+      <div class="space-y-1.5">
+        <label class="block text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+          Frecuencia de Ejecución:
+        </label>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          
+          <button type="button" (click)="configAutomatica.frecuencia = 'hora'"
+                  [disabled]="!configAutomatica.habilitado"
+                  [ngClass]="configAutomatica.frecuencia === 'hora' ? 'bg-red-600 text-white font-bold border-red-600' : 'bg-zinc-50 dark:bg-zinc-950 border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300'"
+                  class="p-3 rounded-2xl border text-xs text-center transition-all cursor-pointer">
+            <span class="block text-base mb-1">⏱️</span>
+            <span>Cada Hora</span>
+          </button>
+
+          <button type="button" (click)="configAutomatica.frecuencia = 'dia'"
+                  [disabled]="!configAutomatica.habilitado"
+                  [ngClass]="configAutomatica.frecuencia === 'dia' ? 'bg-red-600 text-white font-bold border-red-600' : 'bg-zinc-50 dark:bg-zinc-950 border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300'"
+                  class="p-3 rounded-2xl border text-xs text-center transition-all cursor-pointer">
+            <span class="block text-base mb-1">📅</span>
+            <span>Diario</span>
+          </button>
+
+          <button type="button" (click)="configAutomatica.frecuencia = 'semana'"
+                  [disabled]="!configAutomatica.habilitado"
+                  [ngClass]="configAutomatica.frecuencia === 'semana' ? 'bg-red-600 text-white font-bold border-red-600' : 'bg-zinc-50 dark:bg-zinc-950 border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300'"
+                  class="p-3 rounded-2xl border text-xs text-center transition-all cursor-pointer">
+            <span class="block text-base mb-1">🗓️</span>
+            <span>Semanal</span>
+          </button>
+
+          <button type="button" (click)="configAutomatica.frecuencia = 'mes'"
+                  [disabled]="!configAutomatica.habilitado"
+                  [ngClass]="configAutomatica.frecuencia === 'mes' ? 'bg-red-600 text-white font-bold border-red-600' : 'bg-zinc-50 dark:bg-zinc-950 border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300'"
+                  class="p-3 rounded-2xl border text-xs text-center transition-all cursor-pointer">
+            <span class="block text-base mb-1">📊</span>
+            <span>Mensual</span>
+          </button>
+
+        </div>
+      </div>
+
+      <!-- Campos adaptativos según la frecuencia elegida -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-xs">
+        
+        <!-- Si es por HORA: Intervalo -->
+        <div *ngIf="configAutomatica.frecuencia === 'hora'" class="space-y-1">
+          <label class="font-bold text-zinc-700 dark:text-zinc-300 block">Intervalo de Horas:</label>
+          <select [(ngModel)]="configAutomatica.intervalo_horas" [disabled]="!configAutomatica.habilitado" class="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs font-semibold">
+            <option [ngValue]="1">Cada 1 hora</option>
+            <option [ngValue]="3">Cada 3 horas</option>
+            <option [ngValue]="6">Cada 6 horas (Recomendado)</option>
+            <option [ngValue]="12">Cada 12 horas</option>
+          </select>
+        </div>
+
+        <!-- Si es SEMANAL: Día de la semana -->
+        <div *ngIf="configAutomatica.frecuencia === 'semana'" class="space-y-1">
+          <label class="font-bold text-zinc-700 dark:text-zinc-300 block">Día de la Semana:</label>
+          <select [(ngModel)]="configAutomatica.dia_semana" [disabled]="!configAutomatica.habilitado" class="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs font-semibold">
+            <option value="DOMINGO">Domingo</option>
+            <option value="LUNES">Lunes</option>
+            <option value="VIERNES">Viernes</option>
+            <option value="SABADO">Sábado</option>
+          </select>
+        </div>
+
+        <!-- Si es MENSUAL: Día del mes -->
+        <div *ngIf="configAutomatica.frecuencia === 'mes'" class="space-y-1">
+          <label class="font-bold text-zinc-700 dark:text-zinc-300 block">Día del Mes:</label>
+          <select [(ngModel)]="configAutomatica.dia_mes" [disabled]="!configAutomatica.habilitado" class="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs font-semibold">
+            <option [ngValue]="1">Día 1 del mes</option>
+            <option [ngValue]="15">Día 15 del mes</option>
+            <option [ngValue]="28">Último día del mes</option>
+          </select>
+        </div>
+
+        <!-- Hora de Ejecución (para Día, Semana y Mes) -->
+        <div *ngIf="configAutomatica.frecuencia !== 'hora'" class="space-y-1">
+          <label class="font-bold text-zinc-700 dark:text-zinc-300 block">Hora de Ejecución (UTC):</label>
+          <input type="time" [(ngModel)]="configAutomatica.hora_ejecucion" [disabled]="!configAutomatica.habilitado" class="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs font-mono font-bold" />
+        </div>
+
+        <!-- Política de Retención -->
+        <div class="space-y-1">
+          <label class="font-bold text-zinc-700 dark:text-zinc-300 block">Retención en Oracle Cloud:</label>
+          <select [(ngModel)]="configAutomatica.retencion_dias" [disabled]="!configAutomatica.habilitado" class="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs font-semibold">
+            <option [ngValue]="7">Conservar 7 días</option>
+            <option [ngValue]="15">Conservar 15 días</option>
+            <option [ngValue]="30">Conservar 30 días (1 mes)</option>
+            <option [ngValue]="90">Conservar 90 días (Trimestral)</option>
+            <option [ngValue]="180">Conservar 180 días (Semestral)</option>
+          </select>
+        </div>
+
+      </div>
+
+      <!-- Empresa Objetivo para Respaldo Automático -->
+      <div class="space-y-1.5">
+        <label class="block text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+          Base de Datos / Empresa a Respaldar Periódicamente:
+        </label>
+        <select [(ngModel)]="configAutomatica.id_empresa" [disabled]="!configAutomatica.habilitado" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-xs font-medium cursor-pointer">
+          <option [ngValue]="null">🌐 Base de Datos Global (Todas las Empresas)</option>
+          <option *ngFor="let emp of empresas" [ngValue]="emp.id_empresa">
+            🏢 {{ emp.nombre_empresa }} (ID: {{ emp.id_empresa }} • {{ emp.ciudad }})
+          </option>
+        </select>
+      </div>
+
+    </div>
+
+    <!-- Botón Guardar -->
+    <div class="pt-2 flex justify-end">
+      <button (click)="guardarConfiguracionAutomatica()" 
+              [disabled]="guardandoAuto"
+              class="px-6 py-3 rounded-2xl bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-200 text-white dark:text-zinc-950 font-bold text-xs uppercase tracking-wider disabled:opacity-50 transition-colors shadow-md flex items-center space-x-2 cursor-pointer">
+        <span>💾</span>
+        <span>{{ guardandoAuto ? 'Guardando...' : 'Guardar Programación en Oracle Cloud' }}</span>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- PESTAÑA 3: HISTORIAL DE RESPALDOS                                         -->
+  <!-- ========================================================================= -->
+  <div *ngIf="pestanaActiva === 'historial'" class="space-y-4 animate-fade-in">
+    
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm text-xs">
+      <div>
+        <h3 class="font-bold text-zinc-900 dark:text-white flex items-center space-x-2">
+          <span>📋</span>
+          <span>Historial de Volcados en Oracle Cloud</span>
+        </h3>
+        <p class="text-[11px] text-zinc-500">Registro auditable de volcados .dump generados manual o automáticamente.</p>
+      </div>
+
+      <!-- Filtro por Empresa -->
+      <div class="flex items-center space-x-2">
+        <span class="text-zinc-400 font-mono">Filtrar:</span>
+        <select [(ngModel)]="filtroHistorialEmpresa" class="bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-1.5 text-xs font-medium cursor-pointer">
+          <option [ngValue]="null">Todas las Empresas</option>
+          <option *ngFor="let emp of empresas" [ngValue]="emp.id_empresa">
+            {{ emp.nombre_empresa }}
+          </option>
+        </select>
+        <button (click)="cargarHistorial()" title="Refrescar" class="p-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
+          🔄
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabla de Historial -->
+    <div class="border border-zinc-200 dark:border-zinc-800 rounded-3xl overflow-hidden bg-white dark:bg-zinc-900 shadow-sm">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-zinc-50 dark:bg-zinc-950/80 border-b border-zinc-200 dark:border-zinc-800 font-mono uppercase text-[10px] text-zinc-500">
+            <tr>
+              <th class="py-3 px-4">Código / Archivo</th>
+              <th class="py-3 px-4">Empresa / Base de Datos</th>
+              <th class="py-3 px-4">Tipo & Frecuencia</th>
+              <th class="py-3 px-4">Fecha (UTC)</th>
+              <th class="py-3 px-4">Tamaño</th>
+              <th class="py-3 px-4">Gestor Cloud</th>
+              <th class="py-3 px-4">Estado</th>
+              <th class="py-3 px-4 text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
+            
+            <tr *ngFor="let item of historialFiltrado" class="hover:bg-zinc-50/60 dark:hover:bg-zinc-950/40 transition-colors">
+              <td class="py-3.5 px-4 font-mono">
+                <span class="font-bold text-zinc-900 dark:text-white block">{{ item.id_backup }}</span>
+                <span class="text-[10px] text-zinc-400 truncate max-w-[200px] block">{{ item.archivo_dump }}</span>
+              </td>
+              <td class="py-3.5 px-4">
+                <span class="font-bold text-zinc-800 dark:text-zinc-200 block">{{ item.nombre_empresa }}</span>
+                <span class="text-[10px] text-zinc-500 font-mono">{{ item.id_empresa ? 'Tenant ID: ' + item.id_empresa : 'Multi-Tenant Global' }}</span>
+              </td>
+              <td class="py-3.5 px-4">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono"
+                      [ngClass]="item.tipo === 'MANUAL' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'bg-purple-500/10 text-purple-600 dark:text-purple-400'">
+                  {{ item.tipo }}
+                </span>
+                <span class="text-[11px] text-zinc-500 block mt-0.5">{{ item.frecuencia }}</span>
+              </td>
+              <td class="py-3.5 px-4 font-mono text-[11px] text-zinc-600 dark:text-zinc-400">
+                {{ item.fecha | date:'dd/MM/yyyy HH:mm' }}
+              </td>
+              <td class="py-3.5 px-4 font-mono font-bold text-zinc-700 dark:text-zinc-300">
+                {{ item.tamano_mb }} MB
+              </td>
+              <td class="py-3.5 px-4">
+                <span class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md text-[10px] font-bold font-mono bg-red-500/10 text-red-600 dark:text-red-400">
+                  <span>🔴</span>
+                  <span>Oracle Cloud</span>
+                </span>
+              </td>
+              <td class="py-3.5 px-4">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
+                  {{ item.estado }}
+                </span>
+              </td>
+              <td class="py-3.5 px-4 text-right space-x-1.5 whitespace-nowrap">
+                <button (click)="descargarBackupExistente(item)" 
+                        title="Descargar .dump"
+                        class="px-2.5 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-semibold text-[11px] transition-colors cursor-pointer">
+                  ⬇️ .dump
+                </button>
+                <button (click)="prepararRestauracionDesdeHistorial(item)" 
+                        title="Restaurar este respaldo"
+                        class="px-2.5 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/40 text-red-700 dark:text-red-300 font-semibold text-[11px] transition-colors cursor-pointer">
+                  ⚡ Restaurar
+                </button>
+                <button (click)="eliminarDeHistorial(item)" 
+                        title="Eliminar del historial"
+                        class="p-1.5 rounded-xl text-zinc-400 hover:text-rose-600 transition-colors cursor-pointer">
+                  🗑️
+                </button>
+              </td>
+            </tr>
+
+            <tr *ngIf="historialFiltrado.length === 0">
+              <td colspan="8" class="py-12 text-center text-zinc-400 font-mono">
+                No hay respaldos registrados para el filtro seleccionado.
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- PESTAÑA 4: RESTAURACIÓN DE BASE DE DATOS (TIME LAPSE SIMULADO)            -->
+  <!-- ========================================================================= -->
+  <div *ngIf="pestanaActiva === 'restauracion'" class="max-w-4xl mx-auto space-y-6 animate-fade-in">
+    
+    <!-- Tarjeta Principal de Configuración de Restauración -->
+    <div *ngIf="!restaurando && !restauracionCompletada" class="p-6 sm:p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-6">
+      
+      <div class="flex items-center justify-between pb-4 border-b border-zinc-200 dark:border-zinc-800">
+        <div>
+          <h3 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white flex items-center space-x-2">
+            <span>⚡</span>
+            <span>Restauración de Base de Datos en Oracle Cloud</span>
+          </h3>
+          <p class="text-xs text-zinc-500">Carga un archivo .dump para simular el proceso completo de restauración en la nube.</p>
+        </div>
+        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-red-600 text-white font-mono">
+          Oracle Cloud OCI
+        </span>
+      </div>
+
+      <!-- Zona de Carga de Archivo .dump -->
+      <div class="space-y-2">
+        <label class="block text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+          Archivo de Volcado de Entrada (.dump):
+        </label>
+        
+        <div class="p-6 border-2 border-dashed border-zinc-300 dark:border-zinc-700 hover:border-red-500 rounded-3xl text-center space-y-3 bg-zinc-50/50 dark:bg-zinc-950/40 transition-colors">
+          <div class="w-12 h-12 rounded-2xl bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center mx-auto text-xl">
+            📁
+          </div>
+          <div class="space-y-1">
+            <label class="cursor-pointer font-bold text-red-600 dark:text-red-400 hover:underline text-xs">
+              <span>Selecciona un archivo .dump</span>
+              <input type="file" (change)="onArchivoSeleccionado($event)" accept=".dump,.sql,.bak" class="hidden" />
+            </label>
+            <p class="text-[11px] text-zinc-400">o arrastra tu archivo de respaldo de Oracle Cloud aquí</p>
+          </div>
+
+          <div *ngIf="archivoRestaurarNombre" class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-red-500/10 text-red-700 dark:text-red-300 font-mono text-xs font-bold border border-red-500/20">
+            <span>📄 {{ archivoRestaurarNombre }}</span>
+            <span *ngIf="archivoRestaurarTamano" class="text-zinc-400 font-normal">({{ archivoRestaurarTamano }})</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selector de Empresa Destino -->
+      <div class="space-y-1.5">
+        <label class="block text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+          Base de Datos / Empresa de Destino:
+        </label>
+        <select [(ngModel)]="idEmpresaRestaurar" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-xs text-zinc-900 dark:text-white font-medium cursor-pointer">
+          <option [ngValue]="null">🌐 Base de Datos Global (Todas las Empresas)</option>
+          <option *ngFor="let emp of empresas" [ngValue]="emp.id_empresa">
+            🏢 {{ emp.nombre_empresa }} — {{ emp.razon_social }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Advertencia de Seguridad & Confirmación -->
+      <div class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-300 text-xs space-y-2">
+        <div class="flex items-center space-x-2 font-bold">
+          <span>⚠️</span>
+          <span>Aviso de Seguridad de Oracle Cloud Infrastructure:</span>
+        </div>
+        <p class="text-[11px] leading-relaxed">
+          La restauración ejecutará la secuencia de validación de volcado y reconstrucción de catálogos en el gestor Oracle Cloud.
+        </p>
+        <label class="flex items-center space-x-2.5 pt-1 text-xs cursor-pointer font-bold text-zinc-800 dark:text-zinc-200">
+          <input type="checkbox" [(ngModel)]="confirmacionRestaurar" class="rounded text-red-600 cursor-pointer" />
+          <span>Confirmo la ejecución de la restauración sobre la base de datos de Oracle Cloud</span>
+        </label>
+      </div>
+
+      <!-- Botón de Inicio -->
+      <div class="flex justify-end pt-2">
+        <button (click)="iniciarRestauracionSimulada()" 
+                [disabled]="!archivoRestaurarNombre || !confirmacionRestaurar"
+                class="px-8 py-3.5 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs uppercase tracking-wider disabled:opacity-40 transition-colors shadow-lg cursor-pointer flex items-center space-x-2">
+          <span>⚡</span>
+          <span>Iniciar Restauración en Oracle Cloud</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TIME LAPSE EN VIVO: CONSOLA CLOUD & BARRA DE PROGRESO                 -->
+    <!-- ===================================================================== -->
+    <div *ngIf="restaurando" class="p-6 sm:p-8 rounded-3xl bg-zinc-900 text-white border border-zinc-800 shadow-2xl space-y-6 animate-slide-up">
+      
+      <!-- Cabecera de la Consola -->
+      <div class="flex items-center justify-between pb-4 border-b border-zinc-800">
+        <div class="flex items-center space-x-3">
+          <div class="w-3 h-3 rounded-full bg-red-500 animate-ping"></div>
+          <div>
+            <h3 class="text-sm font-bold font-mono tracking-wide text-white">
+              Oracle Cloud OCI — Motor de Restauración en Ejecución
+            </h3>
+            <p class="text-[11px] text-zinc-400 font-mono">
+              Procesando: {{ archivoRestaurarNombre }} • Gestor: Oracle Cloud (sa-saopaulo-1)
+            </p>
+          </div>
+        </div>
+
+        <button (click)="cancelarRestauracion()" class="px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-mono">
+          ✕ Cancelar
+        </button>
+      </div>
+
+      <!-- Barra de Progreso Porcentual -->
+      <div class="space-y-2 font-mono">
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-zinc-400 truncate">{{ etapaRestauracionActual }}</span>
+          <span class="font-bold text-red-400 text-sm">{{ progresoRestauracion }}%</span>
+        </div>
+        <div class="w-full h-3 rounded-full bg-zinc-800 overflow-hidden p-0.5 border border-zinc-700/50">
+          <div class="h-full rounded-full bg-gradient-to-r from-red-600 via-amber-500 to-emerald-400 transition-all duration-700 ease-out"
+               [style.width.%]="progresoRestauracion"></div>
+        </div>
+      </div>
+
+      <!-- Terminal / Logs de Oracle Cloud en Tiempo Real -->
+      <div class="p-4 rounded-2xl bg-black/90 border border-zinc-800 font-mono text-[11px] space-y-1.5 max-h-72 overflow-y-auto">
+        <div class="text-zinc-500 text-[10px] pb-1 border-b border-zinc-900">
+          -- [OCI CLI v3.44.1] STREAM DE RESTAURACIÓN CON ORACLE CLOUD --
+        </div>
+        
+        <div *ngFor="let log of logsRestauracion" class="flex items-start space-x-2">
+          <span class="text-zinc-600 shrink-0">[{{ log.tiempo }}]</span>
+          <span [ngClass]="{
+            'text-zinc-300': log.tipo === 'info',
+            'text-cyan-400': log.tipo === 'proceso',
+            'text-emerald-400 font-bold': log.tipo === 'exito',
+            'text-amber-400': log.tipo === 'advertencia'
+          }">{{ log.mensaje }}</span>
+        </div>
+
+        <div class="flex items-center space-x-2 text-zinc-500 pt-1">
+          <span class="animate-spin text-xs">⏳</span>
+          <span class="animate-pulse">Ejecutando operaciones en Oracle Cloud Infrastructure...</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- ESTADO FINAL: RESTAURACIÓN COMPLETADA CON ÉXITO                       -->
+    <!-- ===================================================================== -->
+    <div *ngIf="restauracionCompletada" class="p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-emerald-500/30 shadow-xl text-center space-y-5 animate-slide-up">
+      <div class="w-16 h-16 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-3xl mx-auto border border-emerald-500/30">
+        ✓
+      </div>
+
+      <div class="space-y-1">
+        <h3 class="text-xl font-serif font-bold text-zinc-900 dark:text-white">
+          Restauración Completada Satisfactoriamente
+        </h3>
+        <p class="text-xs text-zinc-500 max-w-md mx-auto">
+          El volcado <strong>{{ archivoRestaurarNombre }}</strong> ha sido procesado y verificado en la infraestructura de <strong>Oracle Cloud</strong>.
+        </p>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 max-w-lg mx-auto grid grid-cols-3 gap-2 font-mono text-[11px] text-left">
+        <div>
+          <span class="text-[10px] text-zinc-400 uppercase block font-sans">Gestor</span>
+          <strong class="text-red-600 dark:text-red-400">Oracle Cloud</strong>
+        </div>
+        <div>
+          <span class="text-[10px] text-zinc-400 uppercase block font-sans">Tablas</span>
+          <strong class="text-zinc-800 dark:text-zinc-200">64 Verificadas</strong>
+        </div>
+        <div>
+          <span class="text-[10px] text-zinc-400 uppercase block font-sans">Integridad</span>
+          <strong class="text-emerald-600 dark:text-emerald-400">100% OK</strong>
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <button (click)="reiniciarRestaurador()" class="px-6 py-2.5 rounded-2xl bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-200 text-white dark:text-zinc-950 font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer shadow-md">
+          Cerrar y Volver a Opciones
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+</div>

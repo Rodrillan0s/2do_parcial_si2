@@ -110,8 +110,16 @@ def _procesar_operacion_individual(op: SyncOperationItemDTO, token_data: dict) -
 
             if not previous and kind in ("VENTA_CONTADO", "RESERVA_SOLICITUD"):
                 try:
-                    created = datetime.fromisoformat((op.created_at or "").replace("Z", "+00:00"))
-                    if created.tzinfo is None or created < boundary[0]:
+                    if not op.created_at:
+                        raise ValueError("Fecha de operación requerida.")
+                    created_raw = str(op.created_at).replace("Z", "+00:00")
+                    created = datetime.fromisoformat(created_raw)
+                    if created.tzinfo is None:
+                        created = created.replace(tzinfo=timezone.utc)
+                    boundary_dt = boundary[0]
+                    if boundary_dt and getattr(boundary_dt, "tzinfo", None) is None:
+                        boundary_dt = boundary_dt.replace(tzinfo=timezone.utc)
+                    if boundary_dt and created < boundary_dt:
                         raise ValueError("Operación anterior al inicio de la garantía.")
                 except (ValueError, TypeError):
                     return {**_resultado_no_confirmado(op, "LEGACY_OPERATION_REQUIRES_REVIEW",
@@ -755,13 +763,23 @@ def _aplicar_operacion(op: SyncOperationItemDTO, token_data: dict, empresa_id: i
                     },
                 )
             except ValueError as ve:
+                msg = str(ve)
+                code = "STOCK_INSUFFICIENT"
+                if "fuera del horario comercial" in msg:
+                    code = "OUTSIDE_BUSINESS_HOURS"
+                elif "no puede ser anterior" in msg or "máximo de 7 días" in msg or "formato" in msg:
+                    code = "INVALID_VISIT_TIME"
+                elif "límite permitido" in msg or "límite máximo" in msg:
+                    code = "RESERVATION_LIMIT_EXCEEDED"
+                elif "inactiva" in msg or "no pertenece a la tienda" in msg:
+                    code = "BRANCH_INACTIVE"
                 res_conf = {
                     "operation_id": op.operation_id,
                     "kind": kind,
                     "status": "conflict",
                     "http_status": 409,
-                    "conflict_code": "STOCK_INSUFFICIENT",
-                    "message": str(ve),
+                    "conflict_code": code,
+                    "message": msg,
                 }
                 return res_conf
             except HTTPException as he:
@@ -855,25 +873,44 @@ def _aplicar_operacion(op: SyncOperationItemDTO, token_data: dict, empresa_id: i
                     "message": "No tiene autorización para registrar ventas en esta sucursal.",
                 }
 
-            # 3. Prohibir estrictamente pagos electrónicos offline (solo EFECTIVO)
+            # 3. Prohibir estrictamente pagos electrónicos offline directos, pero permitir PAYPAL delegado si ya fue capturado en backend
             metodo_tipo = str(payload.get("metodo_tipo") or payload.get("metodo_pago") or "EFECTIVO").strip().upper()
             req_id_metodo = payload.get("id_metodo_pago")
-            metodo_info = _resolver_metodo_pago_efectivo(schema, req_id_metodo)
-            if metodo_tipo != "EFECTIVO" or metodo_info["tipo"] != "EFECTIVO":
-                res_qr = {
-                    "operation_id": op.operation_id,
-                    "kind": kind,
-                    "status": "reconciliation_required",
-                    "reconciliation_required": True,
-                    "http_status": 409,
-                    "conflict_code": "PAYMENT_REQUIRES_ONLINE",
-                    "message": (
-                        f"El método de pago '{metodo_tipo if metodo_tipo != 'EFECTIVO' else metodo_info['tipo']}' "
-                        "no está permitido en modo offline. Solo se admiten ventas de contado en EFECTIVO."
-                    ),
-                    "conflict_detail": {"reconciliation_required": True, "tipo_detectado": metodo_tipo},
-                }
-                return res_qr
+            pago_intent_id = payload.get("intent_id") or payload.get("pago_delegado_intent_id")
+
+            if metodo_tipo == "PAYPAL" and pago_intent_id:
+                q_intent = f"SELECT status, response_json FROM {schema}.t_sync_operacion WHERE operation_id = %s LIMIT 1;"
+                row_intent = db.execute_query(q_intent, (str(pago_intent_id),), fetchone=True)
+                if not row_intent or row_intent[0] not in ("synced", "completed"):
+                    res_pend = {
+                        "operation_id": op.operation_id,
+                        "kind": kind,
+                        "status": "reconciliation_required",
+                        "reconciliation_required": True,
+                        "http_status": 409,
+                        "conflict_code": "PAYMENT_NOT_YET_CAPTURED",
+                        "message": "El pago por PayPal en el dispositivo delegado aún no ha sido capturado.",
+                        "conflict_detail": {"reconciliation_required": True, "intent_id": pago_intent_id},
+                    }
+                    return res_pend
+                metodo_info = {"id_metodo_pago": 2, "tipo": "PAYPAL", "nombre": "PayPal"}
+            else:
+                metodo_info = _resolver_metodo_pago_efectivo(schema, req_id_metodo)
+                if metodo_tipo != "EFECTIVO" or metodo_info["tipo"] != "EFECTIVO":
+                    res_qr = {
+                        "operation_id": op.operation_id,
+                        "kind": kind,
+                        "status": "reconciliation_required",
+                        "reconciliation_required": True,
+                        "http_status": 409,
+                        "conflict_code": "PAYMENT_REQUIRES_ONLINE",
+                        "message": (
+                            f"El método de pago '{metodo_tipo if metodo_tipo != 'EFECTIVO' else metodo_info['tipo']}' "
+                            "no está permitido en modo offline. Solo se admiten ventas de contado en EFECTIVO o PayPal delegado verificado."
+                        ),
+                        "conflict_detail": {"reconciliation_required": True, "tipo_detectado": metodo_tipo},
+                    }
+                    return res_qr
 
             # 4. Validar descuento manual si existe
             descuento = round(float(payload.get("descuento") or 0.0), 2)
@@ -1099,7 +1136,8 @@ def _aplicar_operacion(op: SyncOperationItemDTO, token_data: dict, empresa_id: i
                 return res_inc
 
             try:
-                ref_offline = f"OFFLINE-{empresa_id}-{id_usuario}-{op.operation_id}"
+                ref_offline = f"PAYPAL-DELEGADO-{pago_intent_id}" if (metodo_tipo == "PAYPAL" and pago_intent_id) else f"OFFLINE-{empresa_id}-{id_usuario}-{op.operation_id}"
+                monto_a_cobrar = monto_recibido if metodo_tipo == "EFECTIVO" else total_venta
                 pago_res = caja_pago_repos.ejecutar_pago_caja(
                     id_venta=int(venta_res["id_venta"]),
                     id_usuario=id_usuario,
@@ -1107,7 +1145,7 @@ def _aplicar_operacion(op: SyncOperationItemDTO, token_data: dict, empresa_id: i
                     id_empresa=empresa_pos,
                     id_sesion_caja=id_sesion_activa,
                     id_metodo_pago=int(metodo_info["id_metodo_pago"]),
-                    monto_recibido=monto_recibido,
+                    monto_recibido=monto_a_cobrar,
                     referencia_externa=ref_offline,
                     datos_facturacion=payload.get("datos_facturacion"),
                     desglose_recibido=payload.get("desglose_recibido") or [],
@@ -1183,6 +1221,43 @@ def _aplicar_operacion(op: SyncOperationItemDTO, token_data: dict, empresa_id: i
                 "idempotent_replay": False,
             }
             return res_ok
+
+        elif kind == "PAYPAL_DELEGADO_CONFIRMACION":
+            pago_intent_id = payload.get("intent_id") or op.entity_id or op.operation_id
+            q_intent = f"SELECT status, http_status, conflict_code, response_json FROM {schema}.t_sync_operacion WHERE operation_id = %s LIMIT 1;"
+            row_intent = db.execute_query(q_intent, (str(pago_intent_id),), fetchone=True)
+            if not row_intent:
+                return {
+                    "operation_id": op.operation_id,
+                    "kind": kind,
+                    "status": "reconciliation_required",
+                    "reconciliation_required": True,
+                    "http_status": 404,
+                    "conflict_code": "INTENT_NOT_FOUND",
+                    "message": "La intención de pago delegado no fue encontrada en el servidor.",
+                }
+            if row_intent[0] in ("synced", "completed"):
+                resp_data = row_intent[3] if isinstance(row_intent[3], dict) else json.loads(row_intent[3] or "{}")
+                return {
+                    "operation_id": op.operation_id,
+                    "kind": kind,
+                    "status": "synced",
+                    "http_status": 200,
+                    "conflict_code": None,
+                    "message": "Pago con PayPal completado y capturado exitosamente.",
+                    "data": resp_data,
+                    "idempotent_replay": False,
+                }
+            else:
+                return {
+                    "operation_id": op.operation_id,
+                    "kind": kind,
+                    "status": "reconciliation_required",
+                    "reconciliation_required": True,
+                    "http_status": 409,
+                    "conflict_code": "PAYMENT_NOT_YET_CAPTURED",
+                    "message": "El pago por PayPal aún se encuentra pendiente de captura en el otro dispositivo.",
+                }
 
         else:
             return {

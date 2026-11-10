@@ -1,0 +1,422 @@
+<div class="min-h-[92vh] bg-zinc-950 text-zinc-100 py-10 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+
+  <!-- Subtle Background Atmospheric Lighting -->
+  <div
+    class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-gradient-to-b from-amber-600/10 via-amber-900/5 to-transparent blur-3xl pointer-events-none -z-10">
+  </div>
+  <div class="absolute bottom-10 right-10 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl pointer-events-none -z-10">
+  </div>
+
+  <div class="max-w-4xl mx-auto space-y-6 animate-fade-in">
+
+    <!-- Top Navigation Bar & Breadcrumb -->
+    <div class="flex items-center justify-between">
+      <a routerLink="/catalogo"
+        class="inline-flex items-center space-x-2 text-xs uppercase tracking-widest text-zinc-400 hover:text-amber-300 transition-colors py-2 group">
+        <i class="ph ph-arrow-left text-sm group-hover:-translate-x-1 transition-transform"></i>
+        <span>Volver al Catálogo</span>
+      </a>
+
+      <div
+        class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-zinc-900/80 border border-amber-500/20 text-[11px] text-amber-300 font-mono">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>AURORA Club</span>
+      </div>
+    </div>
+
+    <!-- Alert / Toast Message -->
+    <div *ngIf="mensaje()" [class]="mensaje()?.tipo === 'exito' 
+           ? 'bg-emerald-950/80 border-emerald-500/40 text-emerald-200' 
+           : 'bg-rose-950/80 border-rose-500/40 text-rose-200'"
+      class="p-4 rounded-2xl border backdrop-blur-xl flex items-center justify-between text-xs sm:text-sm font-medium shadow-2xl animate-slide-down">
+      <div class="flex items-center space-x-3">
+        <i
+          [class]="mensaje()?.tipo === 'exito' ? 'ph ph-check-circle text-lg text-emerald-400' : 'ph ph-warning-circle text-lg text-rose-400'"></i>
+        <span>{{ mensaje()?.texto }}</span>
+      </div>
+      <button (click)="mensaje.set(null)" class="text-zinc-400 hover:text-white text-base">
+        <i class="ph ph-x"></i>
+      </button>
+    </div>
+
+    <!-- Loader -->
+    <div *ngIf="cargando()" class="py-24 flex flex-col items-center justify-center space-y-4">
+      <div class="w-10 h-10 border-2 border-amber-400/20 border-t-amber-400 rounded-full animate-spin"></div>
+      <p class="text-xs uppercase tracking-widest text-zinc-400 font-medium font-mono">...</p>
+    </div>
+
+    <!-- Main Profile Luxury Card -->
+    <div *ngIf="!cargando() && perfil() as user"
+      class="relative rounded-3xl bg-zinc-900/60 backdrop-blur-2xl border border-amber-500/25 p-6 sm:p-10 shadow-2xl shadow-black/80 overflow-hidden">
+
+      <!-- Top Subtle Gold Gradient Accent Line -->
+      <div
+        class="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-70">
+      </div>
+
+      <!-- Card Header: Avatar, Name & Role -->
+      <div class="flex flex-col items-center text-center pb-8 border-b border-white/10 relative">
+
+        <!-- Luxury Avatar Circle with Golden Frame -->
+        <div class="relative group">
+          <div
+            class="w-24 h-24 rounded-full p-[2px] bg-gradient-to-tr from-amber-600 via-amber-400 to-amber-200 shadow-xl shadow-amber-500/10">
+            <div
+              class="w-full h-full rounded-full bg-zinc-950 flex items-center justify-center text-amber-300 font-editorial font-bold text-2xl tracking-wider select-none">
+              {{ obtenerIniciales() }}
+            </div>
+          </div>
+          <span class="absolute bottom-0 right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-zinc-950"
+            title="Sesión Activa"></span>
+        </div>
+
+        <!-- Headline & User Details -->
+        <h1 class="text-2xl sm:text-3xl font-editorial font-bold text-white tracking-tight mt-4">
+          {{ user.nombre_completo || user.nombre + ' ' + user.apellido }}
+        </h1>
+
+        <div class="flex items-center space-x-2 mt-2">
+          <span
+            class="px-3.5 py-1 rounded-full text-[10px] sm:text-xs font-mono tracking-widest uppercase bg-amber-500/15 border border-amber-500/40 text-amber-300 font-semibold">
+            {{ user.nombre_rol }}
+          </span>
+          <span *ngIf="user.nombre_empresa" class="text-xs text-zinc-400 font-light">
+            • {{ user.nombre_empresa }}
+          </span>
+        </div>
+
+        <p class="text-xs text-zinc-400 font-light mt-1">
+          Miembro del Club desde {{ user.fecha_registro | date:'MMMM yyyy' }}
+        </p>
+
+        <!-- Edit Mode Toggle & Actions (View Mode Only) -->
+        <div *ngIf="!modoEdicion()" class="mt-5 flex flex-wrap items-center justify-center gap-3">
+          <a routerLink="/mis-pedidos"
+            class="px-6 py-2.5 rounded-full bg-amber-500 text-zinc-950 hover:bg-amber-400 text-xs uppercase tracking-wider font-bold transition-all flex items-center space-x-2 active:scale-95 shadow-md shadow-amber-500/20 cursor-pointer">
+            <span>📦</span>
+            <span>Mis Pedidos & Compras</span>
+          </a>
+
+          <a routerLink="/mis-reservas"
+            class="px-6 py-2.5 rounded-full bg-zinc-900/90 border border-amber-500/30 text-amber-300 hover:bg-amber-500/10 hover:border-amber-400 text-xs uppercase tracking-wider font-semibold transition-all flex items-center space-x-2 active:scale-95 shadow-sm">
+            <i class="ph ph-calendar-check text-amber-400 text-sm"></i>
+            <span>Mis Citas & Reservas</span>
+          </a>
+
+          <button (click)="activarEdicion()"
+            class="px-6 py-2.5 rounded-full bg-zinc-900 border border-zinc-700 text-zinc-200 hover:bg-zinc-800 hover:border-amber-400 text-xs uppercase tracking-wider font-semibold transition-all flex items-center space-x-2 active:scale-95 shadow-sm">
+            <i class="ph ph-note-pencil text-sm"></i>
+            <span>Editar Información</span>
+          </button>
+
+          <button (click)="abrirModalPassword()"
+            class="px-6 py-2.5 rounded-full bg-zinc-900/90 border border-zinc-700 hover:border-amber-400/60 text-zinc-200 hover:text-amber-300 text-xs uppercase tracking-wider font-semibold transition-all flex items-center space-x-2 active:scale-95 shadow-sm">
+            <i class="ph ph-lock-key text-amber-400 text-sm"></i>
+            <span>Cambiar Contraseña</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- VISTA DE LECTURA (MODO LECTURA)                          -->
+      <!-- ======================================================== -->
+      <div *ngIf="!modoEdicion()" class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8">
+
+        <!-- Columna 1: Datos de Contacto -->
+        <div class="space-y-6">
+          <div class="flex items-center space-x-2 border-b border-white/5 pb-2">
+            <i class="ph ph-address-book text-amber-400 text-base"></i>
+            <h3 class="text-xs uppercase tracking-widest font-bold text-zinc-200">Datos de Contacto</h3>
+          </div>
+
+          <div class="space-y-4">
+            <!-- Carnet CI -->
+            <div class="p-3.5 rounded-2xl bg-zinc-950/60 border border-white/5">
+              <span class="block text-[10px] uppercase tracking-wider font-semibold text-zinc-400">Carnet de Identidad
+                (CI)</span>
+              <span class="block text-sm font-medium text-white mt-1">{{ user.ci || 'Sin registrar' }}</span>
+            </div>
+
+            <!-- Teléfono -->
+            <div class="p-3.5 rounded-2xl bg-zinc-950/60 border border-white/5">
+              <span class="block text-[10px] uppercase tracking-wider font-semibold text-zinc-400">Teléfono Móvil</span>
+              <span class="block text-sm font-medium text-white mt-1">{{ user.telefono || 'Sin registrar' }}</span>
+            </div>
+
+            <!-- Correo Electrónico -->
+            <div class="p-3.5 rounded-2xl bg-zinc-950/60 border border-white/5">
+              <span class="block text-[10px] uppercase tracking-wider font-semibold text-zinc-400">Correo
+                Electrónico</span>
+              <span class="block text-sm font-medium text-white mt-1 break-all">{{ user.correo }}</span>
+            </div>
+
+            <!-- Dirección Física -->
+            <div class="p-3.5 rounded-2xl bg-zinc-950/60 border border-white/5">
+              <span class="block text-[10px] uppercase tracking-wider font-semibold text-zinc-400">Dirección de
+                Entrega</span>
+              <span class="block text-sm font-medium text-white mt-1">{{ user.direccion || 'Sin dirección registrada'
+                }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna 2: Datos de Cuenta -->
+        <div class="space-y-6">
+          <div class="flex items-center space-x-2 border-b border-white/5 pb-2">
+            <i class="ph ph-shield-check text-amber-400 text-base"></i>
+            <h3 class="text-xs uppercase tracking-widest font-bold text-zinc-200">Datos de Cuenta</h3>
+          </div>
+
+          <div class="space-y-4">
+            <!-- Nombre de Usuario -->
+            <div class="p-3.5 rounded-2xl bg-zinc-950/60 border border-white/5">
+              <span class="block text-[10px] uppercase tracking-wider font-semibold text-zinc-400">Nombre de
+                Usuario</span>
+              <span class="block text-sm font-mono text-amber-300 font-medium mt-1">@{{ user.username }}</span>
+            </div>
+
+            <!-- Ciudad -->
+            <div class="p-3.5 rounded-2xl bg-zinc-950/60 border border-white/5">
+              <span class="block text-[10px] uppercase tracking-wider font-semibold text-zinc-400">Ciudad</span>
+              <span class="block text-sm font-medium text-white mt-1">{{ user.ciudad || 'Santa Cruz' }}</span>
+            </div>
+
+            <!-- Seguridad y Contraseña -->
+            <div class="p-3.5 rounded-2xl bg-zinc-950/60 border border-white/5 flex items-center justify-between">
+              <div>
+                <span class="block text-[10px] uppercase tracking-wider font-semibold text-zinc-400">Seguridad &
+                  Contraseña</span>
+                <span class="block text-xs font-mono text-zinc-400 mt-1 tracking-widest">••••••••••••</span>
+              </div>
+              <button (click)="abrirModalPassword()"
+                class="px-3.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-semibold flex items-center space-x-1.5 transition-all active:scale-95">
+                <i class="ph ph-key text-xs"></i>
+                <span>Modificar</span>
+              </button>
+            </div>
+
+            <!-- Estado de Cuenta -->
+            <div class="p-3.5 rounded-2xl bg-zinc-950/60 border border-white/5 flex items-center justify-between">
+              <div>
+                <span class="block text-[10px] uppercase tracking-wider font-semibold text-zinc-400">Estado de
+                  Cuenta</span>
+              </div>
+              <span
+                class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase bg-emerald-500/15 border border-emerald-500/30 text-emerald-300">
+                {{ user.estado }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- MODO EDICIÓN (FORMULARIO INTERACTIVO)                    -->
+      <!-- ======================================================== -->
+      <form *ngIf="modoEdicion()" (ngSubmit)="guardarCambios()" class="pt-8 space-y-8 animate-fade-in">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          <!-- Nombres -->
+          <div>
+            <label class="block text-xs uppercase tracking-wider font-semibold text-zinc-300 mb-1.5">
+              Nombres <span class="text-amber-400">*</span>
+            </label>
+            <input type="text" [(ngModel)]="formulario.nombre" name="nombre" required
+              class="w-full bg-zinc-950/90 border border-zinc-700/80 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 rounded-xl px-4 py-2.5 text-sm text-white transition-all">
+          </div>
+
+          <!-- Apellidos -->
+          <div>
+            <label class="block text-xs uppercase tracking-wider font-semibold text-zinc-300 mb-1.5">
+              Apellidos <span class="text-amber-400">*</span>
+            </label>
+            <input type="text" [(ngModel)]="formulario.apellido" name="apellido" required
+              class="w-full bg-zinc-950/90 border border-zinc-700/80 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 rounded-xl px-4 py-2.5 text-sm text-white transition-all">
+          </div>
+
+          <!-- Carnet CI -->
+          <div>
+            <label class="block text-xs uppercase tracking-wider font-semibold text-zinc-300 mb-1.5">
+              Carnet de Identidad (CI)
+            </label>
+            <input type="text" [(ngModel)]="formulario.ci" name="ci" placeholder="Ej: 7894521 SC"
+              class="w-full bg-zinc-950/90 border border-zinc-700/80 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 rounded-xl px-4 py-2.5 text-sm text-white transition-all">
+          </div>
+
+          <!-- Teléfono -->
+          <div>
+            <label class="block text-xs uppercase tracking-wider font-semibold text-zinc-300 mb-1.5">
+              Teléfono Móvil
+            </label>
+            <input type="text" [(ngModel)]="formulario.telefono" name="telefono" placeholder="+591 7XXXXXXX"
+              class="w-full bg-zinc-950/90 border border-zinc-700/80 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 rounded-xl px-4 py-2.5 text-sm text-white transition-all">
+          </div>
+
+          <!-- Correo -->
+          <div>
+            <label class="block text-xs uppercase tracking-wider font-semibold text-zinc-300 mb-1.5">
+              Correo Electrónico <span class="text-amber-400">*</span>
+            </label>
+            <input type="email" [(ngModel)]="formulario.correo" name="correo" required
+              class="w-full bg-zinc-950/90 border border-zinc-700/80 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 rounded-xl px-4 py-2.5 text-sm text-white transition-all">
+          </div>
+
+          <!-- Ciudad -->
+          <div>
+            <label class="block text-xs uppercase tracking-wider font-semibold text-zinc-300 mb-1.5">
+              Ciudad de Residencia
+            </label>
+            <input type="text" [(ngModel)]="formulario.ciudad" name="ciudad"
+              placeholder="Santa Cruz, La Paz, Cochabamba"
+              class="w-full bg-zinc-950/90 border border-zinc-700/80 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 rounded-xl px-4 py-2.5 text-sm text-white transition-all">
+          </div>
+
+          <!-- Dirección Física (Full Width) -->
+          <div class="md:col-span-2">
+            <label class="block text-xs uppercase tracking-wider font-semibold text-zinc-300 mb-1.5">
+              Dirección de Entrega / Domicilio
+            </label>
+            <input type="text" [(ngModel)]="formulario.direccion" name="direccion"
+              placeholder="Calle, Av., Número, Barrio o Condominio"
+              class="w-full bg-zinc-950/90 border border-zinc-700/80 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 rounded-xl px-4 py-2.5 text-sm text-white transition-all">
+          </div>
+
+        </div>
+
+        <!-- Form Actions Bar -->
+        <div class="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-6 border-t border-white/10">
+
+          <button type="button" (click)="cancelarEdicion()" [disabled]="guardando()"
+            class="w-full sm:w-auto px-6 py-3 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 text-xs uppercase tracking-wider font-semibold transition-all">
+            Cancelar
+          </button>
+
+          <button type="submit" [disabled]="guardando()"
+            class="w-full sm:w-auto px-8 py-3 rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-zinc-950 text-xs uppercase tracking-wider font-bold hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center space-x-2">
+            <span *ngIf="!guardando()">Guardar Cambios</span>
+            <span *ngIf="guardando()">...</span>
+            <i *ngIf="!guardando()" class="ph ph-check-bold text-sm"></i>
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MODAL DE CAMBIO DE CONTRASEÑA (VALIDACIONES RECOVERY)    -->
+    <!-- ======================================================== -->
+    <div *ngIf="modalPasswordAbierto()" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+
+      <!-- Backdrop -->
+      <div class="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity animate-fade-in"
+        (click)="cerrarModalPassword()"></div>
+
+      <!-- Modal Card -->
+      <div
+        class="relative w-full max-w-md bg-zinc-900/95 border border-amber-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/90 overflow-hidden animate-scale-up z-10">
+
+        <!-- Subtle Top Gold Accent Line -->
+        <div class="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent">
+        </div>
+
+        <!-- Header -->
+        <div class="flex items-center justify-between pb-4 border-b border-white/10">
+          <div class="flex items-center space-x-3">
+            <div
+              class="w-9 h-9 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+              <i class="ph ph-lock-key text-lg"></i>
+            </div>
+            <div>
+              <h3 class="text-base font-editorial font-bold text-white tracking-wide">Cambiar Contraseña</h3>
+              <p class="text-[11px] text-zinc-400 font-light">AURORA Store • Credenciales de Acceso</p>
+            </div>
+          </div>
+          <button (click)="cerrarModalPassword()"
+            class="text-zinc-400 hover:text-white p-1.5 rounded-lg hover:bg-white/5 transition-colors">
+            <i class="ph ph-x text-lg"></i>
+          </button>
+        </div>
+
+        <!-- Password Form -->
+        <form (ngSubmit)="guardarPassword()" class="space-y-4 pt-5">
+
+          <!-- Nueva Contraseña -->
+          <div class="space-y-1.5">
+            <label class="text-[11px] uppercase tracking-wider font-semibold text-zinc-300">Nueva Contraseña</label>
+            <div class="relative">
+              <input [type]="mostrarNuevaPassword() ? 'text' : 'password'" [(ngModel)]="passwordForm.nueva_password"
+                name="nueva_password" placeholder="••••••••"
+                class="w-full bg-zinc-950/90 border border-zinc-800 focus:border-amber-400/80 rounded-2xl pl-4 pr-11 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-amber-400/30 transition-all font-mono" />
+              <button type="button" (click)="mostrarNuevaPassword.set(!mostrarNuevaPassword())"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white p-1 transition-colors">
+                <i [class]="mostrarNuevaPassword() ? 'ph ph-eye-slash text-base' : 'ph ph-eye text-base'"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Confirmar Nueva Contraseña -->
+          <div class="space-y-1.5">
+            <label class="text-[11px] uppercase tracking-wider font-semibold text-zinc-300">Confirmar Nueva
+              Contraseña</label>
+            <div class="relative">
+              <input [type]="mostrarConfirmarPassword() ? 'text' : 'password'"
+                [(ngModel)]="passwordForm.confirmar_password" name="confirmar_password" placeholder="••••••••"
+                class="w-full bg-zinc-950/90 border border-zinc-800 focus:border-amber-400/80 rounded-2xl pl-4 pr-11 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-amber-400/30 transition-all font-mono" />
+              <button type="button" (click)="mostrarConfirmarPassword.set(!mostrarConfirmarPassword())"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white p-1 transition-colors">
+                <i [class]="mostrarConfirmarPassword() ? 'ph ph-eye-slash text-base' : 'ph ph-eye text-base'"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Badges de Requisitos y Validaciones (Exactas de Recuperación) -->
+          <div class="p-3.5 rounded-2xl bg-zinc-950/90 border border-zinc-800/90 text-[11px] space-y-1.5">
+            <div [class.text-emerald-400]="newPasswordMinLength" [class.text-zinc-500]="!newPasswordMinLength"
+              class="flex items-center space-x-2 transition-colors">
+              <i
+                [class]="newPasswordMinLength ? 'ph ph-check-circle text-emerald-400 text-sm' : 'ph ph-circle text-zinc-600 text-sm'"></i>
+              <span>Mínimo 8 caracteres</span>
+            </div>
+            <div [class.text-emerald-400]="newPasswordSpecialChar" [class.text-zinc-500]="!newPasswordSpecialChar"
+              class="flex items-center space-x-2 transition-colors">
+              <i
+                [class]="newPasswordSpecialChar ? 'ph ph-check-circle text-emerald-400 text-sm' : 'ph ph-circle text-zinc-600 text-sm'"></i>
+              <span>1 símbolo especial (!@#$%^&*...)</span>
+            </div>
+            <div [class.text-emerald-400]="passwordsMatch" [class.text-zinc-500]="!passwordsMatch"
+              class="flex items-center space-x-2 transition-colors">
+              <i
+                [class]="passwordsMatch ? 'ph ph-check-circle text-emerald-400 text-sm' : 'ph ph-circle text-zinc-600 text-sm'"></i>
+              <span>Las contraseñas coinciden</span>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex items-center justify-end space-x-3 pt-3">
+            <button type="button" (click)="cerrarModalPassword()" [disabled]="cambiandoPassword()"
+              class="px-5 py-2.5 rounded-full bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 text-xs font-semibold uppercase tracking-wider transition-all">
+              Cancelar
+            </button>
+            <button type="submit" [disabled]="!canSubmitPassword"
+              class="px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-400 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-zinc-950 font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-amber-500/20 flex items-center space-x-2">
+              <span *ngIf="!cambiandoPassword()">Actualizar Clave</span>
+              <span *ngIf="cambiandoPassword()">Actualizando...</span>
+              <i *ngIf="!cambiandoPassword()" class="ph ph-check text-sm font-bold"></i>
+              <div *ngIf="cambiandoPassword()"
+                class="w-3.5 h-3.5 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin"></div>
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>

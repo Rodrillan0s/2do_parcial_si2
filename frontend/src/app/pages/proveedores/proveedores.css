@@ -1,0 +1,112 @@
+:host {
+  display: block;
+}
+
+/* Scrollbar del formulario del modal */
+form::-webkit-scrollbar {
+  width: 6px;
+}
+
+form::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+form::-webkit-scrollbar-thumb {
+  background: #d4d4d8;
+  border-radius: 999px;
+}
+
+form::-webkit-scrollbar-thumb:hover {
+  background: #a1a1aa;
+}
+
+/* Scrollbar en modo oscuro */
+:host-context(.dark) form::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+}
+
+:host-context(.dark) form::-webkit-scrollbar-thumb:hover {
+  background: #52525b;
+}
+
+/* Animación de entrada de las tarjetas */
+article {
+  animation: aparecer 0.25s ease-out;
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animación del modal */
+.fixed.z-50 > div {
+  animation: modalEntrada 0.2s ease-out;
+}
+
+@keyframes modalEntrada {
+  from {
+    opacity: 0;
+    transform: scale(0.98) translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Evita que los inputs se vean demasiado pequeños en móvil */
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+}
+
+/* Mejora del textarea */
+textarea {
+  min-height: 90px;
+}
+
+/* Focus accesible */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #f59e0b;
+  outline-offset: 2px;
+}
+
+/* Toast */
+.fixed.bottom-6 {
+  animation: toastEntrada 0.25s ease-out;
+}
+
+@keyframes toastEntrada {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* En pantallas pequeñas */
+@media (max-width: 640px) {
+  .fixed.bottom-6 {
+    right: 1rem;
+    bottom: 1rem;
+    width: calc(100% - 2rem);
+  }
+}

@@ -1,0 +1,1528 @@
+<div class="p-3 sm:p-5 lg:p-6 space-y-5 max-w-[1600px] mx-auto min-h-screen">
+
+  <!-- ========================================================================= -->
+  <!-- HEADER PRINCIPAL DE CAJA Y CONTROL DE TURNO -->
+  <!-- ========================================================================= -->
+  <header class="bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      
+      <!-- Identificación de Sucursal, Caja y Cajero -->
+      <div class="flex items-center gap-3.5">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-md transition-transform"
+             [ngClass]="estadoCaja?.tiene_sesion_activa 
+               ? 'bg-gradient-to-tr from-emerald-600 to-teal-500 shadow-emerald-500/20' 
+               : 'bg-gradient-to-tr from-amber-500 to-rose-500 shadow-amber-500/20'">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+          </svg>
+        </div>
+
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h1 class="text-xl sm:text-2xl font-black tracking-tight text-zinc-900 dark:text-white">
+              Punto de Venta (POS)
+            </h1>
+            
+            <!-- Badge de Empresa Activa y Sucursal Activa -->
+            <span *ngIf="empresaActivaNombre" 
+                  class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+              <span>🏪 {{ empresaActivaNombre }}</span>
+              <span class="text-indigo-300 dark:text-indigo-700">·</span>
+              <span>📍 {{ sucursalActiva?.nombre || 'Sucursal Principal' }}</span>
+            </span>
+
+            <!-- Badge de Estado de Caja -->
+            <span *ngIf="estadoCaja?.tiene_sesion_activa" 
+                  class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              CAJA ABIERTA
+            </span>
+            <span *ngIf="!estadoCaja?.tiene_sesion_activa && !empresaRequerida" 
+                  class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-300 dark:border-rose-800">
+              <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+              CAJA CERRADA
+            </span>
+          </div>
+
+          <div *ngIf="!empresaRequerida" class="flex items-center gap-2 text-xs text-zinc-500 dark:text-slate-400 mt-1 flex-wrap">
+            <span class="font-medium text-zinc-700 dark:text-slate-300">
+              {{ estadoCaja?.sesion_activa?.nombre_caja || estadoCaja?.caja_asignada?.nombre || 'Caja 01' }}
+            </span>
+            <span>•</span>
+            <span>{{ estadoCaja?.sesion_activa?.sucursal_nombre || estadoCaja?.caja_asignada?.sucursal_nombre || sucursalActiva?.nombre || 'Sucursal Asignada' }}</span>
+            <span *ngIf="estadoCaja?.sesion_activa">•</span>
+            <span *ngIf="estadoCaja?.sesion_activa">Cajero: <strong class="text-zinc-700 dark:text-slate-200">{{ estadoCaja?.sesion_activa?.cajero_nombre }}</strong></span>
+            <span *ngIf="estadoCaja?.sesion_activa">•</span>
+            <span *ngIf="estadoCaja?.sesion_activa">Fondo Inicial: <strong class="text-emerald-600 dark:text-emerald-400">Bs. {{ estadoCaja?.sesion_activa?.monto_inicial?.toFixed(2) }}</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Acciones de Cabecera -->
+      <div *ngIf="!empresaRequerida" class="flex items-center gap-2.5 flex-wrap">
+        
+        <!-- Acceso a Supervisión de Cajas (Admin General, Tienda y Encargados) -->
+        <a *ngIf="authService.getAuthorityLevel() <= 4"
+           routerLink="/admin/cajas-monitoreo"
+           title="Supervisar todas las cajas registradoras de la tienda y sucursales"
+           class="inline-flex items-center gap-1.5 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-xs font-bold rounded-xl transition-all border border-indigo-200 dark:border-indigo-800 cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+          </svg>
+          <span>Ver Cajas de Sucursales</span>
+        </a>
+
+        <!-- Si la caja está cerrada -->
+        <button *ngIf="!estadoCaja?.tiene_sesion_activa && puedeAbrirCaja"
+                (click)="abrirModalApertura()"
+                class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+          </svg>
+          Abrir Caja / Turno
+        </button>
+
+        <!-- Si la caja está abierta -->
+        <ng-container *ngIf="estadoCaja?.tiene_sesion_activa">
+          
+          <!-- Botón Destacado: Cobros Pendientes (W28) -->
+          <button (click)="activarPestanaCobrosPendientes()"
+                  title="Ver ventas pendientes de cobro en caja"
+                  class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all border"
+                  [ngClass]="ventasPendientesTurno.length > 0 
+                    ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-600 shadow-md shadow-amber-500/25 ring-2 ring-amber-400/50' 
+                    : 'bg-stone-100 hover:bg-stone-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-zinc-700 dark:text-slate-200 border-stone-300 dark:border-slate-700'">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+            <span>Cobros Pendientes</span>
+            <span *ngIf="ventasPendientesTurno.length > 0" 
+                  class="px-2 py-0.5 rounded-full text-[10px] font-black bg-white text-amber-700 shadow-sm animate-pulse">
+              {{ ventasPendientesTurno.length }}
+            </span>
+          </button>
+
+          <button (click)="abrirModalHistorial()"
+                  title="Ver ventas del turno actual"
+                  class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-stone-100 hover:bg-stone-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-zinc-700 dark:text-slate-200 text-xs font-semibold rounded-xl transition-all border border-stone-300 dark:border-slate-700">
+            <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Historial Turno
+          </button>
+
+          <button (click)="abrirModalResumen()"
+                  title="Consultar arqueo y resumen de efectivo"
+                  class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-stone-100 hover:bg-stone-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-zinc-700 dark:text-slate-200 text-xs font-semibold rounded-xl transition-all border border-stone-300 dark:border-slate-700">
+            <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+            Resumen Financiero
+          </button>
+
+          <button *ngIf="puedeCerrarCaja"
+                  (click)="abrirModalCierre()"
+                  class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-md shadow-rose-600/20 transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+            Cerrar Caja / Arqueo
+          </button>
+        </ng-container>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- BANNER: MODO CONTINGENCIA OFFLINE POS (MIGRACIÓN 008 / PRIORIDAD P0) -->
+  <!-- ========================================================================= -->
+  <div *ngIf="!networkStatus.isOnline()" role="status" 
+       class="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-800 text-amber-950 dark:text-amber-200 text-xs shadow-sm flex items-start gap-3">
+    <div class="p-2 rounded-xl bg-amber-500 text-white shrink-0 shadow-sm">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+      </svg>
+    </div>
+    <div class="flex-1 space-y-1">
+      <div class="flex items-center gap-2 flex-wrap">
+        <strong class="text-sm font-black text-amber-900 dark:text-amber-100">
+          Modo Contingencia POS Activo (Solo Efectivo)
+        </strong>
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-200 dark:bg-amber-900/80 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-700">
+          PRIORIDAD P0
+        </span>
+      </div>
+      <p class="text-amber-800 dark:text-amber-300 leading-relaxed">
+        Operando sin conexión. Las ventas presenciales en efectivo continúan funcionando con el inventario de contingencia preasignado a tu sesión de caja para proteger la atención presencial sin afectar el StoreFront online.
+        Los comprobantes emitidos son <strong>provisionales de contingencia</strong> y se sincronizarán con prioridad máxima (P0) al restablecer la red.
+      </p>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- ALERTAS FLOTANTES / MENSAJES -->
+  <!-- ========================================================================= -->
+  <div *ngIf="mensajeExito" class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-medium flex items-center justify-between shadow-sm animate-fadeIn">
+    <div class="flex items-center gap-2.5">
+      <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span>{{ mensajeExito }}</span>
+    </div>
+    <button (click)="mensajeExito = ''" class="text-emerald-600 hover:text-emerald-800 dark:hover:text-white">✕</button>
+  </div>
+
+  <div *ngIf="mensajeError" class="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-xs font-medium flex items-center justify-between shadow-sm animate-fadeIn">
+    <div class="flex items-center gap-2.5">
+      <svg class="w-5 h-5 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span>{{ mensajeError }}</span>
+    </div>
+    <button (click)="mensajeError = ''" class="text-rose-600 hover:text-rose-800 dark:hover:text-white">✕</button>
+  </div>
+
+  <!-- AVISO: SELECCIÓN DE EMPRESA REQUERIDA (SUPERADMIN) -->
+  <div *ngIf="empresaRequerida" class="p-6 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="space-y-1">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🏪</span>
+          <h3 class="text-base font-bold text-amber-900 dark:text-amber-300">Selecciona una Empresa para operar el Punto de Venta (POS)</h3>
+        </div>
+        <p class="text-xs text-amber-700 dark:text-amber-400">
+          Como <strong>Administrador Global</strong>, debes elegir la tienda en la que deseas abrir caja, cobrar ventas o registrar pedidos presenciales. Puedes seleccionarla en el selector superior de la cabecera o elegir una a continuación:
+        </p>
+      </div>
+    </div>
+    <!-- Tarjetas de selección rápida de empresas -->
+    <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+      <button *ngFor="let emp of empresasDisponibles" (click)="seleccionarEmpresaDirecta(emp)"
+        class="flex items-center justify-between p-3.5 bg-white dark:bg-slate-900 hover:bg-amber-500/15 dark:hover:bg-amber-500/20 border border-amber-300/40 dark:border-amber-700/50 rounded-xl transition-all text-left shadow-xs cursor-pointer group">
+        <div>
+          <div class="text-xs font-bold text-zinc-900 dark:text-white group-hover:text-amber-700 dark:group-hover:text-amber-400">
+            {{ emp.nombre_empresa }}
+          </div>
+          <div class="text-[11px] text-zinc-500 dark:text-slate-400">
+            {{ emp.ciudad || 'Bolivia' }} · NIT: {{ emp.nit || 'S/N' }}
+          </div>
+        </div>
+        <span class="text-xs text-amber-600 font-semibold group-hover:translate-x-0.5 transition-transform">Operar POS →</span>
+      </button>
+    </div>
+  </div>
+
+  <ng-container *ngIf="!empresaRequerida">
+
+  <!-- ========================================================================= -->
+  <!-- PANTALLA PRINCIPAL: CAJA CERRADA (AVISO) O POS ACTIVO -->
+  <!-- ========================================================================= -->
+
+  <!-- ESTADO: CAJA CERRADA -->
+  <div *ngIf="!estadoCaja?.tiene_sesion_activa" 
+       class="bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-3xl p-8 sm:p-14 text-center max-w-2xl mx-auto my-12 shadow-sm">
+    <div class="w-20 h-20 mx-auto rounded-3xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex items-center justify-center text-amber-600 dark:text-amber-400 mb-6 shadow-inner">
+      <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" 
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+      </svg>
+    </div>
+
+    <h2 class="text-2xl font-black text-zinc-900 dark:text-white tracking-tight mb-2">
+      La caja se encuentra cerrada
+    </h2>
+    <p class="text-sm text-zinc-500 dark:text-slate-400 max-w-md mx-auto mb-8">
+      Para comenzar a registrar ventas presenciales en este punto de venta, debe realizar la apertura formal registrando el arqueo físico de billetes y monedas del fondo inicial.
+    </p>
+
+    <div *ngIf="puedeAbrirCaja">
+      <button (click)="abrirModalApertura()"
+              class="inline-flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-sm font-bold rounded-2xl shadow-lg shadow-emerald-600/25 transition-all transform hover:scale-[1.02]">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+        </svg>
+        Iniciar Turno y Aperturar Caja
+      </button>
+    </div>
+
+    <div *ngIf="!puedeAbrirCaja" class="p-4 rounded-xl bg-stone-100 dark:bg-slate-800 text-xs text-zinc-600 dark:text-slate-400">
+      Su usuario no cuenta con el permiso <code class="font-mono text-indigo-600">caja.abrir</code>. Contacte con el administrador de la sucursal.
+    </div>
+  </div>
+
+  <!-- BANNER PROMINENTE DE COBROS PENDIENTES EN CAJA -->
+  <div *ngIf="estadoCaja?.tiene_sesion_activa && ventasPendientesTurno.length > 0" 
+       class="p-4 bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-transparent border border-amber-300 dark:border-amber-800/80 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm animate-fadeIn">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-md shadow-amber-500/30 shrink-0">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-xs font-black uppercase tracking-wider text-amber-900 dark:text-amber-300">
+          Ventas Pendientes de Pago en Caja ({{ ventasPendientesTurno.length }})
+        </h3>
+        <p class="text-xs text-zinc-600 dark:text-slate-300">
+          Hay {{ ventasPendientesTurno.length }} {{ ventasPendientesTurno.length === 1 ? 'orden esperando' : 'órdenes esperando' }} su cobro en efectivo o comprobante (W28).
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button (click)="activarPestanaCobrosPendientes()"
+              class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow-md shadow-amber-500/25 transition-all flex items-center gap-2">
+        <span>Ver y Cobrar Ahora</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ESTADO: POS ACTIVO (CAJA ABIERTA) -->
+  <div *ngIf="estadoCaja?.tiene_sesion_activa" class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+    <!-- ======================================================================= -->
+    <!-- COLUMNA IZQUIERDA: CATÁLOGO ÁGIL Y BÚSQUEDA (7 cols) -->
+    <!-- ======================================================================= -->
+    <div class="lg:col-span-7 space-y-4">
+      
+      <!-- Barra de Filtros y Búsqueda Rápida -->
+      <div class="bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-3">
+        <div class="flex items-center gap-3">
+          <div class="relative flex-1">
+            <input type="text"
+                   [(ngModel)]="busquedaProducto"
+                   (input)="onBuscarProductoChange()"
+                   placeholder="Buscar por nombre, código, SKU o código de barras..."
+                   class="w-full pl-10 pr-10 py-2.5 bg-stone-50 dark:bg-slate-800/80 border border-stone-200 dark:border-slate-700 text-zinc-900 dark:text-white rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder:text-zinc-400">
+            <svg class="w-4 h-4 text-zinc-400 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <button *ngIf="busquedaProducto" 
+                    (click)="limpiarBusqueda()"
+                    class="absolute right-3 top-3 text-zinc-400 hover:text-zinc-600 dark:hover:text-white text-xs font-bold">
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <!-- Chips de Categoría -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs no-scrollbar">
+          <button (click)="seleccionarCategoria(null)"
+                  [ngClass]="categoriaSeleccionadaId === null 
+                    ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 font-bold shadow-sm' 
+                    : 'bg-stone-100 hover:bg-stone-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-zinc-600 dark:text-slate-300'"
+                  class="px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors">
+            Todas las categorías
+          </button>
+          <button *ngFor="let cat of categorias"
+                  (click)="seleccionarCategoria(cat.id_categoria ?? null)"
+                  [ngClass]="categoriaSeleccionadaId === cat.id_categoria 
+                    ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 font-bold shadow-sm' 
+                    : 'bg-stone-100 hover:bg-stone-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-zinc-600 dark:text-slate-300'"
+                  class="px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors">
+            {{ cat.nombre }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Cuadrícula de Productos -->
+      <div *ngIf="cargandoCatalogo" class="py-20 text-center text-xs text-zinc-400 dark:text-slate-500">
+        <svg class="w-8 h-8 mx-auto mb-2 animate-spin text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        Cargando catálogo de la sucursal...
+      </div>
+
+      <div *ngIf="!cargandoCatalogo && productos.length === 0" 
+           class="bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-2xl p-10 text-center text-zinc-400">
+        <p class="text-sm font-semibold">No se encontraron productos disponibles</p>
+        <p class="text-xs mt-1">Pruebe ajustando la búsqueda o seleccionando otra categoría.</p>
+      </div>
+
+      <div *ngIf="!cargandoCatalogo && productos.length > 0" 
+           class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 max-h-[calc(100vh-280px)] overflow-y-auto pr-1">
+        <div *ngFor="let prod of productos"
+             (click)="seleccionarProducto(prod)"
+             [ngClass]="prod.stock_total_sucursal > 0 
+               ? 'hover:border-indigo-500 dark:hover:border-indigo-400 cursor-pointer shadow-sm hover:shadow-md' 
+               : 'opacity-50 cursor-not-allowed border-dashed'"
+             class="group bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-2xl p-3 flex flex-col justify-between transition-all relative overflow-hidden">
+          
+          <!-- Imagen del producto -->
+          <div class="w-full aspect-square rounded-xl bg-stone-100 dark:bg-slate-800/80 mb-2.5 overflow-hidden flex items-center justify-center relative">
+            <img *ngIf="prod.imagen_url" 
+                 [src]="prod.imagen_url" 
+                 [alt]="prod.nombre" 
+                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            <div *ngIf="!prod.imagen_url" class="text-stone-400 dark:text-slate-600">
+              <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </div>
+
+            <!-- Badge de Stock en Sucursal (Diferencia Stock Confirmado vs Provisional Local) -->
+            <span *ngIf="prod.stock_total_sucursal > 0"
+                  class="absolute top-2 right-2 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-600 text-white shadow-sm">
+              {{ prod.stock_total_sucursal }} disp.
+            </span>
+            <span *ngIf="prod.stock_total_sucursal <= 0"
+                  class="absolute top-2 right-2 px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-600 text-white shadow-sm">
+              Agotado
+            </span>
+            <span *ngIf="(prod.unidades_provisionales_offline || 0) > 0"
+                  title="Unidades descontadas provisionalmente en cola offline frente al último stock confirmado del servidor"
+                  class="absolute bottom-2 left-2 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/95 text-zinc-950 shadow-sm">
+              Prov: -{{ prod.unidades_provisionales_offline }} (Srv: {{ prod.stock_confirmado_servidor }})
+            </span>
+          </div>
+
+          <!-- Información del Producto -->
+          <div class="space-y-1">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 block truncate">
+              {{ prod.categoria_nombre || 'General' }}
+            </span>
+            <h3 class="text-xs font-bold text-zinc-900 dark:text-white line-clamp-2 leading-tight group-hover:text-indigo-600 transition-colors"
+                [title]="prod.nombre">
+              {{ prod.nombre }}
+            </h3>
+            <div class="flex items-baseline justify-between pt-1">
+              <span class="text-sm font-black text-zinc-900 dark:text-white">
+                Bs. {{ prod.precio_base.toFixed(2) }}
+              </span>
+              <span *ngIf="prod.tiene_variantes" class="text-[10px] text-zinc-400 font-medium">
+                Ver tallas →
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- COLUMNA DERECHA: CANASTA ACTIVA Y DETALLE DE LA VENTA (5 cols) -->
+    <!-- ======================================================================= -->
+    <div class="lg:col-span-5 space-y-4">
+      <div class="bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-2xl shadow-sm flex flex-col overflow-hidden">
+        
+        <!-- Pestañas: Venta en Curso vs Cobros Pendientes (W28) -->
+        <div class="flex border-b border-stone-200 dark:border-slate-800 bg-stone-50/70 dark:bg-slate-800/40">
+          <button (click)="pestanaDerecha = 'CARRITO'"
+                  class="flex-1 py-3 px-3 text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 border-b-2 transition-all cursor-pointer"
+                  [ngClass]="pestanaDerecha === 'CARRITO'
+                    ? 'border-emerald-600 text-emerald-700 dark:text-emerald-400 bg-white dark:bg-slate-900 font-black'
+                    : 'border-transparent text-zinc-400 hover:text-zinc-600 dark:hover:text-slate-200 font-bold'">
+            <span>🛒 Venta en Curso</span>
+            <span *ngIf="totalItemsCarrito > 0" class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-mono font-bold">
+              {{ totalItemsCarrito }}
+            </span>
+          </button>
+
+          <button (click)="activarPestanaCobrosPendientes()"
+                  class="flex-1 py-3 px-3 text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 border-b-2 transition-all cursor-pointer relative"
+                  [ngClass]="pestanaDerecha === 'POR_COBRAR'
+                    ? 'border-amber-500 text-amber-700 dark:text-amber-400 bg-white dark:bg-slate-900 font-black'
+                    : 'border-transparent text-zinc-400 hover:text-zinc-600 dark:hover:text-slate-200 font-bold'">
+            <span>💳 Por Cobrar (W28)</span>
+            <span *ngIf="ventasPendientesTurno.length > 0" 
+                  class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-white shadow-sm animate-pulse">
+              {{ ventasPendientesTurno.length }}
+            </span>
+          </button>
+        </div>
+
+        <!-- CONTENIDO: PESTAÑA VENTA EN CURSO (CARRITO) -->
+        <div *ngIf="pestanaDerecha === 'CARRITO'" class="flex flex-col flex-1">
+
+        <!-- Header de la Canasta -->
+        <div class="p-4 border-b border-stone-200 dark:border-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <h2 class="text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-wider">
+              Venta en Curso
+            </h2>
+            <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400">
+              {{ totalItemsCarrito }} {{ totalItemsCarrito === 1 ? 'ítem' : 'ítems' }}
+            </span>
+          </div>
+
+          <button *ngIf="carrito.length > 0"
+                  (click)="vaciarCarrito()"
+                  title="Vaciar canasta completa"
+                  class="text-xs text-rose-600 hover:text-rose-700 font-semibold flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+            Vaciar
+          </button>
+        </div>
+
+        <!-- Sección de Asignación de Cliente -->
+        <div class="p-3.5 bg-stone-50/70 dark:bg-slate-800/40 border-b border-stone-200 dark:border-slate-800 space-y-2">
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-bold text-zinc-700 dark:text-slate-300">Cliente de la venta:</span>
+            <div class="flex items-center gap-1.5">
+              <button (click)="setTipoCliente('SIN_CLIENTE')"
+                      [ngClass]="tipoCliente === 'SIN_CLIENTE' ? 'bg-zinc-800 text-white dark:bg-white dark:text-zinc-900 font-bold' : 'text-zinc-500 hover:text-zinc-800 dark:text-slate-400'"
+                      class="px-2 py-1 rounded text-[11px] transition-colors">
+                Sin cliente
+              </button>
+              <button (click)="setTipoCliente('CON_CLIENTE')"
+                      [ngClass]="tipoCliente === 'CON_CLIENTE' ? 'bg-indigo-600 text-white font-bold shadow-sm' : 'text-zinc-500 hover:text-zinc-800 dark:text-slate-400'"
+                      class="px-2 py-1 rounded text-[11px] transition-colors">
+                Asignar cliente
+              </button>
+            </div>
+          </div>
+
+          <!-- Si eligió asignar cliente -->
+          <div *ngIf="tipoCliente === 'CON_CLIENTE'" class="space-y-2 pt-1 animate-fadeIn">
+            <div *ngIf="!clienteSeleccionado" class="relative">
+              <input type="text"
+                     [(ngModel)]="busquedaCliente"
+                     (input)="buscarClientes()"
+                     placeholder="Buscar por NIT/CI, nombre o correo..."
+                     class="w-full px-3 py-1.5 text-xs bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+              
+              <!-- Desplegable de resultados de clientes -->
+              <div *ngIf="clientesResultados.length > 0"
+                   class="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-700 rounded-xl shadow-xl z-20 max-h-48 overflow-y-auto divide-y divide-stone-100 dark:divide-slate-800">
+                <div *ngFor="let cl of clientesResultados"
+                     (click)="seleccionarCliente(cl)"
+                     class="p-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 cursor-pointer text-xs flex justify-between items-center">
+                  <div>
+                    <strong class="text-zinc-900 dark:text-white block">{{ cl.nombre_completo }}</strong>
+                    <span class="text-zinc-500 text-[11px]">NIT/CI: {{ cl.nit_ci || 'S/N' }} • {{ cl.correo || '' }}</span>
+                  </div>
+                  <span class="text-indigo-600 dark:text-indigo-400 font-bold text-xs">Elegir</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cliente seleccionado activo -->
+            <div *ngIf="clienteSeleccionado" 
+                 class="p-2.5 bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 rounded-xl flex items-center justify-between text-xs animate-fadeIn">
+              <div>
+                <span class="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-wider block">Cliente Asignado</span>
+                <strong class="text-zinc-900 dark:text-white">{{ clienteSeleccionado.nombre_completo }}</strong>
+                <div class="text-[11px] text-zinc-500 dark:text-slate-400">
+                  NIT/CI: {{ clienteSeleccionado.nit_ci || 'S/N' }}
+                  <span *ngIf="clienteSeleccionado.telefono">• Tel: {{ clienteSeleccionado.telefono }}</span>
+                </div>
+              </div>
+              <button (click)="quitarCliente()" 
+                      class="text-rose-500 hover:text-rose-700 text-xs font-semibold px-2 py-1">
+                Cambiar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de Items en el Carrito -->
+        <div class="p-3.5 space-y-2.5 max-h-[360px] overflow-y-auto divide-y divide-stone-100 dark:divide-slate-800/60">
+          
+          <div *ngIf="carrito.length === 0" class="py-12 text-center text-zinc-400 dark:text-slate-500">
+            <svg class="w-10 h-10 mx-auto mb-2 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+            </svg>
+            <p class="text-xs font-semibold">Canasta vacía</p>
+            <p class="text-[11px] mt-0.5">Haga clic en un producto del catálogo para agregarlo a la venta.</p>
+          </div>
+
+          <div *ngFor="let item of carrito" class="pt-2.5 first:pt-0 flex items-center justify-between gap-2 text-xs">
+            
+            <div class="flex-1 min-w-0 pr-2">
+              <h4 class="font-bold text-zinc-900 dark:text-white truncate" [title]="item.productoNombre">
+                {{ item.productoNombre }}
+              </h4>
+              <div class="flex items-center gap-1.5 mt-0.5 text-[11px] text-zinc-500 dark:text-slate-400">
+                <span *ngIf="item.variante.talla_nombre" class="px-1.5 py-0.2 bg-stone-100 dark:bg-slate-800 rounded font-semibold text-zinc-700 dark:text-slate-300">
+                  {{ item.variante.talla_nombre }}
+                </span>
+                <span *ngIf="item.variante.color_nombre" class="flex items-center gap-1">
+                  <span class="w-2.5 h-2.5 rounded-full border border-stone-300 dark:border-slate-700 inline-block" 
+                        [style.background-color]="item.variante.color_hex || '#999'"></span>
+                  {{ item.variante.color_nombre }}
+                </span>
+                <span class="text-[10px] text-zinc-400 font-mono">SKU: {{ item.variante.sku }}</span>
+              </div>
+              <div class="text-[11px] font-semibold text-zinc-600 dark:text-slate-300 mt-1">
+                Bs. {{ item.precioUnitario.toFixed(2) }} c/u
+              </div>
+            </div>
+
+            <!-- Controles de Cantidad -->
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button (click)="decrementarCantidad(item)"
+                      title="Reducir cantidad"
+                      class="w-6 h-6 rounded-lg bg-stone-100 hover:bg-stone-200 dark:bg-slate-800 dark:hover:bg-slate-700 flex items-center justify-center text-zinc-700 dark:text-slate-200 font-bold">
+                -
+              </button>
+              <span class="w-7 text-center font-black text-zinc-900 dark:text-white text-xs">
+                {{ item.cantidad }}
+              </span>
+              <button (click)="incrementarCantidad(item)"
+                      title="Aumentar cantidad"
+                      class="w-6 h-6 rounded-lg bg-stone-100 hover:bg-stone-200 dark:bg-slate-800 dark:hover:bg-slate-700 flex items-center justify-center text-zinc-700 dark:text-slate-200 font-bold">
+                +
+              </button>
+            </div>
+
+            <!-- Subtotal y Eliminar -->
+            <div class="text-right shrink-0 min-w-[70px]">
+              <span class="font-black text-zinc-900 dark:text-white block text-xs">
+                Bs. {{ item.subtotal.toFixed(2) }}
+              </span>
+              <button (click)="eliminarItemCarrito(item)" 
+                      title="Eliminar de la venta"
+                      class="text-rose-500 hover:text-rose-700 text-[11px] mt-0.5 font-semibold">
+                Quitar
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Totales y Descuentos -->
+        <div class="p-4 bg-stone-50 dark:bg-slate-800/80 border-t border-stone-200 dark:border-slate-800 space-y-3">
+          
+          <!-- Subtotal -->
+          <div class="flex justify-between items-center text-xs text-zinc-600 dark:text-slate-300">
+            <span>Subtotal:</span>
+            <span class="font-bold font-mono">Bs. {{ subtotalCarrito.toFixed(2) }}</span>
+          </div>
+
+          <!-- Descuento (con RBAC check) -->
+          <div class="flex justify-between items-center text-xs">
+            <div class="flex items-center gap-1.5">
+              <span class="text-zinc-600 dark:text-slate-300">Descuento (Bs.):</span>
+              <span *ngIf="!puedeAplicarDescuento" class="text-[10px] text-zinc-400" title="Requiere permiso pos.descuento">(Bloqueado)</span>
+            </div>
+            <div class="w-24">
+              <input type="number"
+                     step="0.50"
+                     min="0"
+                     [max]="subtotalCarrito"
+                     [(ngModel)]="descuento"
+                     (input)="validarDescuento()"
+                     [disabled]="!puedeAplicarDescuento || carrito.length === 0"
+                     class="w-full text-right px-2 py-1 text-xs font-mono font-bold bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50">
+            </div>
+          </div>
+
+          <!-- Total a Cobrar -->
+          <div class="pt-2 border-t border-stone-200 dark:border-slate-700 flex justify-between items-baseline">
+            <span class="text-sm font-black uppercase tracking-wider text-zinc-900 dark:text-white">
+              Total a Pagar:
+            </span>
+            <span class="text-2xl font-black text-indigo-600 dark:text-indigo-400 font-mono">
+              Bs. {{ totalCarrito.toFixed(2) }}
+            </span>
+          </div>
+
+          <!-- Botón de Registro de Venta -->
+          <button (click)="abrirModalConfirmarVenta()"
+                  [disabled]="carrito.length === 0 || procesando"
+                  class="w-full py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold text-sm rounded-xl shadow-md shadow-indigo-600/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Registrar Venta POS
+          </button>
+        </div>
+
+        </div>
+        <!-- FIN CONTENIDO: PESTAÑA VENTA EN CURSO -->
+
+        <!-- CONTENIDO: PESTAÑA VENTAS PENDIENTES DE COBRO (W28) -->
+        <div *ngIf="pestanaDerecha === 'POR_COBRAR'" class="p-4 space-y-3 flex-1 overflow-y-auto max-h-[620px] animate-fadeIn">
+          
+          <div class="flex items-center justify-between pb-2 border-b border-stone-200 dark:border-slate-800 text-xs">
+            <div>
+              <span class="font-black text-zinc-900 dark:text-white uppercase tracking-wider block">
+                Ventas en Espera de Pago
+              </span>
+              <span class="text-[11px] text-zinc-400">Listas para cobro en caja (W28)</span>
+            </div>
+            <button (click)="cargarVentasTurno()" 
+                    title="Actualizar listado"
+                    class="px-2.5 py-1 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <span>Actualizar</span>
+            </button>
+          </div>
+
+          <!-- Si no hay pendientes -->
+          <div *ngIf="ventasPendientesTurno.length === 0" class="py-14 text-center text-zinc-400 dark:text-slate-500 space-y-3">
+            <div class="w-14 h-14 mx-auto rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-2xl font-bold shadow-inner">
+              ✓
+            </div>
+            <div class="space-y-1">
+              <p class="text-xs font-bold text-zinc-700 dark:text-slate-300">¡Al día! No hay ventas pendientes de cobro</p>
+              <p class="text-[11px] text-zinc-400">Todas las ventas presenciales de este turno han sido cobradas.</p>
+            </div>
+            <button (click)="pestanaDerecha = 'CARRITO'" 
+                    class="px-4 py-2 bg-stone-100 hover:bg-stone-200 dark:bg-slate-800 text-xs font-bold rounded-xl text-zinc-700 dark:text-slate-200 transition-all">
+              Volver al Carrito (Nueva Venta)
+            </button>
+          </div>
+
+          <!-- Tarjetas de ventas pendientes -->
+          <div *ngFor="let vp of ventasPendientesTurno" 
+               class="p-4 rounded-2xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/40 dark:bg-amber-950/20 space-y-3 transition-all hover:border-amber-400 shadow-sm">
+            
+            <div class="flex items-start justify-between">
+              <div>
+                <span class="font-mono text-xs font-black text-zinc-900 dark:text-white block">
+                  {{ vp.codigo_venta }}
+                </span>
+                <span class="text-[11px] text-zinc-500 dark:text-slate-400">
+                  {{ vp.cliente || 'Consumidor Final' }} • {{ vp.cant_items }} {{ vp.cant_items === 1 ? 'artículo' : 'artículos' }}
+                </span>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
+                PENDIENTE
+              </span>
+            </div>
+
+            <div class="flex items-baseline justify-between pt-2 border-t border-amber-200/60 dark:border-amber-900/40">
+              <span class="text-xs font-bold text-zinc-600 dark:text-slate-400">Total a Cobrar:</span>
+              <span class="font-mono text-xl font-black text-emerald-600 dark:text-emerald-400">
+                Bs. {{ vp.total.toFixed(2) }}
+              </span>
+            </div>
+
+            <button (click)="irACobrar(vp.id_venta)"
+                    class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-black rounded-xl shadow-md shadow-emerald-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+              </svg>
+              <span>Cobrar Ahora (W28)</span>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+  </ng-container>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: APERTURA DE CAJA (ARQUEO INICIAL FÍSICO) -->
+  <!-- ========================================================================= -->
+  <div *ngIf="modalAbrirAbierto" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+    <div class="bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-5 animate-scaleUp max-h-[90vh] flex flex-col">
+      
+      <div class="flex items-center justify-between border-b border-stone-200 dark:border-slate-800 pb-3.5">
+        <div>
+          <h3 class="text-lg font-black text-zinc-900 dark:text-white">
+            Apertura de Caja y Turno
+          </h3>
+          <p class="text-xs text-zinc-500 dark:text-slate-400">
+            Conteo físico de billetes y monedas del fondo inicial
+          </p>
+        </div>
+        <button (click)="cerrarModalApertura()" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-white text-lg">✕</button>
+      </div>
+
+      <!-- Tabla de Conteo Físico -->
+      <div class="flex-1 overflow-y-auto space-y-2 pr-1">
+        <div class="grid grid-cols-12 gap-2 text-[11px] font-bold text-zinc-400 uppercase tracking-wider pb-1 border-b border-stone-100 dark:border-slate-800">
+          <div class="col-span-4">Denominación</div>
+          <div class="col-span-5 text-center">Cantidad</div>
+          <div class="col-span-3 text-right">Subtotal</div>
+        </div>
+
+        <div *ngFor="let fila of conteoApertura" class="grid grid-cols-12 gap-2 items-center py-1.5 border-b border-stone-50 dark:border-slate-800/40 text-xs">
+          
+          <div class="col-span-4 flex items-center gap-1.5">
+            <span [ngClass]="fila.tipo === 'BILLETE' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400' : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-400'"
+                  class="px-1.5 py-0.5 rounded text-[10px] font-bold">
+              {{ fila.tipo === 'BILLETE' ? 'Billete' : 'Moneda' }}
+            </span>
+            <strong class="text-zinc-800 dark:text-slate-200 font-mono">
+              Bs. {{ fila.valor.toFixed(2) }}
+            </strong>
+          </div>
+
+          <div class="col-span-5 flex items-center justify-center gap-1.5">
+            <button (click)="cambiarCantidadApertura(fila, -1)" 
+                    class="w-6 h-6 rounded bg-stone-100 dark:bg-slate-800 flex items-center justify-center font-bold text-zinc-700 dark:text-slate-300">
+              -
+            </button>
+            <input type="number" 
+                   min="0"
+                   [(ngModel)]="fila.cantidad"
+                   (input)="actualizarSubtotalApertura(fila)"
+                   class="w-14 text-center font-mono font-bold text-xs py-1 bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-700 rounded-lg outline-none focus:ring-1 focus:ring-indigo-500">
+            <button (click)="cambiarCantidadApertura(fila, 1)" 
+                    class="w-6 h-6 rounded bg-stone-100 dark:bg-slate-800 flex items-center justify-center font-bold text-zinc-700 dark:text-slate-300">
+              +
+            </button>
+          </div>
+
+          <div class="col-span-3 text-right font-mono font-bold text-zinc-900 dark:text-white">
+            Bs. {{ fila.subtotal.toFixed(2) }}
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Observación opcional -->
+      <div>
+        <label class="block text-xs font-semibold text-zinc-700 dark:text-slate-300 mb-1">Observación (opcional):</label>
+        <input type="text"
+               [(ngModel)]="observacionApertura"
+               placeholder="Ej: Inicio de turno regular mañana..."
+               class="w-full text-xs px-3 py-2 bg-stone-50 dark:bg-slate-800 border border-stone-300 dark:border-slate-700 rounded-xl outline-none">
+      </div>
+
+      <!-- Total Fondo y Botones -->
+      <div class="pt-3 border-t border-stone-200 dark:border-slate-800 flex items-center justify-between">
+        <div>
+          <span class="text-xs text-zinc-500 block">Fondo Inicial Calculado:</span>
+          <span class="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
+            Bs. {{ totalConteoApertura.toFixed(2) }}
+          </span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button (click)="cerrarModalApertura()"
+                  class="px-4 py-2 bg-stone-100 hover:bg-stone-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-zinc-700 dark:text-slate-300 text-xs font-semibold rounded-xl">
+            Cancelar
+          </button>
+          <button (click)="confirmarAperturaCaja()"
+                  [disabled]="procesando"
+                  class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 disabled:opacity-50 flex items-center gap-2">
+            <span *ngIf="procesando" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            Confirmar Apertura
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: CIERRE DE CAJA (ARQUEO FÍSICO Y DIFERENCIAS) -->
+  <!-- ========================================================================= -->
+  <div *ngIf="modalCerrarAbierto" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+    <div class="bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-3xl max-w-3xl w-full p-6 shadow-2xl space-y-5 animate-scaleUp max-h-[92vh] flex flex-col">
+      
+      <div class="flex items-center justify-between border-b border-stone-200 dark:border-slate-800 pb-3.5">
+        <div>
+          <h3 class="text-lg font-black text-zinc-900 dark:text-white">
+            Cierre de Caja y Arqueo Físico
+          </h3>
+          <p class="text-xs text-zinc-500 dark:text-slate-400">
+            Compare el efectivo físico contado con las ventas registradas del turno
+          </p>
+        </div>
+        <button (click)="cerrarModalCierre()" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-white text-lg">✕</button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-5 flex-1 overflow-hidden">
+        
+        <!-- Columna Izquierda: Resumen Contable / Sistema (5 cols) -->
+        <div class="md:col-span-5 bg-stone-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-stone-200 dark:border-slate-800 space-y-3.5 overflow-y-auto">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-slate-300">
+            Resumen del Sistema
+          </h4>
+
+          <div class="space-y-2 text-xs divide-y divide-stone-100 dark:divide-slate-800">
+            <div class="flex justify-between pt-1">
+              <span class="text-zinc-500">Fondo Inicial:</span>
+              <strong class="font-mono">Bs. {{ resumenCaja?.monto_inicial?.toFixed(2) }}</strong>
+            </div>
+            <div class="flex justify-between pt-1">
+              <span class="text-zinc-500">Ventas en Efectivo:</span>
+              <strong class="font-mono text-emerald-600 dark:text-emerald-400">Bs. {{ resumenCaja?.ventas_efectivo?.toFixed(2) }}</strong>
+            </div>
+            <div class="flex justify-between pt-1">
+              <span class="text-zinc-500">Ventas con Tarjeta:</span>
+              <strong class="font-mono">Bs. {{ resumenCaja?.ventas_tarjeta?.toFixed(2) }}</strong>
+            </div>
+            <div class="flex justify-between pt-1">
+              <span class="text-zinc-500">Ventas Electrónicas/QR:</span>
+              <strong class="font-mono">Bs. {{ resumenCaja?.ventas_electronicas?.toFixed(2) }}</strong>
+            </div>
+            <div class="flex justify-between pt-1">
+              <span class="text-zinc-500">Total Ventas Turno:</span>
+              <strong class="font-mono text-indigo-600 dark:text-indigo-400">Bs. {{ resumenCaja?.total_ventas?.toFixed(2) }}</strong>
+            </div>
+          </div>
+
+          <!-- Total Efectivo Esperado -->
+          <div class="pt-3 border-t-2 border-stone-200 dark:border-slate-700">
+            <span class="text-xs font-bold text-zinc-700 dark:text-slate-200 block uppercase tracking-wider">
+              Efectivo Esperado en Caja:
+            </span>
+            <span class="text-2xl font-black text-zinc-900 dark:text-white font-mono">
+              Bs. {{ resumenCaja?.efectivo_esperado?.toFixed(2) }}
+            </span>
+            <p class="text-[10px] text-zinc-400 mt-0.5">Fondo Inicial + Ventas en Efectivo</p>
+          </div>
+
+          <!-- Resultado del Arqueo en Vivo -->
+          <div class="p-3 rounded-xl border text-xs"
+               [ngClass]="estadoDiferenciaCierre === 'CUADRA' 
+                 ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 text-emerald-800 dark:text-emerald-300' 
+                 : (estadoDiferenciaCierre === 'SOBRANTE' 
+                   ? 'bg-blue-50 dark:bg-blue-950/40 border-blue-300 text-blue-800 dark:text-blue-300' 
+                   : 'bg-rose-50 dark:bg-rose-950/40 border-rose-300 text-rose-800 dark:text-rose-300')">
+            <div class="font-bold flex items-center justify-between">
+              <span>Resultado Arqueo:</span>
+              <span class="px-2 py-0.5 rounded text-[11px] font-black uppercase">{{ estadoDiferenciaCierre }}</span>
+            </div>
+            <div class="flex justify-between items-baseline mt-1 font-mono">
+              <span>Diferencia:</span>
+              <span class="text-sm font-black">
+                {{ diferenciaCierre > 0 ? '+' : '' }}Bs. {{ diferenciaCierre.toFixed(2) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna Derecha: Conteo Físico vs Esperado por Denominaciones (7 cols) -->
+        <div class="md:col-span-7 flex flex-col overflow-hidden space-y-2.5">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-slate-300">
+              Conteo Físico por Denominación
+            </h4>
+            <button type="button"
+                    (click)="copiarEsperadoAContado()"
+                    class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 transition-colors">
+              Copiar Esperado a Contado
+            </button>
+          </div>
+
+          <!-- Cabecera de la Tabla: DENOMINACIÓN | ESPERADO | CONTADO | SUBT. CONTADO -->
+          <div class="grid grid-cols-12 gap-1 px-2 py-1.5 bg-stone-100 dark:bg-slate-800 rounded-lg text-[10px] font-extrabold uppercase text-zinc-500 tracking-wider">
+            <div class="col-span-4">Denominación</div>
+            <div class="col-span-2 text-center">Esperado</div>
+            <div class="col-span-4 text-center">Contado</div>
+            <div class="col-span-2 text-right">Subtotal</div>
+          </div>
+
+          <div class="flex-1 overflow-y-auto space-y-1 pr-1 max-h-[300px]">
+            <div *ngFor="let fila of conteoCierre" 
+                 class="grid grid-cols-12 gap-1 items-center py-1.5 px-2 border-b border-stone-100 dark:border-slate-800 text-xs rounded hover:bg-stone-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                 [ngClass]="fila.cantidad !== (fila.cantidad_esperada || 0) && fila.cantidad > 0 ? 'bg-amber-50/40 dark:bg-amber-950/20' : ''">
+              
+              <!-- Denominación -->
+              <div class="col-span-4 flex items-center gap-1.5">
+                <span class="text-[9px] font-bold px-1 rounded uppercase"
+                      [ngClass]="fila.tipo === 'BILLETE' ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400' : 'bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400'">
+                  {{ fila.tipo === 'BILLETE' ? 'B.' : 'M.' }}
+                </span>
+                <strong class="font-mono">Bs. {{ fila.valor.toFixed(2) }}</strong>
+              </div>
+
+              <!-- Esperado -->
+              <div class="col-span-2 text-center font-mono font-bold text-zinc-600 dark:text-slate-300">
+                {{ fila.cantidad_esperada || 0 }}
+              </div>
+
+              <!-- Contado (Inputs + Stepper) -->
+              <div class="col-span-4 flex items-center justify-center gap-1">
+                <button (click)="cambiarCantidadCierre(fila, -1)" class="w-6 h-6 rounded bg-stone-100 dark:bg-slate-800 flex items-center justify-center font-bold text-zinc-700 dark:text-slate-200 hover:bg-stone-200 transition-colors">-</button>
+                <input type="number" min="0" [(ngModel)]="fila.cantidad" (input)="actualizarSubtotalCierre(fila)"
+                       class="w-12 text-center font-mono font-bold text-xs py-1 bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-700 rounded outline-none focus:ring-1 focus:ring-indigo-500">
+                <button (click)="cambiarCantidadCierre(fila, 1)" class="w-6 h-6 rounded bg-indigo-600 text-white flex items-center justify-center font-bold hover:bg-indigo-700 transition-colors">+</button>
+              </div>
+
+              <!-- Subtotal Contado -->
+              <div class="col-span-2 text-right font-mono font-bold text-zinc-900 dark:text-white">
+                Bs. {{ fila.subtotal.toFixed(2) }}
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-semibold text-zinc-700 dark:text-slate-300 mb-0.5">Observación de Cierre:</label>
+            <input type="text" [(ngModel)]="observacionCierre" placeholder="Notas sobre el arqueo o discrepancias..."
+                   class="w-full text-xs px-2.5 py-1.5 bg-stone-50 dark:bg-slate-800 border border-stone-300 dark:border-slate-700 rounded-lg outline-none">
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer del Cierre -->
+      <div class="pt-3 border-t border-stone-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="flex items-center gap-5 text-xs">
+          <div>
+            <span class="text-[10px] text-zinc-400 uppercase font-bold block">Total Esperado:</span>
+            <span class="text-base font-black font-mono text-zinc-700 dark:text-slate-300">
+              Bs. {{ resumenCaja?.efectivo_esperado?.toFixed(2) }}
+            </span>
+          </div>
+          <div>
+            <span class="text-[10px] text-zinc-400 uppercase font-bold block">Total Contado:</span>
+            <span class="text-base font-black font-mono text-indigo-600 dark:text-indigo-400">
+              Bs. {{ totalConteoCierre.toFixed(2) }}
+            </span>
+          </div>
+          <div>
+            <span class="text-[10px] text-zinc-400 uppercase font-bold block">Diferencia:</span>
+            <span class="text-base font-black font-mono"
+                  [ngClass]="diferenciaCierre === 0 ? 'text-emerald-600' : (diferenciaCierre > 0 ? 'text-blue-600' : 'text-rose-600')">
+              {{ diferenciaCierre > 0 ? '+' : '' }}Bs. {{ diferenciaCierre.toFixed(2) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button (click)="cerrarModalCierre()" class="px-4 py-2 bg-stone-100 hover:bg-stone-200 dark:bg-slate-800 text-zinc-700 dark:text-slate-300 text-xs font-semibold rounded-xl">
+            Cancelar
+          </button>
+          <button (click)="confirmarCierreCaja()" [disabled]="procesando"
+                  class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-md shadow-rose-600/20 disabled:opacity-50 flex items-center gap-2">
+            <span *ngIf="procesando" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            Confirmar y Cerrar Caja
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: SELECCIÓN DE VARIANTE (TALLA / COLOR CON STOCK EN SUCURSAL) -->
+  <!-- ========================================================================= -->
+  <div *ngIf="modalVariantesAbierto" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+    <div class="bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 animate-scaleUp">
+      
+      <div class="flex items-center justify-between border-b border-stone-200 dark:border-slate-800 pb-3">
+        <div>
+          <span class="text-[10px] uppercase font-bold text-indigo-600 dark:text-indigo-400">Seleccionar Variante</span>
+          <h3 class="text-base font-black text-zinc-900 dark:text-white">
+            {{ productoSeleccionadoParaVariante?.nombre }}
+          </h3>
+        </div>
+        <button (click)="cerrarModalVariantes()" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-white text-lg">✕</button>
+      </div>
+
+      <div *ngIf="cargandoVariantes" class="py-10 text-center text-xs text-zinc-400">
+        Cargando opciones de talla y color...
+      </div>
+
+      <div *ngIf="!cargandoVariantes" class="space-y-2 max-h-72 overflow-y-auto pr-1">
+        <div *ngFor="let v of variantesDelProducto"
+             (click)="v.stock_disponible > 0 ? agregarVarianteAlCarrito(productoSeleccionadoParaVariante!, v) : null"
+             [ngClass]="v.stock_disponible > 0 
+               ? 'hover:border-indigo-500 cursor-pointer shadow-sm bg-stone-50/50 dark:bg-slate-800/40' 
+               : 'opacity-40 cursor-not-allowed bg-stone-100 dark:bg-slate-800/20'"
+             class="p-3 border border-stone-200 dark:border-slate-700 rounded-xl flex items-center justify-between transition-all">
+          
+          <div class="flex items-center gap-3">
+            <span class="w-3.5 h-3.5 rounded-full border border-stone-300 dark:border-slate-600 shrink-0"
+                  [style.background-color]="v.color_hex || '#888'"></span>
+            <div>
+              <div class="flex items-center gap-1.5">
+                <strong class="text-xs text-zinc-900 dark:text-white">
+                  Talla: {{ v.talla_nombre || 'Única' }}
+                </strong>
+                <span class="text-zinc-400">•</span>
+                <span class="text-xs text-zinc-600 dark:text-slate-300">{{ v.color_nombre || 'Estándar' }}</span>
+              </div>
+              <span class="text-[10px] font-mono text-zinc-400 block">SKU: {{ v.sku }}</span>
+            </div>
+          </div>
+
+          <div class="text-right">
+            <span class="text-xs font-black text-zinc-900 dark:text-white block font-mono">
+              Bs. {{ v.precio.toFixed(2) }}
+            </span>
+            <span [ngClass]="v.stock_disponible > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600'"
+                  class="text-[10px] font-bold">
+              {{ v.stock_disponible > 0 ? v.stock_disponible + ' disponibles' : 'Sin stock' }}
+            </span>
+            <span *ngIf="(v.unidades_provisionales_offline || 0) > 0"
+                  class="block text-[9px] text-amber-600 dark:text-amber-400 font-semibold">
+              Stock servidor: {{ v.stock_confirmado_servidor }} ({{ v.unidades_provisionales_offline }} en cola local)
+            </span>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: CONFIRMAR VENTA POS (CON SOPORTE OFFLINE EN EFECTIVO · CU24W) -->
+  <!-- ========================================================================= -->
+  <div *ngIf="modalConfirmarVentaAbierto" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+    <div class="bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 animate-scaleUp max-h-[92vh] overflow-y-auto">
+      
+      <div class="text-center space-y-1">
+        <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 mx-auto flex items-center justify-center mb-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-black text-zinc-900 dark:text-white">Confirmar Venta POS</h3>
+        <p class="text-xs text-zinc-500 dark:text-slate-400">Verifique los detalles antes de registrar la venta</p>
+      </div>
+
+      <!-- Aviso explícito cuando está en modo sin conexión (CU24W) -->
+      <div *ngIf="!networkStatus.isOnline()"
+           class="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs space-y-1">
+        <div class="font-bold flex items-center gap-1.5">
+          <span>⚡ Modo Offline Activo</span>
+        </div>
+        <p class="text-[11px] leading-relaxed">
+          Solo se permiten <strong>ventas de contado en EFECTIVO</strong>. Los pagos electrónicos (Tarjeta, QR, PayPal) están deshabilitados sin conexión. El stock local se descontará provisionalmente y la venta se validará al reconectar.
+        </p>
+      </div>
+
+      <div class="p-3.5 bg-stone-50 dark:bg-slate-800/60 rounded-xl space-y-2 text-xs border border-stone-200 dark:border-slate-700">
+        <div class="flex justify-between">
+          <span class="text-zinc-500">Cliente:</span>
+          <strong>{{ clienteSeleccionado ? clienteSeleccionado.nombre_completo : 'Consumidor Final (Sin Cliente)' }}</strong>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-zinc-500">Artículos:</span>
+          <strong>{{ totalItemsCarrito }} unidades ({{ carrito.length }} productos)</strong>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-zinc-500">Subtotal:</span>
+          <span class="font-mono">Bs. {{ subtotalCarrito.toFixed(2) }}</span>
+        </div>
+        <div *ngIf="descuento > 0" class="flex justify-between text-rose-600">
+          <span>Descuento aplicado:</span>
+          <span class="font-mono">-Bs. {{ descuento.toFixed(2) }}</span>
+        </div>
+        <div class="pt-2 border-t border-stone-200 dark:border-slate-700 flex justify-between items-baseline font-bold text-sm">
+          <span>Total a Pagar:</span>
+          <span class="text-indigo-600 dark:text-indigo-400 font-mono text-lg">Bs. {{ totalCarrito.toFixed(2) }}</span>
+        </div>
+      </div>
+
+      <!-- Selector de Modalidad de Cobro -->
+      <div class="space-y-2">
+        <label class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-slate-400">
+          Modalidad de Cobro:
+        </label>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+          <button type="button"
+                  (click)="modalidadCobroConfirmacion = 'EFECTIVO_INMEDIATO'"
+                  [ngClass]="modalidadCobroConfirmacion === 'EFECTIVO_INMEDIATO' || !networkStatus.isOnline()
+                    ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-200 font-bold ring-1 ring-emerald-500'
+                    : 'border-stone-200 dark:border-slate-700 text-zinc-600 dark:text-slate-300'"
+                  class="p-2.5 rounded-xl border text-left transition-all cursor-pointer">
+            <div class="flex items-center justify-between">
+              <span>💵 Contado en Efectivo</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-600 text-white font-bold">CU24W</span>
+            </div>
+            <span class="block text-[10px] opacity-80 mt-0.5">Cobro directo en caja (Online y Offline)</span>
+          </button>
+
+          <button type="button"
+                  [disabled]="!networkStatus.isOnline()"
+                  (click)="networkStatus.isOnline() ? (modalidadCobroConfirmacion = 'PASO_W28_ONLINE') : null"
+                  [ngClass]="modalidadCobroConfirmacion === 'PASO_W28_ONLINE' && networkStatus.isOnline()
+                    ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-800 dark:text-indigo-200 font-bold ring-1 ring-indigo-500'
+                    : 'border-stone-200 dark:border-slate-700 text-zinc-600 dark:text-slate-300 disabled:opacity-45 disabled:cursor-not-allowed'"
+                  class="p-2.5 rounded-xl border text-left transition-all cursor-pointer">
+            <div class="flex items-center justify-between">
+              <span>💳 Pasarela W28 (Tarjeta/QR)</span>
+              <span *ngIf="!networkStatus.isOnline()" class="text-[10px] px-1.5 py-0.5 rounded bg-rose-600 text-white font-bold">Solo Online</span>
+            </div>
+            <span class="block text-[10px] opacity-80 mt-0.5">
+              {{ networkStatus.isOnline() ? 'Pasar orden a cobro W28 (Efectivo/Tarjeta/QR)' : 'Bloqueado sin conexión a internet' }}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Panel de Cobro en Efectivo (CU24W) -->
+      <div *ngIf="modalidadCobroConfirmacion === 'EFECTIVO_INMEDIATO' || !networkStatus.isOnline()"
+           class="p-3.5 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/60 space-y-3 text-xs">
+        <div class="flex items-center justify-between">
+          <label class="font-bold text-zinc-800 dark:text-slate-200">Efectivo Recibido (Bs.):</label>
+          <div class="flex items-center gap-1">
+            <button type="button" (click)="fijarMontoRecibidoRapido(totalCarrito)"
+                    class="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-700 text-[10px] font-bold hover:border-emerald-500 cursor-pointer">
+              Exacto
+            </button>
+            <button type="button" (click)="fijarMontoRecibidoRapido(totalCarrito + 10)"
+                    class="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-700 text-[10px] font-bold hover:border-emerald-500 cursor-pointer">
+              +10
+            </button>
+            <button type="button" (click)="fijarMontoRecibidoRapido(totalCarrito + 50)"
+                    class="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-700 text-[10px] font-bold hover:border-emerald-500 cursor-pointer">
+              +50
+            </button>
+            <button type="button" (click)="fijarMontoRecibidoRapido(totalCarrito + 100)"
+                    class="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-700 text-[10px] font-bold hover:border-emerald-500 cursor-pointer">
+              +100
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 items-center">
+          <div>
+            <input type="number"
+                   min="0"
+                   step="0.5"
+                   [(ngModel)]="montoRecibidoEfectivo"
+                   class="w-full px-3 py-2 font-mono font-black text-base bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] uppercase font-bold text-zinc-500 block">Cambio a Entregar:</span>
+            <span class="font-mono text-lg font-black text-emerald-600 dark:text-emerald-400">
+              Bs. {{ cambioEfectivoCalculado.toFixed(2) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 pt-1 border-t border-emerald-200/60 dark:border-emerald-900/40">
+          <div>
+            <label class="block text-[10px] font-semibold text-zinc-600 dark:text-slate-400 mb-0.5">NIT / CI Comprobante:</label>
+            <input type="text" [(ngModel)]="nitCiFacturacionOffline" placeholder="S/N"
+                   class="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-700 rounded-lg outline-none">
+          </div>
+          <div>
+            <label class="block text-[10px] font-semibold text-zinc-600 dark:text-slate-400 mb-0.5">Razón Social / Nombre:</label>
+            <input type="text" [(ngModel)]="razonSocialFacturacionOffline" placeholder="SIN NOMBRE"
+                   class="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-700 rounded-lg outline-none">
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-[11px] font-semibold text-zinc-700 dark:text-slate-300 mb-1">Notas de la venta (opcional):</label>
+        <input type="text" [(ngModel)]="observacionesVenta" placeholder="Ej: Venta de mostrador..."
+               class="w-full text-xs px-3 py-1.5 bg-stone-50 dark:bg-slate-800 border border-stone-300 dark:border-slate-700 rounded-lg outline-none">
+      </div>
+
+      <div class="flex items-center gap-2 pt-2">
+        <button (click)="cerrarModalConfirmarVenta()" class="flex-1 py-2.5 bg-stone-100 hover:bg-stone-200 dark:bg-slate-800 text-zinc-700 dark:text-slate-300 text-xs font-semibold rounded-xl">
+          Cancelar
+        </button>
+        <button (click)="procesarVentaPos()"
+                [disabled]="procesando || ((modalidadCobroConfirmacion === 'EFECTIVO_INMEDIATO' || !networkStatus.isOnline()) && !montoEfectivoValido)"
+                class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-600/20 disabled:opacity-50 flex items-center justify-center gap-2">
+          <span *ngIf="procesando" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+          <span>
+            {{ (!networkStatus.isOnline() || modalidadCobroConfirmacion === 'EFECTIVO_INMEDIATO') ? 'Cobrar en Efectivo y Registrar' : 'Registrar Venta' }}
+          </span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: VENTA EXITOSA (CONFIRMACIÓN Y PASO A COBRO / RECIBO OFFLINE) -->
+  <!-- ========================================================================= -->
+  <div *ngIf="modalVentaExitosaAbierto" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+    <div class="bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl space-y-5 text-center animate-scaleUp">
+      
+      <div class="w-16 h-16 mx-auto rounded-3xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-600 flex items-center justify-center shadow-inner">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+
+      <div class="space-y-1">
+        <h3 class="text-xl font-black text-zinc-900 dark:text-white">
+          {{ ventaExitosaInfo?.offline_queued ? '¡Venta en Efectivo Registrada!' : '¡Venta Registrada con Éxito!' }}
+        </h3>
+        <p class="text-xs text-zinc-500 dark:text-slate-400">
+          {{ ventaExitosaInfo?.offline_queued
+            ? 'El cobro en efectivo y el descuento provisional de stock se guardaron en la cola segura.'
+            : 'La venta ha sido guardada y el stock fue actualizado correctamente.' }}
+        </p>
+      </div>
+
+      <div class="p-4 bg-stone-50 dark:bg-slate-800/70 border border-stone-200 dark:border-slate-700 rounded-2xl space-y-2 text-xs">
+        <div class="flex justify-between">
+          <span class="text-zinc-500">Código de Venta:</span>
+          <strong class="font-mono text-indigo-600 dark:text-indigo-400">{{ ventaExitosaInfo?.codigo_venta }}</strong>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-zinc-500">Estado:</span>
+          <span *ngIf="!ventaExitosaInfo?.offline_queued"
+                class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-400">
+            PENDIENTE DE PAGO (W28)
+          </span>
+          <span *ngIf="ventaExitosaInfo?.offline_queued"
+                class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+            PAGADO EN EFECTIVO (COLA SYNC)
+          </span>
+        </div>
+        <div class="flex justify-between items-baseline pt-1 border-t border-stone-200 dark:border-slate-700">
+          <span class="font-bold text-zinc-700 dark:text-slate-300">Total Venta:</span>
+          <span class="text-xl font-black text-zinc-900 dark:text-white font-mono">
+            Bs. {{ ventaExitosaInfo?.total?.toFixed(2) }}
+          </span>
+        </div>
+        <div *ngIf="ventaExitosaInfo?.offline_queued" class="pt-1 border-t border-stone-200 dark:border-slate-700 space-y-1">
+          <div class="flex justify-between">
+            <span class="text-zinc-500">Efectivo Recibido:</span>
+            <strong class="font-mono">Bs. {{ ventaExitosaInfo?.monto_recibido?.toFixed(2) }}</strong>
+          </div>
+          <div class="flex justify-between text-emerald-600 dark:text-emerald-400">
+            <span class="font-bold">Cambio Entregado:</span>
+            <strong class="font-mono">Bs. {{ ventaExitosaInfo?.cambio?.toFixed(2) }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- AVISO COMPROBANTE PROVISIONAL DE CONTINGENCIA -->
+      <div *ngIf="ventaExitosaInfo?.offline_queued"
+           class="p-3 bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800 rounded-2xl text-left space-y-1">
+        <div class="flex items-center gap-1.5 text-amber-900 dark:text-amber-200 font-extrabold text-[11px] uppercase tracking-wider">
+          <span>🛡️</span>
+          <span>Comprobante Provisional de Contingencia (P0)</span>
+        </div>
+        <p class="text-[10px] text-amber-800 dark:text-amber-300 leading-snug">
+          <strong>No válido como factura fiscal.</strong> Venta presencial autorizada con cuota de contingencia offline. El comprobante fiscal definitivo se generará al sincronizar con el servidor.
+        </p>
+      </div>
+
+      <p class="text-[11px] text-zinc-400">
+        {{ ventaExitosaInfo?.offline_queued
+          ? 'La operación sobrevive al reinicio del navegador y se sincronizará con prioridad P0 al reconectar.'
+          : 'El monto y la orden quedan listos para su recepción de pago en efectivo o pasarela según el protocolo W28.' }}
+      </p>
+
+      <div class="space-y-2 pt-2">
+        <button *ngIf="ventaExitosaInfo?.offline_queued"
+                (click)="imprimirTicketProvisional()"
+                class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-xl shadow-md shadow-amber-500/20 transition-all flex items-center justify-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+          </svg>
+          Imprimir Ticket Provisional de Contingencia
+        </button>
+
+        <div class="grid grid-cols-1 gap-2" [class.sm:grid-cols-2]="!ventaExitosaInfo?.offline_queued">
+          <button *ngIf="!ventaExitosaInfo?.offline_queued"
+                  (click)="irACobrar(ventaExitosaInfo!.id_venta)"
+                  class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+            Cobrar Ahora (W28)
+          </button>
+          <button (click)="cerrarModalVentaExitosa()"
+                  class="w-full py-3 bg-stone-100 hover:bg-stone-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-zinc-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all">
+            {{ ventaExitosaInfo?.offline_queued ? 'Aceptar y Continuar Vendiendo' : 'Nueva Venta' }}
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: RESUMEN FINANCIERO DEL TURNO -->
+  <!-- ========================================================================= -->
+  <div *ngIf="modalResumenAbierto" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+    <div class="bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 animate-scaleUp">
+      
+      <div class="flex items-center justify-between border-b border-stone-200 dark:border-slate-800 pb-3">
+        <div>
+          <h3 class="text-base font-black text-zinc-900 dark:text-white">Resumen de Turno Activo</h3>
+          <p class="text-xs text-zinc-500 dark:text-slate-400">Arqueo preventivo y desglose de cobros</p>
+        </div>
+        <button (click)="cerrarModalResumen()" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-white text-lg">✕</button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div class="grid grid-cols-2 gap-2.5">
+          <div class="p-3 rounded-xl bg-stone-50 dark:bg-slate-800/50 border border-stone-200 dark:border-slate-800">
+            <span class="text-zinc-500 text-[10px] uppercase font-bold block">Fondo Inicial</span>
+            <span class="text-base font-mono font-black text-zinc-900 dark:text-white">Bs. {{ resumenCaja?.monto_inicial?.toFixed(2) }}</span>
+          </div>
+          <div class="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
+            <span class="text-emerald-700 dark:text-emerald-300 text-[10px] uppercase font-bold block">Efectivo Esperado</span>
+            <span class="text-base font-mono font-black text-emerald-700 dark:text-emerald-300">Bs. {{ resumenCaja?.efectivo_esperado?.toFixed(2) }}</span>
+          </div>
+        </div>
+
+        <div class="p-3.5 bg-stone-50 dark:bg-slate-800/60 rounded-xl space-y-2 border border-stone-200 dark:border-slate-700">
+          <div class="flex justify-between">
+            <span class="text-zinc-500">Ventas en Efectivo:</span>
+            <strong class="font-mono">Bs. {{ resumenCaja?.ventas_efectivo?.toFixed(2) }}</strong>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-zinc-500">Ventas con Tarjeta:</span>
+            <strong class="font-mono">Bs. {{ resumenCaja?.ventas_tarjeta?.toFixed(2) }}</strong>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-zinc-500">Ventas Electrónicas:</span>
+            <strong class="font-mono">Bs. {{ resumenCaja?.ventas_electronicas?.toFixed(2) }}</strong>
+          </div>
+          <div class="pt-2 border-t border-stone-200 dark:border-slate-700 flex justify-between font-bold">
+            <span>Total Volumen Vendido:</span>
+            <span class="text-indigo-600 dark:text-indigo-400 font-mono">Bs. {{ resumenCaja?.total_ventas?.toFixed(2) }}</span>
+          </div>
+          <div class="flex justify-between text-zinc-500 text-[11px]">
+            <span>Cantidad de Ventas:</span>
+            <span>{{ resumenCaja?.cant_ventas }} (Pagadas: {{ resumenCaja?.cant_pagadas }} | Pendientes: {{ resumenCaja?.cant_pendientes }})</span>
+          </div>
+        </div>
+      </div>
+
+      <button (click)="cerrarModalResumen()" class="w-full py-2.5 bg-stone-100 hover:bg-stone-200 dark:bg-slate-800 text-zinc-700 dark:text-slate-300 text-xs font-semibold rounded-xl">
+        Cerrar
+      </button>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: HISTORIAL DE VENTAS DEL TURNO -->
+  <!-- ========================================================================= -->
+  <div *ngIf="modalHistorialAbierto" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+    <div class="bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-3xl max-w-3xl w-full p-6 shadow-2xl space-y-4 animate-scaleUp max-h-[85vh] flex flex-col">
+      
+      <div class="flex items-center justify-between border-b border-stone-200 dark:border-slate-800 pb-3">
+        <div>
+          <h3 class="text-base font-black text-zinc-900 dark:text-white">Ventas del Turno</h3>
+          <p class="text-xs text-zinc-500 dark:text-slate-400">Registro cronológico de transacciones en esta sesión</p>
+        </div>
+        <button (click)="cerrarModalHistorial()" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-white text-lg">✕</button>
+      </div>
+
+      <div *ngIf="cargandoHistorial" class="py-12 text-center text-xs text-zinc-400">
+        Cargando transacciones...
+      </div>
+
+      <div *ngIf="!cargandoHistorial && ventasTurno.length === 0" class="py-12 text-center text-xs text-zinc-400">
+        No se han registrado ventas en esta sesión de caja aún.
+      </div>
+
+      <div *ngIf="!cargandoHistorial && ventasTurno.length > 0" class="flex-1 overflow-y-auto space-y-2 pr-1">
+        <table class="w-full text-left text-xs">
+          <thead class="text-[10px] uppercase font-bold text-zinc-400 border-b border-stone-100 dark:border-slate-800">
+            <tr>
+              <th class="py-2">Código</th>
+              <th class="py-2">Hora</th>
+              <th class="py-2">Cliente</th>
+              <th class="py-2 text-center">Ítems</th>
+              <th class="py-2 text-right">Total</th>
+              <th class="py-2 text-center">Estado</th>
+              <th class="py-2 text-right">Acción</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-stone-100 dark:divide-slate-800">
+            <tr *ngFor="let v of ventasTurno" class="hover:bg-stone-50 dark:hover:bg-slate-800/50">
+              <td class="py-2.5 font-mono font-bold text-indigo-600 dark:text-indigo-400">{{ v.codigo_venta }}</td>
+              <td class="py-2.5 text-zinc-500">{{ v.fecha | date:'HH:mm:ss' }}</td>
+              <td class="py-2.5">
+                <span class="font-medium text-zinc-800 dark:text-slate-200 block">{{ v.cliente }}</span>
+                <span *ngIf="v.nit_ci" class="text-[10px] text-zinc-400">NIT: {{ v.nit_ci }}</span>
+              </td>
+              <td class="py-2.5 text-center">{{ v.cant_items }}</td>
+              <td class="py-2.5 text-right font-mono font-bold text-zinc-900 dark:text-white">Bs. {{ v.total.toFixed(2) }}</td>
+              <td class="py-2.5 text-center">
+                <span [ngClass]="v.estado === 'PAGADO' || v.estado === 'COMPLETADA' 
+                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400' 
+                  : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-400'"
+                      class="px-2 py-0.5 rounded text-[10px] font-bold">
+                  {{ v.estado }}
+                </span>
+              </td>
+              <td class="py-2.5 text-right space-x-1.5 whitespace-nowrap">
+                <button *ngIf="v.estado === 'PENDIENTE_PAGO'"
+                        (click)="irACobrar(v.id_venta)"
+                        class="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded shadow-sm transition-all inline-flex items-center gap-1">
+                  💳 Cobrar
+                </button>
+                <button *ngIf="v.estado === 'PAGADO' || v.estado === 'COMPLETADA'"
+                        (click)="irAComprobante(v.id_venta)"
+                        class="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold rounded shadow-sm transition-all inline-flex items-center gap-1">
+                  🧾 Comprobante
+                </button>
+                <button (click)="verDetalleVenta(v.id_venta)" class="text-zinc-500 hover:text-zinc-800 dark:hover:text-white text-[11px] font-semibold underline">
+                  Detalles
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: DETALLE DE UNA VENTA -->
+  <!-- ========================================================================= -->
+  <div *ngIf="modalDetalleVentaAbierto" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+    <div class="bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 animate-scaleUp">
+      
+      <div class="flex items-center justify-between border-b border-stone-200 dark:border-slate-800 pb-3">
+        <div>
+          <span class="text-[10px] uppercase font-bold text-indigo-600 dark:text-indigo-400">Detalle de Venta</span>
+          <h3 class="text-base font-black text-zinc-900 dark:text-white font-mono">
+            {{ ventaDetalleSeleccionada?.codigo_venta }}
+          </h3>
+        </div>
+        <button (click)="cerrarModalDetalleVenta()" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-white text-lg">✕</button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div class="p-3 bg-stone-50 dark:bg-slate-800/60 rounded-xl space-y-1">
+          <div>Cliente: <strong>{{ ventaDetalleSeleccionada?.cliente || 'Consumidor Final' }}</strong></div>
+          <div>Cajero: <strong>{{ ventaDetalleSeleccionada?.cajero }}</strong></div>
+          <div>Fecha: <strong>{{ ventaDetalleSeleccionada?.fecha | date:'dd/MM/yyyy HH:mm:ss' }}</strong></div>
+          <div class="flex items-center gap-2 pt-1">
+            <span>Estado:</span>
+            <span [ngClass]="ventaDetalleSeleccionada?.estado === 'PAGADO' || ventaDetalleSeleccionada?.estado === 'COMPLETADA'
+                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400' 
+                  : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-400'"
+                  class="px-2 py-0.5 rounded text-[10px] font-bold">
+              {{ ventaDetalleSeleccionada?.estado }}
+            </span>
+          </div>
+        </div>
+
+        <div class="space-y-1.5 max-h-48 overflow-y-auto">
+          <div *ngFor="let d of ventaDetalleSeleccionada?.detalles" class="p-2 border border-stone-100 dark:border-slate-800 rounded-lg flex justify-between items-center">
+            <div>
+              <strong class="block">{{ d.producto }}</strong>
+              <span class="text-[11px] text-zinc-500">{{ d.talla || '' }} / {{ d.color || '' }} • SKU: {{ d.sku }}</span>
+            </div>
+            <div class="text-right font-mono">
+              <span>{{ d.cantidad }} x Bs. {{ d.precio_unitario.toFixed(2) }}</span>
+              <strong class="block text-zinc-900 dark:text-white">Bs. {{ d.subtotal.toFixed(2) }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-stone-200 dark:border-slate-800 flex justify-between font-bold text-sm">
+          <span>Total Venta:</span>
+          <span class="text-indigo-600 dark:text-indigo-400 font-mono">Bs. {{ ventaDetalleSeleccionada?.total?.toFixed(2) }}</span>
+        </div>
+
+        <!-- Acciones directas W28 / W29 desde el detalle -->
+        <div class="pt-2 border-t border-stone-200 dark:border-slate-800 flex justify-end gap-2">
+          <button *ngIf="ventaDetalleSeleccionada?.estado === 'PENDIENTE_PAGO'"
+                  (click)="irACobrar(ventaDetalleSeleccionada!.id_venta)"
+                  class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow transition-all flex items-center justify-center gap-2">
+            💳 Proceder al Cobro en Caja (W28)
+          </button>
+          <button *ngIf="ventaDetalleSeleccionada?.estado === 'PAGADO' || ventaDetalleSeleccionada?.estado === 'COMPLETADA'"
+                  (click)="irAComprobante(ventaDetalleSeleccionada!.id_venta)"
+                  class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow transition-all flex items-center justify-center gap-2">
+            🧾 Ver / Emitir Comprobante (W29)
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>

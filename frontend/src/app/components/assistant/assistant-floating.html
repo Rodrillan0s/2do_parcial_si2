@@ -1,0 +1,550 @@
+<!-- ========================================================================= -->
+<!-- W13 / ITER 2-3: AURORA ADVISOR — ORQUESTADOR CONVERSACIONAL INTELIGENTE  -->
+<!-- ========================================================================= -->
+
+<div class="assistant-wrapper fixed z-[9999] bottom-6 right-6 font-sans">
+
+  <!-- 1. BURBUJA FLOTANTE INTERACTIVA -->
+  <button
+    *ngIf="!isOpen"
+    (click)="alternarPanel()"
+    class="assistant-bubble group relative flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-tr from-amber-600 via-amber-500 to-yellow-400 text-black shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 hover:scale-105 active:scale-95 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 dark:focus:ring-offset-zinc-950"
+    aria-label="Abrir asistente"
+    title="Abrir Aurora Advisor">
+    
+    <span class="absolute inset-0 rounded-full bg-amber-400/30 animate-ping pointer-events-none opacity-75"></span>
+    
+    <svg class="w-7 h-7 relative z-10 transition-transform duration-300 group-hover:rotate-12" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2L14.4 7.6L20 10L14.4 12.4L12 18L9.6 12.4L4 10L9.6 7.6L12 2Z" />
+      <path d="M19 15L20.2 17.8L23 19L20.2 20.2L19 23L17.8 20.2L15 19L17.8 17.8L19 15Z" opacity="0.8" />
+    </svg>
+
+    <span class="absolute right-16 px-3 py-1.5 rounded-lg bg-zinc-900 text-white text-xs font-medium whitespace-nowrap shadow-md opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 border border-zinc-800">
+      ✨ Aurora Advisor IA
+    </span>
+  </button>
+
+  <!-- 2. PANEL DE CONVERSACIÓN ABIERTO -->
+  <div
+    *ngIf="isOpen"
+    class="assistant-panel w-[410px] h-[630px] max-w-[calc(100vw-2rem)] max-h-[calc(100vh-5rem)] flex flex-col bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-stone-200 dark:border-zinc-800 rounded-3xl shadow-2xl shadow-black/20 dark:shadow-black/60 overflow-hidden animate-slide-up transition-all duration-300">
+
+    <!-- A. ENCABEZADO DEL ASISTENTE -->
+    <header class="flex items-center justify-between px-4 py-3.5 bg-stone-50/80 dark:bg-zinc-900/80 border-b border-stone-200/80 dark:border-zinc-800/80">
+      <div class="flex items-center gap-3">
+        <div class="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-400 text-black shadow-sm font-bold">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2L14.4 7.6L20 10L14.4 12.4L12 18L9.6 12.4L4 10L9.6 7.6L12 2Z" />
+          </svg>
+          <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-zinc-900"></span>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+            Aurora Advisor
+            <span class="text-[10px] font-medium tracking-wide uppercase px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+              {{ esAdmin ? 'Copiloto Pro' : 'Personal Shopper' }}
+            </span>
+          </h3>
+          <div class="flex items-center gap-2 mt-0.5">
+            <p class="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-medium">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+              Contexto Activo
+            </p>
+            <div class="inline-flex items-center rounded-lg bg-stone-200/70 dark:bg-zinc-800 p-0.5 border border-stone-300/60 dark:border-zinc-700/70">
+              <button
+                type="button"
+                (click)="seleccionarModelo('deepseek-chat')"
+                [class.bg-amber-500]="selectedModel === 'deepseek-chat'"
+                [class.text-black]="selectedModel === 'deepseek-chat'"
+                [class.font-bold]="selectedModel === 'deepseek-chat'"
+                [class.text-zinc-500]="selectedModel !== 'deepseek-chat'"
+                class="text-[10px] px-1.5 py-0.5 rounded-md transition-all"
+                title="DeepSeek Chat (V3) — Respuesta rápida y Function Calling nativo">
+                ⚡ V3 Chat
+              </button>
+              <button
+                type="button"
+                (click)="seleccionarModelo('deepseek-reasoner')"
+                [class.bg-amber-500]="selectedModel === 'deepseek-reasoner'"
+                [class.text-black]="selectedModel === 'deepseek-reasoner'"
+                [class.font-bold]="selectedModel === 'deepseek-reasoner'"
+                [class.text-zinc-500]="selectedModel !== 'deepseek-reasoner'"
+                class="text-[10px] px-1.5 py-0.5 rounded-md transition-all"
+                title="DeepSeek Reasoner (R1) — Razonamiento profundo y analítico">
+                🧠 R1 Reasoner
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones de Acción de Cabecera -->
+      <div class="flex items-center gap-1 text-zinc-400 dark:text-zinc-500">
+        <button
+          (click)="reiniciarConversacion()"
+          class="p-1.5 rounded-lg hover:bg-stone-200/60 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
+          title="Nueva conversación"
+          aria-label="Nueva conversación">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </button>
+
+        <button
+          (click)="cerrarPanel()"
+          class="p-1.5 rounded-lg hover:bg-stone-200/60 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
+          title="Cerrar asistente"
+          aria-label="Cerrar asistente">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- B. CONTENEDOR PRINCIPAL DE MENSAJES -->
+    <main #scrollContainer class="flex-1 overflow-y-auto p-4 space-y-4 text-sm assistant-scroll">
+      
+      <div *ngFor="let msg of messages" class="flex flex-col">
+        
+        <!-- 1. Mensaje del Usuario -->
+        <div *ngIf="msg.role === 'user'" class="flex justify-end">
+          <div class="bg-amber-500 text-black font-medium rounded-2xl rounded-tr-none px-4 py-2.5 max-w-[85%] shadow-sm">
+            {{ msg.content }}
+          </div>
+        </div>
+
+        <!-- 2. Mensaje del Asistente -->
+        <div *ngIf="msg.role === 'assistant'" class="flex items-start gap-2.5">
+          <div class="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center flex-shrink-0 mt-0.5 border border-amber-500/20">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L14.4 7.6L20 10L14.4 12.4L12 18L9.6 12.4L4 10L9.6 7.6L12 2Z" />
+            </svg>
+          </div>
+
+          <div class="flex-1 space-y-2.5 min-w-0">
+            <!-- Burbuja de texto principal -->
+            <div
+              [class.border-red-400]="msg.isError"
+              [class.bg-red-50]="msg.isError"
+              class="bg-stone-100 dark:bg-zinc-800/80 text-zinc-800 dark:text-zinc-200 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm border border-stone-200/50 dark:border-zinc-700/50 leading-relaxed text-[13.5px]">
+              <div [innerHTML]="formatearTexto(msg.content)"></div>
+
+              <!-- Botón Reintentar en caso de error -->
+              <div *ngIf="msg.isError" class="mt-2 pt-2 border-t border-stone-200/60 dark:border-zinc-700/60 flex justify-end">
+                <button
+                  type="button"
+                  (click)="reintentar()"
+                  class="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-black transition-colors">
+                  ↻ Reintentar consulta
+                </button>
+              </div>
+            </div>
+
+            <!-- Insignias de herramientas usadas (Transparencia del Orquestador) -->
+            <div *ngIf="msg.herramientas_usadas && msg.herramientas_usadas.length > 0" class="flex flex-wrap gap-1">
+              <span *ngFor="let tool of msg.herramientas_usadas" class="text-[10px] px-2 py-0.5 rounded-full bg-stone-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-stone-200/70 dark:border-zinc-700">
+                ⚡ {{ tool }}
+              </span>
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- RENDERIZADO ENRIQUECIDO DE WIDGETS SEGÚN TIPO             -->
+            <!-- ========================================================= -->
+
+            <!-- Tipo A: PRODUCTOS Y RECOMENDACIONES ML -->
+            <div *ngIf="(msg.tipo === 'productos' || msg.tipo === 'recomendaciones') && getProductos(msg.datos).length > 0" class="space-y-2 pt-1">
+              <!-- Etiqueta Inicio Frío vs Perfil Personalizado -->
+              <div *ngIf="msg.tipo === 'recomendaciones' && asAny(msg.datos).estrategia" class="px-2.5 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-300 flex items-center justify-between">
+                <span>🎯 {{ asAny(msg.datos).perfil_detectado || 'Selección Inteligente' }}</span>
+                <span *ngIf="asAny(msg.datos).es_inicio_frio" class="text-[10px] px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">Tendencias</span>
+              </div>
+
+              <div class="grid grid-cols-1 gap-2">
+                <div *ngFor="let prod of getProductos(msg.datos) | slice:0:6" class="group flex gap-3 p-2.5 rounded-xl bg-white dark:bg-zinc-800/60 border border-stone-200 dark:border-zinc-700/60 hover:border-amber-500/40 transition-all shadow-sm">
+                  <div class="w-14 h-16 rounded-lg overflow-hidden bg-stone-100 dark:bg-zinc-900 flex-shrink-0 border border-stone-200/60 dark:border-zinc-700/60 flex items-center justify-center">
+                    <img 
+                      *ngIf="prod.imagen_url || prod.imagen"
+                      [src]="prod.imagen_url || prod.imagen" 
+                      [alt]="prod.nombre"
+                      class="w-full h-full object-cover" />
+                    <span *ngIf="!prod.imagen_url && !prod.imagen" class="text-lg">👗</span>
+                  </div>
+                  
+                  <div class="flex-1 flex flex-col justify-between min-w-0">
+                    <div>
+                      <div class="flex items-start justify-between gap-1">
+                        <h4 class="font-medium text-xs text-zinc-900 dark:text-zinc-100 truncate" [title]="prod.nombre">
+                          {{ prod.nombre }}
+                        </h4>
+                        <span class="text-xs font-bold text-amber-600 dark:text-amber-400 whitespace-nowrap">
+                          Bs. {{ prod.precio | number:'1.2-2' }}
+                        </span>
+                      </div>
+                      <p class="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-1 mt-0.5">
+                        {{ prod.categoria || 'Moda' }}
+                        <span *ngIf="prod.tallas_disponibles"> • Tallas: {{ prod.tallas_disponibles }}</span>
+                      </p>
+                      <p *ngIf="prod.motivo_recomendacion" class="text-[10px] text-amber-700 dark:text-amber-400 mt-1 line-clamp-2">
+                        💡 {{ prod.motivo_recomendacion }}
+                      </p>
+                    </div>
+
+                    <div class="mt-1.5 flex items-center justify-between">
+                      <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                        ✓ Stock: {{ prod.stock_total || prod.stock_disponible || 'Disponible' }}
+                      </span>
+                      <button
+                        type="button"
+                        (click)="verProducto(prod)"
+                        class="text-[11px] font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-700 flex items-center gap-0.5">
+                        Ver prenda →
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tipo B: OUTFIT COMPLETO -->
+            <div *ngIf="msg.tipo === 'outfit' && msg.datos" class="p-3 rounded-xl bg-gradient-to-br from-amber-500/10 to-stone-100 dark:from-amber-500/10 dark:to-zinc-800 border border-amber-500/30 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                  ✨ Look {{ asAny(msg.datos).ocasion | titlecase }}
+                </span>
+                <span class="text-xs font-bold text-amber-600 dark:text-amber-400">
+                  Total: Bs. {{ asAny(msg.datos).total_outfit_bs | number:'1.2-2' }}
+                </span>
+              </div>
+              <div class="space-y-1.5">
+                <div *ngFor="let pieza of getProductos(msg.datos)" class="flex items-center justify-between p-2 rounded-lg bg-white/80 dark:bg-zinc-900/70 border border-stone-200/60 dark:border-zinc-700/60 text-xs">
+                  <div class="truncate pr-2">
+                    <p class="font-medium text-zinc-900 dark:text-zinc-100 truncate">{{ pieza.nombre }}</p>
+                    <p class="text-[10px] text-zinc-500">{{ pieza.categoria }} • {{ pieza.colores_disponibles || 'Varios' }}</p>
+                  </div>
+                  <div class="flex items-center gap-2 flex-shrink-0">
+                    <span class="font-bold text-amber-600 dark:text-amber-400">Bs. {{ pieza.precio | number:'1.2-2' }}</span>
+                    <button type="button" (click)="verProducto(pieza)" class="text-[10px] underline text-zinc-600 dark:text-zinc-300">Ver</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tipo C: COMPARACIÓN DE PRODUCTOS -->
+            <div *ngIf="msg.tipo === 'comparacion' && msg.datos" class="p-3 rounded-xl bg-white dark:bg-zinc-800/80 border border-stone-200 dark:border-zinc-700 space-y-2">
+              <div class="text-xs font-bold text-zinc-800 dark:text-zinc-200 flex items-center justify-between">
+                <span>⚖️ Comparativa de Prendas</span>
+                <span *ngIf="asAny(msg.datos).mas_economico" class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                  Más económico: Bs. {{ asAny(msg.datos).mas_economico.precio }}
+                </span>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div *ngFor="let item of getProductos(msg.datos) | slice:0:4" class="p-2 rounded-lg bg-stone-50 dark:bg-zinc-900/70 border border-stone-200/60 dark:border-zinc-700 text-[11px] flex flex-col justify-between">
+                  <div>
+                    <p class="font-semibold text-zinc-900 dark:text-zinc-100 line-clamp-2">{{ item.nombre }}</p>
+                    <p class="text-amber-600 dark:text-amber-400 font-bold mt-1">Bs. {{ item.precio | number:'1.2-2' }}</p>
+                  </div>
+                  <div class="mt-1.5 pt-1 border-t border-stone-200/60 dark:border-zinc-800 text-[10px] text-zinc-500">
+                    <p>Stock: {{ item.stock_total || item.stock_disponible || 0 }} un.</p>
+                    <p class="truncate">Tallas: {{ item.tallas_disponibles || 'N/A' }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tipo D: PREDICCIONES DE DEMANDA (CU23W) -->
+            <div *ngIf="msg.tipo === 'predicciones' && msg.datos" class="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/25 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-indigo-700 dark:text-indigo-300">
+                  🔮 Proyección IA ({{ asAny(msg.datos).dias_proyeccion || 14 }} días)
+                </span>
+                <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-700 dark:text-indigo-300">
+                  {{ asAny(msg.datos).tendencia || 'ESTABLE' }}
+                </span>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-xs">
+                <div class="p-2 rounded-lg bg-white/80 dark:bg-zinc-900/70">
+                  <span class="text-[10px] text-zinc-500 block">Demanda Estimada</span>
+                  <strong class="text-sm text-zinc-900 dark:text-zinc-100">{{ asAny(msg.datos).demanda_total_proyectada }} un.</strong>
+                </div>
+                <div class="p-2 rounded-lg bg-white/80 dark:bg-zinc-900/70">
+                  <span class="text-[10px] text-zinc-500 block">Promedio Diario</span>
+                  <strong class="text-sm text-zinc-900 dark:text-zinc-100">{{ asAny(msg.datos).promedio_diario_proyectado }} un./día</strong>
+                </div>
+              </div>
+              <div class="flex items-center justify-between text-[10px] text-zinc-500 dark:text-zinc-400">
+                <span>Modelo: {{ asAny(msg.datos).modelo_seleccionado || 'Ensemble' }}</span>
+                <button type="button" (click)="irARuta('/predicciones')" class="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
+                  Abrir Panel CU23W →
+                </button>
+              </div>
+            </div>
+
+            <!-- Tipo E: ALERTAS DE STOCK Y RIESGO DE QUIEBRE -->
+            <div *ngIf="msg.tipo === 'alertas' && getAlertas(msg.datos).length > 0" class="space-y-1.5 pt-1">
+              <div *ngFor="let alerta of getAlertas(msg.datos) | slice:0:5" class="p-2.5 rounded-xl bg-red-500/10 border border-red-500/25 flex items-center justify-between text-xs">
+                <div class="min-w-0 pr-2">
+                  <p class="font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+                    {{ asAny(alerta).nombre_producto || asAny(alerta).producto || asAny(alerta).nombre }}
+                  </p>
+                  <p class="text-[10px] text-zinc-500 dark:text-zinc-400">
+                    {{ asAny(alerta).sucursal || asAny(alerta).talla || 'Inventario' }}
+                    <span *ngIf="asAny(alerta).dias_cobertura_estimados !== undefined"> • Cobertura: {{ asAny(alerta).dias_cobertura_estimados }} días</span>
+                  </p>
+                </div>
+                <div class="text-right flex-shrink-0">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500 text-white">
+                    Stock: {{ asAny(alerta).stock_disponible ?? asAny(alerta).stock_actual ?? 0 }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tipo F: SEGUIMIENTO DE PEDIDOS Y RESERVAS -->
+            <div *ngIf="msg.tipo === 'seguimiento_pedido' && msg.datos" class="p-3 rounded-xl bg-white dark:bg-zinc-800/80 border border-stone-200 dark:border-zinc-700 space-y-2 text-xs">
+              <div *ngIf="asAny(msg.datos).pedidos && asAny(msg.datos).pedidos.length > 0" class="space-y-1">
+                <span class="text-[10px] font-bold uppercase text-zinc-500">Compras Recientes</span>
+                <div *ngFor="let ped of asAny(msg.datos).pedidos | slice:0:3" class="flex justify-between items-center p-2 rounded-lg bg-stone-50 dark:bg-zinc-900/60">
+                  <div>
+                    <p class="font-semibold">#{{ asAny(ped).id_venta || asAny(ped).numero_pedido }} • {{ asAny(ped).sucursal || 'Tienda' }}</p>
+                    <p class="text-[10px] text-zinc-500">{{ asAny(ped).fecha }}</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-bold text-amber-600 dark:text-amber-400">Bs. {{ (asAny(ped).total ?? asAny(ped).total_bs ?? 0) | number:'1.2-2' }}</p>
+                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600">{{ asAny(ped).estado }}</span>
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="asAny(msg.datos).reservas && asAny(msg.datos).reservas.length > 0" class="space-y-1">
+                <span class="text-[10px] font-bold uppercase text-zinc-500">Reservas Activas</span>
+                <div *ngFor="let res of asAny(msg.datos).reservas | slice:0:3" class="flex justify-between items-center p-2 rounded-lg bg-stone-50 dark:bg-zinc-900/60">
+                  <span>Reserva #{{ asAny(res).id_reserva || asAny(res).codigo_reserva }} ({{ asAny(res).sucursal || 'Tienda' }})</span>
+                  <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-600">{{ asAny(res).estado }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tipo G: TABLA DE DATOS -->
+            <div *ngIf="msg.tipo === 'tabla' && getItemsTabla(msg.datos).length > 0" class="pt-1 overflow-x-auto rounded-xl border border-stone-200 dark:border-zinc-700/70 shadow-sm bg-white dark:bg-zinc-800/80">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead class="bg-stone-50 dark:bg-zinc-800 text-[10px] uppercase font-bold text-zinc-500 dark:text-zinc-400 border-b border-stone-200 dark:border-zinc-700">
+                  <tr>
+                    <th class="p-2.5">Ítem / Prenda</th>
+                    <th class="p-2.5">Detalle</th>
+                    <th class="p-2.5 text-right">Valor / Stock</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-stone-100 dark:divide-zinc-700/60">
+                  <tr *ngFor="let item of getItemsTabla(msg.datos) | slice:0:6" class="hover:bg-amber-500/5">
+                    <td class="p-2.5 font-medium text-zinc-900 dark:text-zinc-100">
+                      {{ asAny(item).nombre_producto || asAny(item).prenda || asAny(item).nombre || asAny(item).sucursal }}
+                    </td>
+                    <td class="p-2.5 text-zinc-500 dark:text-zinc-400 text-[11px]">
+                      {{ asAny(item).sucursal || asAny(item).categoria || asAny(item).nivel_urgencia || asAny(item).direccion || '' }}
+                    </td>
+                    <td class="p-2.5 text-right font-bold text-zinc-800 dark:text-zinc-200">
+                      <span *ngIf="asAny(item).cantidad_sugerida_reposicion !== undefined" class="text-amber-600 dark:text-amber-400">
+                        +{{ asAny(item).cantidad_sugerida_reposicion }} un.
+                      </span>
+                      <span *ngIf="asAny(item).unidades_vendidas !== undefined">
+                        {{ asAny(item).unidades_vendidas }} vend.
+                      </span>
+                      <span *ngIf="asAny(item).stock_disponible !== undefined && asAny(item).cantidad_sugerida_reposicion === undefined">
+                        {{ asAny(item).stock_disponible }} un.
+                      </span>
+                      <span *ngIf="asAny(item).ingresos_bs !== undefined && asAny(item).unidades_vendidas === undefined">
+                        Bs. {{ asAny(item).ingresos_bs | number:'1.2-2' }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Tipo H: INDICADORES KPI -->
+            <div *ngIf="msg.tipo === 'indicadores' && msg.datos" class="pt-1 grid grid-cols-2 gap-2">
+              <div class="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                <span class="text-[10px] font-semibold uppercase text-amber-700 dark:text-amber-400">Ingresos (Bs.)</span>
+                <p class="text-base font-bold text-amber-600 dark:text-amber-400 mt-0.5">
+                  Bs. {{ (asAny(msg.datos).ingresos_totales ?? asAny(msg.datos).total_ventas_bs ?? asAny(msg.datos).facturacion_total_bs ?? 0) | number:'1.2-2' }}
+                </p>
+              </div>
+
+              <div class="p-2.5 rounded-xl bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700">
+                <span class="text-[10px] font-semibold uppercase text-zinc-500 dark:text-zinc-400">Transacciones</span>
+                <p class="text-base font-bold text-zinc-900 dark:text-zinc-100 mt-0.5">
+                  {{ asAny(msg.datos).total_transacciones ?? asAny(msg.datos).total_ventas ?? 0 }}
+                </p>
+              </div>
+
+              <div class="col-span-2 p-2.5 rounded-xl bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 flex justify-between items-center">
+                <span class="text-xs text-zinc-500 dark:text-zinc-400 font-medium">Ticket Promedio</span>
+                <span class="text-xs font-bold text-zinc-800 dark:text-zinc-200">
+                  Bs. {{ (asAny(msg.datos).ticket_promedio ?? asAny(msg.datos).ticket_promedio_bs ?? 0) | number:'1.2-2' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Tipo I: REPORTE DINÁMICO -->
+            <div *ngIf="msg.tipo === 'reporte' && msg.datos" class="pt-1 p-3 rounded-xl bg-stone-100 dark:bg-zinc-800/80 border border-stone-200 dark:border-zinc-700 flex flex-col gap-2">
+              <div class="flex items-center justify-between text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+                <span>📋 {{ asAny(msg.datos).reporte_generado || 'Reporte Dinámico' }}</span>
+                <span class="text-[10px] text-amber-600 dark:text-amber-400">{{ asAny(msg.datos).total_filas || 0 }} filas</span>
+              </div>
+              <button
+                type="button"
+                (click)="irARuta('/reportes')"
+                class="w-full py-1.5 px-2.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold transition-colors">
+                Abrir Motor de Reportes →
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Indicador de Carga con Botón Detener -->
+      <div *ngIf="isLoading" class="flex items-center justify-between gap-2.5 pt-1">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center flex-shrink-0 border border-amber-500/20">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L14.4 7.6L20 10L14.4 12.4L12 18L9.6 12.4L4 10L9.6 7.6L12 2Z" />
+            </svg>
+          </div>
+          <div class="px-3.5 py-2 rounded-2xl rounded-tl-none bg-stone-100 dark:bg-zinc-800/80 text-zinc-500 dark:text-zinc-400 text-xs flex items-center gap-2 shadow-sm border border-stone-200/50 dark:border-zinc-700/50">
+            <span>Aurora está analizando</span>
+            <span class="flex gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-bounce"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-bounce [animation-delay:0.15s]"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-bounce [animation-delay:0.3s]"></span>
+            </span>
+          </div>
+        </div>
+        <button
+          type="button"
+          (click)="detenerRespuesta()"
+          class="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/20 transition-colors">
+          ⏹ Detener
+        </button>
+      </div>
+
+    </main>
+
+    <!-- C. BARRA DE ENTRADA, TRANSCRIPCIÓN DE VOZ Y ACCIONES -->
+    <footer class="p-3 bg-stone-50/90 dark:bg-zinc-900/90 border-t border-stone-200/80 dark:border-zinc-800/80">
+      
+      <!-- Alerta de error de micrófono -->
+      <div *ngIf="speechError" class="mb-2 px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-[11px] text-red-600 dark:text-red-400">
+        🎙️ {{ speechError }}
+      </div>
+
+      <!-- Vista previa de transcripción de voz en curso -->
+      <div *ngIf="isListening || transcripcionPrevia" class="mb-2 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-2 text-xs">
+        <span class="truncate text-zinc-800 dark:text-zinc-200">
+          🎙️ {{ transcripcionPrevia || 'Escuchando tu voz...' }}
+        </span>
+        <span class="text-[10px] text-amber-600 dark:text-amber-400 whitespace-nowrap font-semibold">
+          Editable abajo
+        </span>
+      </div>
+
+      <!-- Sugerencias rápidas según rol -->
+      <div *ngIf="messages.length <= 1" class="flex gap-1.5 overflow-x-auto pb-2 mb-1 scrollbar-none">
+        <ng-container *ngIf="!esAdmin">
+          <button
+            type="button"
+            (click)="sugerirConsulta('Busco un outfit formal por menos de 450 Bs')"
+            class="text-[11px] px-2.5 py-1 rounded-full bg-stone-200/70 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-amber-500/20 hover:text-amber-600 dark:hover:text-amber-400 whitespace-nowrap transition-colors">
+            ✨ Armar Outfit
+          </button>
+          <button
+            type="button"
+            (click)="sugerirConsulta('¿Qué prendas tienen en oferta hoy?')"
+            class="text-[11px] px-2.5 py-1 rounded-full bg-stone-200/70 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-amber-500/20 hover:text-amber-600 dark:hover:text-amber-400 whitespace-nowrap transition-colors">
+            🏷️ Ofertas
+          </button>
+          <button
+            type="button"
+            (click)="sugerirConsulta('¿Dónde quedan las sucursales?')"
+            class="text-[11px] px-2.5 py-1 rounded-full bg-stone-200/70 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-amber-500/20 hover:text-amber-600 dark:hover:text-amber-400 whitespace-nowrap transition-colors">
+            📍 Sucursales
+          </button>
+        </ng-container>
+
+        <ng-container *ngIf="esAdmin">
+          <button
+            type="button"
+            (click)="sugerirConsulta('¿Cómo estuvieron las ventas esta semana y qué stock crítico tenemos?')"
+            class="text-[11px] px-2.5 py-1 rounded-full bg-stone-200/70 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-amber-500/20 hover:text-amber-600 dark:hover:text-amber-400 whitespace-nowrap transition-colors">
+            📊 Ventas + Stock Crítico
+          </button>
+          <button
+            type="button"
+            (click)="sugerirConsulta('¿Cuál es la proyección de demanda y sugerencias de reposición?')"
+            class="text-[11px] px-2.5 py-1 rounded-full bg-stone-200/70 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-amber-500/20 hover:text-amber-600 dark:hover:text-amber-400 whitespace-nowrap transition-colors">
+            🔮 Demanda CU23W
+          </button>
+          <button
+            type="button"
+            (click)="sugerirConsulta('¿Qué productos tienen stock sin rotación en los últimos 30 días?')"
+            class="text-[11px] px-2.5 py-1 rounded-full bg-stone-200/70 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-amber-500/20 hover:text-amber-600 dark:hover:text-amber-400 whitespace-nowrap transition-colors">
+            📦 Sin Rotación
+          </button>
+        </ng-container>
+      </div>
+
+      <!-- Barra de Input con Micrófono y Envío -->
+      <div class="relative flex items-center gap-2">
+        <input
+          #inputMensaje
+          type="text"
+          [(ngModel)]="mensajeTexto"
+          (keydown)="onKeyDown($event)"
+          [disabled]="isLoading"
+          placeholder="Pregunta en lenguaje natural o dicta por voz..."
+          class="w-full pl-3.5 pr-20 py-2.5 text-xs rounded-xl bg-white dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all disabled:opacity-60" />
+
+        <div class="absolute right-1.5 flex items-center gap-1">
+          <!-- Botón de Micrófono (Web Speech API) -->
+          <button
+            type="button"
+            (click)="alternarMicrofono()"
+            [disabled]="isLoading"
+            [class.bg-red-500]="isListening"
+            [class.text-white]="isListening"
+            [class.animate-pulse]="isListening"
+            [class.text-zinc-400]="!isListening"
+            class="p-1.5 rounded-lg hover:bg-stone-100 dark:hover:bg-zinc-700 hover:text-amber-500 transition-all"
+            [title]="isListening ? 'Escuchando... Haz clic para detener' : 'Dictar por voz (editable antes de enviar)'"
+            aria-label="Hablar por micrófono">
+            <svg *ngIf="!isListening" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+            </svg>
+            <span *ngIf="isListening" class="flex items-center gap-0.5 px-0.5">
+              <span class="w-1 h-3 bg-white rounded-full animate-pulse"></span>
+              <span class="w-1 h-4 bg-white rounded-full animate-pulse [animation-delay:0.1s]"></span>
+              <span class="w-1 h-2 bg-white rounded-full animate-pulse [animation-delay:0.2s]"></span>
+            </span>
+          </button>
+
+          <!-- Botón Enviar Mensaje -->
+          <button
+            type="button"
+            (click)="enviar()"
+            [disabled]="!mensajeTexto.trim() || isLoading"
+            class="p-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 active:scale-95 text-black disabled:opacity-40 disabled:hover:bg-amber-500 transition-all font-bold"
+            title="Enviar mensaje"
+            aria-label="Enviar mensaje">
+            <svg class="w-4 h-4 transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19V5m0 0l-7 7m7-7l7 7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+    </footer>
+
+  </div>
+
+</div>
