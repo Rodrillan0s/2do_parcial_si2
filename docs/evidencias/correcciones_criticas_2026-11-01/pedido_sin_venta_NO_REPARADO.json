@@ -1,0 +1,46 @@
+[
+  {
+    "id_pedido": 8882,
+    "sql": {
+      "details": {
+        "query": "SELECT id_detalle_pedido,id_variante,cantidad,subtotal FROM t_detalle_pedido WHERE id_pedido=%s ORDER BY 1",
+        "params": [
+          8882
+        ]
+      },
+      "receipts_explicit_order_id": {
+        "query": "SELECT operation_id,status,id_usuario,id_empresa,response_json->'data'->>'id_venta'\n                        FROM t_sync_operacion WHERE response_json->'data'->>'id_pedido'=%s OR response_json->>'id_pedido'=%s",
+        "params": [
+          "8882",
+          "8882"
+        ]
+      },
+      "audit_explicit_order_id": {
+        "query": "SELECT id_bitacora,modulo,accion,entidad,id_entidad,fecha_hora,\n                        datos_nuevos->>'id_venta' FROM t_bitacora\n                        WHERE (entidad IN ('t_pedido','Pedido','PEDIDO') AND id_entidad=%s)\n                           OR datos_nuevos->>'id_pedido'=%s ORDER BY id_bitacora",
+        "params": [
+          "8882",
+          "8882"
+        ]
+      },
+      "candidate_sales_same_client_tenant_total_NOT_APPROVED": {
+        "query": "SELECT v.id_venta,v.id_sucursal,v.fecha_venta,v.total,v.estado,\n                        array_agg(p.id_pago ORDER BY p.id_pago) FILTER (WHERE p.id_pago IS NOT NULL),\n                        COALESCE(sum(p.monto) FILTER (WHERE p.estado='APROBADO'),0)\n                        FROM t_venta v LEFT JOIN t_pago p ON p.id_venta=v.id_venta\n                        WHERE v.id_cliente=%s AND v.id_empresa=%s AND v.total=%s\n                        GROUP BY v.id_venta ORDER BY v.id_venta",
+        "params": [
+          9,
+          1,
+          "1180.00"
+        ]
+      }
+    },
+    "details": [
+      {
+        "id_detalle_pedido": 10,
+        "id_variante": 16,
+        "cantidad": 1,
+        "subtotal": "1200.00"
+      }
+    ],
+    "receipts_explicit_order_id": [],
+    "audit_explicit_order_id": [],
+    "candidate_sales_same_client_tenant_total_NOT_APPROVED": []
+  }
+]

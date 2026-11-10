@@ -1,0 +1,48 @@
+{
+  "transaction_read_only": "on",
+  "schema": "comercio",
+  "postgres_settings": {
+    "fsync": "on",
+    "full_page_writes": "on",
+    "server_version": "17.11 (Ubuntu 17.11-1.pgdg22.04+2)",
+    "synchronous_commit": "on"
+  },
+  "relations": [
+    null,
+    null,
+    null
+  ],
+  "columns": [],
+  "constraints": [],
+  "indexes": [],
+  "payment_reference_columns": [
+    [
+      "t_pago",
+      "codigo_transaccion",
+      "character varying",
+      100
+    ],
+    [
+      "t_pago",
+      "referencia_externa",
+      "character varying",
+      150
+    ]
+  ],
+  "business_functions": [
+    {
+      "name": "fn_registrar_venta_pos",
+      "sha256": "bcc907172bfce97f9d6827941f91f7fd0071112a995d588ed758a027792c7fa5",
+      "has_for_update": true
+    },
+    {
+      "name": "fn_reservar_stock",
+      "sha256": "cc21fefffcd58ac9cd04355d1dbceb144ff74f14a203f034e90e670b9240371f",
+      "has_for_update": true
+    }
+  ],
+  "migrations": [],
+  "required_columns_present": false,
+  "cutover_control_present": false,
+  "audit_date": "2026-10-31"
+}

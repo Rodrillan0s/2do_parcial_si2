@@ -1,0 +1,689 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 1720" width="1440" height="1720">
+    <defs>
+        <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+            <feDropShadow dx="2" dy="3" stdDeviation="3" flood-opacity="0.1" flood-color="#0f172a"/>
+        </filter>
+        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1 L 9 5 L 0 9" fill="none" stroke="#475569" stroke-width="1.6" stroke-linecap="round"/>
+        </marker>
+        <marker id="arrow-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1 L 9 5 L 0 9" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round"/>
+        </marker>
+        <linearGradient id="mod-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#fff5f5"/>
+            <stop offset="100%" stop-color="#fee2e2"/>
+        </linearGradient>
+        <linearGradient id="mod-grad-ia" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#faf5ff"/>
+            <stop offset="100%" stop-color="#f3e8ff"/>
+        </linearGradient>
+        <linearGradient id="mod-grad-db" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#f0fdf4"/>
+            <stop offset="100%" stop-color="#dcfce7"/>
+        </linearGradient>
+        <linearGradient id="pkg-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="100%" stop-color="#f8fafc"/>
+        </linearGradient>
+    </defs>
+
+    <rect width="1440" height="1720" fill="#ffffff"/>
+    
+    <rect x="30" y="10" width="310" height="26" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2" rx="3"/>
+    <text x="40" y="27" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">pkg Diagrama de modulos de sistema</text>
+    
+        <path d="M 30 73 L 30 45 L 170 45 L 180 73 Z" fill="url(#pkg-grad)" stroke="#334155" stroke-width="2"/>
+        <rect x="30" y="73" width="1380" height="247" rx="3" fill="url(#pkg-grad)" stroke="#334155" stroke-width="2"/>
+        <text x="40" y="61" font-family="Segoe UI, Arial, sans-serif" font-size="10" font-weight="bold" fill="#475569">«Capa» Presentación</text>
+        
+        <path d="M 50 109 L 50 85 L 200 85 L 210 109 Z" fill="url(#pkg-grad)" stroke="#64748b" stroke-width="1.5"/>
+        <rect x="50" y="109" width="620" height="196" rx="3" fill="url(#pkg-grad)" stroke="#64748b" stroke-width="1.5"/>
+        <text x="60" y="101" font-family="Segoe UI, Arial, sans-serif" font-size="10" font-weight="bold" fill="#475569">«SubSistema» Web (Angular PWA)</text>
+        
+        <g filter="url(#shadow)">
+            <rect x="75" y="125" width="230" height="60" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="281" y="133" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="277" y="136" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="277" y="144" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="87" y="143" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="87" y="159" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">views</text>
+        
+            <text x="87" y="173" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">Storefront &amp; Admin Views</text>
+            </g>
+        <g filter="url(#shadow)">
+            <rect x="415" y="125" width="230" height="60" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="621" y="133" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="617" y="136" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="617" y="144" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="427" y="143" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="427" y="159" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">Services</text>
+        
+            <text x="427" y="173" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">HTTP Clients &amp; RxJS State</text>
+            </g>
+        <g filter="url(#shadow)">
+            <rect x="75" y="215" width="230" height="60" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="281" y="223" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="277" y="226" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="277" y="234" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="87" y="233" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="87" y="249" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">offline</text>
+        
+            <text x="87" y="263" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">IndexedDB &amp; Service Worker</text>
+            </g>
+        <path d="M 710 109 L 710 85 L 860 85 L 870 109 Z" fill="url(#pkg-grad)" stroke="#64748b" stroke-width="1.5"/>
+        <rect x="710" y="109" width="680" height="196" rx="3" fill="url(#pkg-grad)" stroke="#64748b" stroke-width="1.5"/>
+        <text x="720" y="101" font-family="Segoe UI, Arial, sans-serif" font-size="10" font-weight="bold" fill="#475569">«SubSistema» Movil (Flutter)</text>
+        
+        <g filter="url(#shadow)">
+            <rect x="735" y="125" width="200" height="60" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="911" y="133" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="907" y="136" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="907" y="144" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="747" y="143" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="747" y="159" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">Views</text>
+        
+            <text x="747" y="173" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">Flutter Mobile Screens</text>
+            </g>
+        <g filter="url(#shadow)">
+            <rect x="1045" y="125" width="200" height="60" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="1221" y="133" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="1217" y="136" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="1217" y="144" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="1057" y="143" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="1057" y="159" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">Services</text>
+        
+            <text x="1057" y="173" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">ApiClient &amp; TokenStorage</text>
+            </g>
+        <g filter="url(#shadow)">
+            <rect x="735" y="215" width="200" height="60" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="911" y="223" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="907" y="226" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="907" y="234" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="747" y="233" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="747" y="249" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">Vestidor RA</text>
+        
+            <text x="747" y="263" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">ARCore &amp; Visor 3D GLB</text>
+            </g>
+        <g filter="url(#shadow)">
+            <rect x="1045" y="215" width="200" height="60" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="1221" y="223" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="1217" y="226" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="1217" y="234" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="1057" y="233" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="1057" y="249" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">offline</text>
+        
+            <text x="1057" y="263" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">SQLite DatabaseHelper</text>
+            </g>
+        <path d="M 305 155 L 415 155" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+        
+            <rect x="342.0" y="147.0" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="360.0" y="158.0" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#475569" text-anchor="middle">«use»</text>
+            
+        <path d="M 190 185 L 190 215" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+        
+            <rect x="172.0" y="192.0" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="190.0" y="203.0" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#475569" text-anchor="middle">«use»</text>
+            
+        <path d="M 935 155 L 1045 155" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+        
+            <rect x="972.0" y="147.0" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="990.0" y="158.0" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#475569" text-anchor="middle">«use»</text>
+            
+        <path d="M 835 185 L 835 215" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+        
+            <rect x="817.0" y="192.0" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="835.0" y="203.0" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#475569" text-anchor="middle">«use»</text>
+            
+        <path d="M 935 175 L 1045 235" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+        
+            <rect x="966.5" y="194.0" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="984.5" y="205.0" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#475569" text-anchor="middle">«use»</text>
+            
+        <path d="M 30 373 L 30 345 L 170 345 L 180 373 Z" fill="url(#pkg-grad)" stroke="#334155" stroke-width="2"/>
+        <rect x="30" y="373" width="1380" height="862" rx="3" fill="url(#pkg-grad)" stroke="#334155" stroke-width="2"/>
+        <text x="40" y="361" font-family="Segoe UI, Arial, sans-serif" font-size="10" font-weight="bold" fill="#475569">«Capa» Negocio</text>
+        
+        <path d="M 50 409 L 50 385 L 210 385 L 220 409 Z" fill="url(#pkg-grad)" stroke="#475569" stroke-width="1.8"/>
+        <rect x="50" y="409" width="960" height="811" rx="3" fill="url(#pkg-grad)" stroke="#475569" stroke-width="1.8"/>
+        <text x="60" y="401" font-family="Segoe UI, Arial, sans-serif" font-size="10" font-weight="bold" fill="#475569">«SubSistema» Backend (FastAPI)</text>
+        
+        <path d="M 75 449 L 75 425 L 185 425 L 195 449 Z" fill="url(#pkg-grad)" stroke="#64748b" stroke-width="1.5"/>
+        <rect x="75" y="449" width="420" height="71" rx="3" fill="url(#pkg-grad)" stroke="#64748b" stroke-width="1.5"/>
+        <text x="85" y="441" font-family="Segoe UI, Arial, sans-serif" font-size="10" font-weight="bold" fill="#475569">«SubSistema» Seguridad</text>
+        
+        <g filter="url(#shadow)">
+            <rect x="95" y="455" width="370" height="52" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="441" y="463" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="437" y="466" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="437" y="474" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="107" y="473" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="107" y="489" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">middleware</text>
+        
+            <text x="107" y="503" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">JWT Auth &amp; Permisos RBAC</text>
+            </g>
+        <path d="M 535 449 L 535 425 L 685 425 L 695 449 Z" fill="url(#pkg-grad)" stroke="#64748b" stroke-width="1.5"/>
+        <rect x="535" y="449" width="450" height="71" rx="3" fill="url(#pkg-grad)" stroke="#64748b" stroke-width="1.5"/>
+        <text x="545" y="441" font-family="Segoe UI, Arial, sans-serif" font-size="10" font-weight="bold" fill="#475569">«SubSistema» Saas (Multi-tenant)</text>
+        
+        <g filter="url(#shadow)">
+            <rect x="555" y="455" width="400" height="52" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="931" y="463" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="927" y="466" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="927" y="474" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="567" y="473" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="567" y="489" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">Scopes</text>
+        
+            <text x="567" y="503" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">Aislamiento Tenant &amp; Sucursales</text>
+            </g>
+        <path d="M 465 480 L 555 480" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+        
+            <rect x="492.0" y="472.0" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="510.0" y="483.0" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#475569" text-anchor="middle">«use»</text>
+            
+        <path d="M 75 555 L 75 535 L 255 535 L 265 555 Z" fill="url(#pkg-grad)" stroke="#94a3b8" stroke-width="1.5"/>
+        <rect x="75" y="555" width="420" height="80" rx="3" fill="url(#pkg-grad)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="85" y="551" font-family="Segoe UI, Arial, sans-serif" font-size="10" font-weight="bold" fill="#475569">«SubSistema» Autenticacion y Usuarios</text>
+        
+        <g filter="url(#shadow)">
+            <rect x="90" y="567" width="180" height="55" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="246" y="575" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="242" y="578" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="242" y="586" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="102" y="585" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="102" y="601" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">services</text>
+        
+            <text x="102" y="615" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">Logica de Dominio</text>
+            </g>
+        <g filter="url(#shadow)">
+            <rect x="290" y="567" width="180" height="55" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="446" y="575" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="442" y="578" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="442" y="586" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="302" y="585" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="302" y="601" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">controllers</text>
+        
+            <text x="302" y="615" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">Endpoints REST / API</text>
+            </g>
+        <path d="M 290 595 L 270 595" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+        
+            <rect x="262.0" y="587.0" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="280.0" y="598.0" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#475569" text-anchor="middle">«use»</text>
+            
+        <path d="M 535 555 L 535 535 L 715 535 L 725 555 Z" fill="url(#pkg-grad)" stroke="#94a3b8" stroke-width="1.5"/>
+        <rect x="535" y="555" width="450" height="80" rx="3" fill="url(#pkg-grad)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="545" y="551" font-family="Segoe UI, Arial, sans-serif" font-size="10" font-weight="bold" fill="#475569">«SubSistema» Catalogo</text>
+        
+        <g filter="url(#shadow)">
+            <rect x="550" y="567" width="195" height="55" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="721" y="575" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="717" y="578" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="717" y="586" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="562" y="585" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="562" y="601" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">services</text>
+        
+            <text x="562" y="615" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">Logica de Dominio</text>
+            </g>
+        <g filter="url(#shadow)">
+            <rect x="765" y="567" width="195" height="55" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="936" y="575" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="932" y="578" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="932" y="586" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="777" y="585" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="777" y="601" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">controllers</text>
+        
+            <text x="777" y="615" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">Endpoints REST / API</text>
+            </g>
+        <path d="M 765 595 L 745 595" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+        
+            <rect x="737.0" y="587.0" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="755.0" y="598.0" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#475569" text-anchor="middle">«use»</text>
+            
+        <path d="M 75 670 L 75 650 L 255 650 L 265 670 Z" fill="url(#pkg-grad)" stroke="#94a3b8" stroke-width="1.5"/>
+        <rect x="75" y="670" width="420" height="80" rx="3" fill="url(#pkg-grad)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="85" y="666" font-family="Segoe UI, Arial, sans-serif" font-size="10" font-weight="bold" fill="#475569">«SubSistema» Gestion de E-Commerce</text>
+        
+        <g filter="url(#shadow)">
+            <rect x="90" y="682" width="180" height="55" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="246" y="690" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="242" y="693" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="242" y="701" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="102" y="700" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="102" y="716" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">services</text>
+        
+            <text x="102" y="730" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">Logica de Dominio</text>
+            </g>
+        <g filter="url(#shadow)">
+            <rect x="290" y="682" width="180" height="55" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="446" y="690" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="442" y="693" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="442" y="701" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="302" y="700" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="302" y="716" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">controllers</text>
+        
+            <text x="302" y="730" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">Endpoints REST / API</text>
+            </g>
+        <path d="M 290 710 L 270 710" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+        
+            <rect x="262.0" y="702.0" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="280.0" y="713.0" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#475569" text-anchor="middle">«use»</text>
+            
+        <path d="M 535 670 L 535 650 L 715 650 L 725 670 Z" fill="url(#pkg-grad)" stroke="#94a3b8" stroke-width="1.5"/>
+        <rect x="535" y="670" width="450" height="80" rx="3" fill="url(#pkg-grad)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="545" y="666" font-family="Segoe UI, Arial, sans-serif" font-size="10" font-weight="bold" fill="#475569">«SubSistema» Sucursales e Inventario</text>
+        
+        <g filter="url(#shadow)">
+            <rect x="550" y="682" width="195" height="55" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="721" y="690" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="717" y="693" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="717" y="701" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="562" y="700" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="562" y="716" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">services</text>
+        
+            <text x="562" y="730" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">Logica de Dominio</text>
+            </g>
+        <g filter="url(#shadow)">
+            <rect x="765" y="682" width="195" height="55" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="936" y="690" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="932" y="693" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="932" y="701" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="777" y="700" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="777" y="716" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">controllers</text>
+        
+            <text x="777" y="730" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">Endpoints REST / API</text>
+            </g>
+        <path d="M 765 710 L 745 710" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+        
+            <rect x="737.0" y="702.0" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="755.0" y="713.0" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#475569" text-anchor="middle">«use»</text>
+            
+        <path d="M 75 785 L 75 765 L 255 765 L 265 785 Z" fill="url(#pkg-grad)" stroke="#94a3b8" stroke-width="1.5"/>
+        <rect x="75" y="785" width="420" height="80" rx="3" fill="url(#pkg-grad)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="85" y="781" font-family="Segoe UI, Arial, sans-serif" font-size="10" font-weight="bold" fill="#475569">«SubSistema» Reservas</text>
+        
+        <g filter="url(#shadow)">
+            <rect x="90" y="797" width="180" height="55" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="246" y="805" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="242" y="808" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="242" y="816" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="102" y="815" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="102" y="831" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">services</text>
+        
+            <text x="102" y="845" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">Logica de Dominio</text>
+            </g>
+        <g filter="url(#shadow)">
+            <rect x="290" y="797" width="180" height="55" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="446" y="805" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="442" y="808" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="442" y="816" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="302" y="815" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="302" y="831" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">controllers</text>
+        
+            <text x="302" y="845" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">Endpoints REST / API</text>
+            </g>
+        <path d="M 290 825 L 270 825" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+        
+            <rect x="262.0" y="817.0" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="280.0" y="828.0" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#475569" text-anchor="middle">«use»</text>
+            
+        <path d="M 535 785 L 535 765 L 715 765 L 725 785 Z" fill="url(#pkg-grad)" stroke="#94a3b8" stroke-width="1.5"/>
+        <rect x="535" y="785" width="450" height="80" rx="3" fill="url(#pkg-grad)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="545" y="781" font-family="Segoe UI, Arial, sans-serif" font-size="10" font-weight="bold" fill="#475569">«SubSistema» Punto de Venta (POS)</text>
+        
+        <g filter="url(#shadow)">
+            <rect x="550" y="797" width="195" height="55" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="721" y="805" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="717" y="808" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="717" y="816" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="562" y="815" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="562" y="831" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">services</text>
+        
+            <text x="562" y="845" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">Logica de Dominio</text>
+            </g>
+        <g filter="url(#shadow)">
+            <rect x="765" y="797" width="195" height="55" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="936" y="805" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="932" y="808" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="932" y="816" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="777" y="815" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="777" y="831" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">controllers</text>
+        
+            <text x="777" y="845" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">Endpoints REST / API</text>
+            </g>
+        <path d="M 765 825 L 745 825" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+        
+            <rect x="737.0" y="817.0" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="755.0" y="828.0" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#475569" text-anchor="middle">«use»</text>
+            
+        <path d="M 75 900 L 75 880 L 255 880 L 265 900 Z" fill="url(#pkg-grad)" stroke="#94a3b8" stroke-width="1.5"/>
+        <rect x="75" y="900" width="420" height="80" rx="3" fill="url(#pkg-grad)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="85" y="896" font-family="Segoe UI, Arial, sans-serif" font-size="10" font-weight="bold" fill="#475569">«SubSistema» Pedidos y Reportes</text>
+        
+        <g filter="url(#shadow)">
+            <rect x="90" y="912" width="180" height="55" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="246" y="920" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="242" y="923" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="242" y="931" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="102" y="930" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="102" y="946" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">services</text>
+        
+            <text x="102" y="960" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">Logica de Dominio</text>
+            </g>
+        <g filter="url(#shadow)">
+            <rect x="290" y="912" width="180" height="55" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="446" y="920" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="442" y="923" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="442" y="931" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="302" y="930" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="302" y="946" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">controllers</text>
+        
+            <text x="302" y="960" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">Endpoints REST / API</text>
+            </g>
+        <path d="M 290 940 L 270 940" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+        
+            <rect x="262.0" y="932.0" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="280.0" y="943.0" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#475569" text-anchor="middle">«use»</text>
+            
+        <path d="M 535 900 L 535 880 L 715 880 L 725 900 Z" fill="url(#pkg-grad)" stroke="#94a3b8" stroke-width="1.5"/>
+        <rect x="535" y="900" width="450" height="80" rx="3" fill="url(#pkg-grad)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="545" y="896" font-family="Segoe UI, Arial, sans-serif" font-size="10" font-weight="bold" fill="#475569">«SubSistema» Administracion y Respaldos</text>
+        
+        <g filter="url(#shadow)">
+            <rect x="550" y="912" width="195" height="55" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="721" y="920" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="717" y="923" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="717" y="931" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="562" y="930" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="562" y="946" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">services</text>
+        
+            <text x="562" y="960" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">Logica de Dominio</text>
+            </g>
+        <g filter="url(#shadow)">
+            <rect x="765" y="912" width="195" height="55" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="936" y="920" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="932" y="923" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="932" y="931" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="777" y="930" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="777" y="946" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">controllers</text>
+        
+            <text x="777" y="960" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">Endpoints REST / API</text>
+            </g>
+        <path d="M 765 940 L 745 940" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+        
+            <rect x="737.0" y="932.0" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="755.0" y="943.0" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#475569" text-anchor="middle">«use»</text>
+            
+        <path d="M 1040 409 L 1040 385 L 1210 385 L 1220 409 Z" fill="url(#pkg-grad)" stroke="#7c3aed" stroke-width="1.8"/>
+        <rect x="1040" y="409" width="350" height="811" rx="3" fill="url(#pkg-grad)" stroke="#7c3aed" stroke-width="1.8"/>
+        <text x="1050" y="401" font-family="Segoe UI, Arial, sans-serif" font-size="10" font-weight="bold" fill="#475569">«SubSistema» Inteligencia Artificial</text>
+        
+        <g filter="url(#shadow)">
+            <rect x="1065" y="440" width="300" height="75" rx="5" fill="url(#mod-grad-ia)" stroke="#7c3aed" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="1341" y="448" width="16" height="18" rx="1" fill="#ffffff" stroke="#7c3aed" stroke-width="1.2"/>
+            <rect x="1337" y="451" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#7c3aed" stroke-width="1.1"/>
+            <rect x="1337" y="459" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#7c3aed" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="1077" y="458" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="1077" y="474" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#3b0764">Service (Orquestador IA)</text>
+        
+            <text x="1077" y="488" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">Aurora Advisor W13 / 26 Tools</text>
+            </g>
+        <g filter="url(#shadow)">
+            <rect x="1065" y="580" width="300" height="75" rx="5" fill="url(#mod-grad-ia)" stroke="#7c3aed" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="1341" y="588" width="16" height="18" rx="1" fill="#ffffff" stroke="#7c3aed" stroke-width="1.2"/>
+            <rect x="1337" y="591" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#7c3aed" stroke-width="1.1"/>
+            <rect x="1337" y="599" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#7c3aed" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="1077" y="598" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="1077" y="614" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#3b0764">Modelo de ia (LLMs)</text>
+        
+            <text x="1077" y="628" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">DeepSeek V3/R1, Gemini, OpenAI</text>
+            </g>
+        <g filter="url(#shadow)">
+            <rect x="1065" y="720" width="300" height="75" rx="5" fill="url(#mod-grad-ia)" stroke="#7c3aed" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="1341" y="728" width="16" height="18" rx="1" fill="#ffffff" stroke="#7c3aed" stroke-width="1.2"/>
+            <rect x="1337" y="731" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#7c3aed" stroke-width="1.1"/>
+            <rect x="1337" y="739" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#7c3aed" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="1077" y="738" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="1077" y="754" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#3b0764">Pronostico de Demanda</text>
+        
+            <text x="1077" y="768" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">demanda_forecast_services (Holt 95%)</text>
+            </g>
+        <g filter="url(#shadow)">
+            <rect x="1065" y="860" width="300" height="75" rx="5" fill="url(#mod-grad-ia)" stroke="#7c3aed" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="1341" y="868" width="16" height="18" rx="1" fill="#ffffff" stroke="#7c3aed" stroke-width="1.2"/>
+            <rect x="1337" y="871" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#7c3aed" stroke-width="1.1"/>
+            <rect x="1337" y="879" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#7c3aed" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="1077" y="878" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="1077" y="894" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#3b0764">Mini-ML Afinidad</text>
+        
+            <text x="1077" y="908" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">ml_preferencias_services (Cosine)</text>
+            </g>
+        <path d="M 1215 515 L 1215 580" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+        
+            <rect x="1197.0" y="539.5" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="1215.0" y="550.5" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#475569" text-anchor="middle">«use»</text>
+            
+        <path d="M 1215 655 L 1215 720" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+        
+            <rect x="1197.0" y="679.5" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="1215.0" y="690.5" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#475569" text-anchor="middle">«use»</text>
+            
+        <path d="M 1215 795 L 1215 860" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+        
+            <rect x="1197.0" y="819.5" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="1215.0" y="830.5" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#475569" text-anchor="middle">«use»</text>
+            
+        <path d="M 985 580 L 1065 480" fill="none" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow-red)"/>
+        
+            <rect x="1007.0" y="522.0" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="1025.0" y="533.0" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#dc2626" text-anchor="middle">«use»</text>
+            
+        <path d="M 30 1283 L 30 1255 L 170 1255 L 180 1283 Z" fill="url(#pkg-grad)" stroke="#334155" stroke-width="2"/>
+        <rect x="30" y="1283" width="1380" height="407" rx="3" fill="url(#pkg-grad)" stroke="#334155" stroke-width="2"/>
+        <text x="40" y="1271" font-family="Segoe UI, Arial, sans-serif" font-size="10" font-weight="bold" fill="#475569">«Capa» Datos</text>
+        
+        <path d="M 50 1319 L 50 1295 L 230 1295 L 240 1319 Z" fill="url(#pkg-grad)" stroke="#64748b" stroke-width="1.5"/>
+        <rect x="50" y="1319" width="620" height="351" rx="3" fill="url(#pkg-grad)" stroke="#64748b" stroke-width="1.5"/>
+        <text x="60" y="1311" font-family="Segoe UI, Arial, sans-serif" font-size="10" font-weight="bold" fill="#475569">«SubSistema» Persistencia de Datos</text>
+        
+        <g filter="url(#shadow)">
+            <rect x="75" y="1345" width="250" height="70" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="301" y="1353" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="297" y="1356" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="297" y="1364" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="87" y="1363" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="87" y="1379" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">repositories</text>
+        
+            <text x="87" y="1393" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">Capa SQL / Data Access</text>
+            </g>
+        <g filter="url(#shadow)">
+            <rect x="385" y="1345" width="250" height="70" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="611" y="1353" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="607" y="1356" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="607" y="1364" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="397" y="1363" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="397" y="1379" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">entities</text>
+        
+            <text x="397" y="1393" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">Modelos de Dominio / DTOs</text>
+            </g>
+        <g filter="url(#shadow)">
+            <rect x="75" y="1460" width="560" height="70" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="611" y="1468" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="607" y="1471" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="607" y="1479" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="87" y="1478" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="87" y="1494" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">Almacenamiento Local Offline</text>
+        
+            <text x="87" y="1508" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">IndexedDB (PWA) &amp; SQLite (Flutter Movil)</text>
+            </g>
+        <g filter="url(#shadow)">
+            <rect x="75" y="1570" width="560" height="70" rx="5" fill="url(#mod-grad)" stroke="#e53935" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="611" y="1578" width="16" height="18" rx="1" fill="#ffffff" stroke="#e53935" stroke-width="1.2"/>
+            <rect x="607" y="1581" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <rect x="607" y="1589" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#e53935" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="87" y="1588" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="87" y="1604" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">Conector PostgreSQL (Pool)</text>
+        
+            <text x="87" y="1618" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">app.core.postgres / Zero RTT / ContextVar</text>
+            </g>
+        <path d="M 325 1380 L 385 1380" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+        
+            <rect x="337.0" y="1372.0" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="355.0" y="1383.0" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#475569" text-anchor="middle">«use»</text>
+            
+        <path d="M 200 1415 L 200 1460" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+        
+            <rect x="182.0" y="1429.5" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="200.0" y="1440.5" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#475569" text-anchor="middle">«use»</text>
+            
+        <path d="M 355 1530 L 355 1570" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+        
+            <rect x="337.0" y="1542.0" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="355.0" y="1553.0" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#475569" text-anchor="middle">«use»</text>
+            
+        <path d="M 710 1319 L 710 1295 L 930 1295 L 940 1319 Z" fill="url(#pkg-grad)" stroke="#059669" stroke-width="1.5"/>
+        <rect x="710" y="1319" width="680" height="351" rx="3" fill="url(#pkg-grad)" stroke="#059669" stroke-width="1.5"/>
+        <text x="720" y="1311" font-family="Segoe UI, Arial, sans-serif" font-size="10" font-weight="bold" fill="#475569">«SubSistema» Base de datos (PostgreSQL 15+)</text>
+        
+        <g filter="url(#shadow)">
+            <rect x="735" y="1345" width="270" height="70" rx="5" fill="url(#mod-grad-db)" stroke="#059669" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="981" y="1353" width="16" height="18" rx="1" fill="#ffffff" stroke="#059669" stroke-width="1.2"/>
+            <rect x="977" y="1356" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#059669" stroke-width="1.1"/>
+            <rect x="977" y="1364" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#059669" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="747" y="1363" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="747" y="1379" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#064e3b">usuarios</text>
+        
+            <text x="747" y="1393" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">t_usuario, t_rol, t_permiso</text>
+            </g>
+        <g filter="url(#shadow)">
+            <rect x="1045" y="1345" width="310" height="70" rx="5" fill="url(#mod-grad-db)" stroke="#059669" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="1331" y="1353" width="16" height="18" rx="1" fill="#ffffff" stroke="#059669" stroke-width="1.2"/>
+            <rect x="1327" y="1356" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#059669" stroke-width="1.1"/>
+            <rect x="1327" y="1364" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#059669" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="1057" y="1363" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="1057" y="1379" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#064e3b">tienda.sql (comercio)</text>
+        
+            <text x="1057" y="1393" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">empresa, t_producto, t_venta, etc.</text>
+            </g>
+        <g filter="url(#shadow)">
+            <rect x="735" y="1460" width="620" height="70" rx="5" fill="url(#mod-grad-db)" stroke="#059669" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="1331" y="1468" width="16" height="18" rx="1" fill="#ffffff" stroke="#059669" stroke-width="1.2"/>
+            <rect x="1327" y="1471" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#059669" stroke-width="1.1"/>
+            <rect x="1327" y="1479" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#059669" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="747" y="1478" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="747" y="1494" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#064e3b">Vistas Analiticas SQL</text>
+        
+            <text x="747" y="1508" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">vw_ventas_reporte, vw_inventario_reporte, etc. (14 vistas)</text>
+            </g>
+        <g filter="url(#shadow)">
+            <rect x="735" y="1570" width="620" height="70" rx="5" fill="url(#mod-grad-db)" stroke="#059669" stroke-width="1.4"/>
+            <!-- Component icon (right top) -->
+            <rect x="1331" y="1578" width="16" height="18" rx="1" fill="#ffffff" stroke="#059669" stroke-width="1.2"/>
+            <rect x="1327" y="1581" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#059669" stroke-width="1.1"/>
+            <rect x="1327" y="1589" width="7" height="4" rx="0.5" fill="#ffffff" stroke="#059669" stroke-width="1.1"/>
+            <!-- Text -->
+            <text x="747" y="1588" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold" fill="#64748b">«modulo»</text>
+            <text x="747" y="1604" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold" fill="#064e3b">Auditoria &amp; Bitacora Central</text>
+        
+            <text x="747" y="1618" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" fill="#64748b">t_bitacora inmutable &amp; t_sync_operacion</text>
+            </g>
+        <path d="M 1005 1380 L 1045 1380" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+        
+            <rect x="1007.0" y="1372.0" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="1025.0" y="1383.0" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#475569" text-anchor="middle">«use»</text>
+            
+        <path d="M 500 185 L 500 360 L 300 360 L 300 455" fill="none" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow-red)"/>
+        
+            <rect x="382.0" y="352" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="400.0" y="363" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#dc2626" text-anchor="middle">«use»</text>
+            
+        <path d="M 1100 185 L 1100 350 L 380 350 L 380 455" fill="none" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow-red)"/>
+        
+            <rect x="722.0" y="342" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="740.0" y="353" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#dc2626" text-anchor="middle">«use»</text>
+            
+        <path d="M 280 507 L 280 565" fill="none" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow-red)"/>
+        
+            <rect x="262.0" y="528.0" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="280.0" y="539.0" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#dc2626" text-anchor="middle">«use»</text>
+            
+        <path d="M 200 980 L 200 1345" fill="none" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow-red)"/>
+        
+            <rect x="182.0" y="1154.5" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="200.0" y="1165.5" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#dc2626" text-anchor="middle">«use»</text>
+            
+        <path d="M 635 1380 L 635 1325 L 1045 1325 L 1045 1380" fill="none" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow-red)"/>
+        
+            <rect x="822.0" y="1317" width="36" height="14" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+            <text x="840.0" y="1328" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#dc2626" text-anchor="middle">«use»</text>
+            </svg>

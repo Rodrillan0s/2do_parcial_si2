@@ -1,0 +1,160 @@
+{
+  "transaction_read_only": "on",
+  "schema": "comercio",
+  "postgres_settings": {
+    "fsync": "on",
+    "full_page_writes": "on",
+    "server_version": "17.11 (Ubuntu 17.11-1.pgdg22.04+2)",
+    "synchronous_commit": "on"
+  },
+  "relations": [
+    "comercio.t_sync_operacion",
+    "comercio.schema_migrations",
+    "comercio.t_sync_control"
+  ],
+  "columns": [
+    [
+      "schema_migrations",
+      "version",
+      "text"
+    ],
+    [
+      "schema_migrations",
+      "checksum",
+      "text"
+    ],
+    [
+      "schema_migrations",
+      "applied_at",
+      "timestamp with time zone"
+    ],
+    [
+      "t_sync_control",
+      "id",
+      "smallint"
+    ],
+    [
+      "t_sync_control",
+      "inicio_garantia",
+      "timestamp with time zone"
+    ],
+    [
+      "t_sync_operacion",
+      "operation_id",
+      "character varying"
+    ],
+    [
+      "t_sync_operacion",
+      "id_usuario",
+      "integer"
+    ],
+    [
+      "t_sync_operacion",
+      "id_empresa",
+      "integer"
+    ],
+    [
+      "t_sync_operacion",
+      "kind",
+      "character varying"
+    ],
+    [
+      "t_sync_operacion",
+      "status",
+      "character varying"
+    ],
+    [
+      "t_sync_operacion",
+      "http_status",
+      "integer"
+    ],
+    [
+      "t_sync_operacion",
+      "conflict_code",
+      "character varying"
+    ],
+    [
+      "t_sync_operacion",
+      "response_json",
+      "jsonb"
+    ],
+    [
+      "t_sync_operacion",
+      "created_at",
+      "timestamp with time zone"
+    ],
+    [
+      "t_sync_operacion",
+      "updated_at",
+      "timestamp with time zone"
+    ],
+    [
+      "t_sync_operacion",
+      "request_hash",
+      "character varying"
+    ]
+  ],
+  "constraints": [
+    [
+      "ck_sync_request_hash",
+      "CHECK (((request_hash IS NULL) OR ((request_hash)::text ~ '^[0-9a-f]{64}$'::text)))"
+    ],
+    [
+      "t_sync_operacion_id_empresa_fkey",
+      "FOREIGN KEY (id_empresa) REFERENCES comercio.empresa(id_empresa) ON DELETE RESTRICT"
+    ],
+    [
+      "t_sync_operacion_id_usuario_fkey",
+      "FOREIGN KEY (id_usuario) REFERENCES comercio.t_usuario(id_usuario) ON DELETE RESTRICT"
+    ],
+    [
+      "t_sync_operacion_pkey",
+      "PRIMARY KEY (id_usuario, id_empresa, operation_id)"
+    ]
+  ],
+  "indexes": [
+    "CREATE UNIQUE INDEX t_sync_operacion_pkey ON comercio.t_sync_operacion USING btree (id_usuario, id_empresa, operation_id)",
+    "CREATE INDEX idx_iter2_sync_op_empresa_fecha ON comercio.t_sync_operacion USING btree (id_empresa, created_at DESC)"
+  ],
+  "payment_reference_columns": [
+    [
+      "t_pago",
+      "codigo_transaccion",
+      "character varying",
+      100
+    ],
+    [
+      "t_pago",
+      "referencia_externa",
+      "character varying",
+      150
+    ]
+  ],
+  "business_functions": [
+    {
+      "name": "fn_registrar_venta_pos",
+      "sha256": "bcc907172bfce97f9d6827941f91f7fd0071112a995d588ed758a027792c7fa5",
+      "has_for_update": true
+    },
+    {
+      "name": "fn_reservar_stock",
+      "sha256": "cc21fefffcd58ac9cd04355d1dbceb144ff74f14a203f034e90e670b9240371f",
+      "has_for_update": true
+    }
+  ],
+  "migrations": [
+    {
+      "version": "003_iter2_sync_idempotency",
+      "checksum_matches": true
+    },
+    {
+      "version": "004_iter2_sync_transactional",
+      "checksum_matches": true
+    }
+  ],
+  "required_columns_present": true,
+  "cutover_control_present": true,
+  "cutover_boundary": "2026-10-31T01:25:59.021451-04:00",
+  "verification_date": "2026-10-31",
+  "authorized_by_user": true
+}

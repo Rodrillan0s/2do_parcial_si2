@@ -1,0 +1,23 @@
+C:\Users\eddym\AppData\Roaming\Python\Python314\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+test_01_cliente_solicita_devolucion_valida (test_devoluciones_iter3.TestDevolucionesIteracion3.test_01_cliente_solicita_devolucion_valida)
+CU25W: Cliente solicita devolución válida de una prenda de su compra propia. ... ok
+test_02_cliente_no_puede_ver_ni_devolver_venta_ajena (test_devoluciones_iter3.TestDevolucionesIteracion3.test_02_cliente_no_puede_ver_ni_devolver_venta_ajena)
+CU25W: Cliente no puede ver ni solicitar devolución de compra ajena ni de otro tenant. ... ok
+test_03_rechazo_cantidades_mayores_a_elegibles (test_devoluciones_iter3.TestDevolucionesIteracion3.test_03_rechazo_cantidades_mayores_a_elegibles)
+Integridad: Rechaza cantidades mayores a las compradas o disponibles. ... ok
+test_04_bloqueo_venta_no_confirmada (test_devoluciones_iter3.TestDevolucionesIteracion3.test_04_bloqueo_venta_no_confirmada)
+Integridad: Venta no pagada (PENDIENTE_PAGO) está bloqueada para devolución. ... ok
+test_05_aprobacion_recepcion_y_bloqueo_reembolso_sin_evidencia (test_devoluciones_iter3.TestDevolucionesIteracion3.test_05_aprobacion_recepcion_y_bloqueo_reembolso_sin_evidencia)
+CU24W: Recepción completa; no liquidar una transferencia solo por referencia. ... ok
+test_06_recepcion_defectuosa_no_incrementa_stock_disponible (test_devoluciones_iter3.TestDevolucionesIteracion3.test_06_recepcion_defectuosa_no_incrementa_stock_disponible)
+CU24W: Prenda defectuosa no incrementa stock vendible. ... ok
+test_07_reembolso_inmediato_bloqueado_sin_permiso_o_evidencia (test_devoluciones_iter3.TestDevolucionesIteracion3.test_07_reembolso_inmediato_bloqueado_sin_permiso_o_evidencia)
+CU24W: Cajero sin permiso y encargado sin infraestructura no liquidan efectivo. ... ok
+test_08_reversibilidad_migracion_005_down_up (test_devoluciones_iter3.TestDevolucionesIteracion3.test_08_reversibilidad_migracion_005_down_up)
+Solo esquema aislado vacío: DOWN/UP no certifica preservación de historia. ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 7.383s
+
+OK

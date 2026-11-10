@@ -1,0 +1,263 @@
+<?xml version="1.0" ?>
+<mxfile host="Electron" modified="2026-11-08T21:00:00.000Z" agent="Antigravity Architect" version="21.6.8" type="device">
+  <diagram id="diag_modulos_aurorastore_v2" name="pkg Diagrama de modulos de sistema">
+    <mxGraphModel dx="1440" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1460" pageHeight="1740" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="header" value="&lt;b&gt;pkg Diagrama de modulos de sistema — AuroraStore SaaS&lt;/b&gt;&lt;br/&gt;&lt;span style='font-size:11px;font-weight:normal;color:#475569;'&gt;Arquitectura en 3 Capas (Presentación, Negocio, Datos) integrando los 10 Módulos de Dominio&lt;/span&gt;" style="text;html=1;align=left;verticalAlign=middle;fontSize=14;fontFamily=Segoe UI,Arial;fontStyle=1;fontColor=#0f172a;" vertex="1" parent="1">
+          <mxGeometry x="30" y="10" width="800" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="capa_presentacion" value="&amp;laquo;Capa&amp;raquo;&lt;br/&gt;&lt;b&gt;Presentación&lt;/b&gt;" style="shape=folder;fontStyle=1;tabWidth=140;tabHeight=28;tabPosition=left;html=1;boundedLbl=1;backgroundOutline=0;fillColor=#fafbfc;strokeColor=#1e293b;strokeWidth=2;fontFamily=Segoe UI,Arial;fontSize=13;fontColor=#0f172a;align=left;spacingLeft=15;verticalAlign=top;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="30" y="45" width="1380" height="275" as="geometry"/>
+        </mxCell>
+        <mxCell id="sub_web" value="&amp;laquo;SubSistema&amp;raquo;&lt;br/&gt;&lt;b&gt;Web (Angular 19 PWA)&lt;/b&gt;" style="shape=folder;fontStyle=1;tabWidth=130;tabHeight=22;tabPosition=left;html=1;boundedLbl=1;backgroundOutline=0;fillColor=#f8fafc;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=11;fontColor=#1e293b;align=left;spacingLeft=10;verticalAlign=top;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="50" y="85" width="620" height="220" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_web_views" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;views&lt;/b&gt;&lt;br/&gt;&lt;span style='font-size:9px;font-weight:normal;'&gt;Storefront &amp;amp; Admin&lt;/span&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="75" y="125" width="230" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_web_services" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;Services&lt;/b&gt;&lt;br/&gt;&lt;span style='font-size:9px;font-weight:normal;'&gt;HTTP Clients &amp;amp; State&lt;/span&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="415" y="125" width="230" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_web_offline" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;offline&lt;/b&gt;&lt;br/&gt;&lt;span style='font-size:9px;font-weight:normal;'&gt;IndexedDB &amp;amp; Service Worker&lt;/span&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="75" y="215" width="230" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="sub_movil" value="&amp;laquo;SubSistema&amp;raquo;&lt;br/&gt;&lt;b&gt;Movil (Flutter 3.x)&lt;/b&gt;" style="shape=folder;fontStyle=1;tabWidth=130;tabHeight=22;tabPosition=left;html=1;boundedLbl=1;backgroundOutline=0;fillColor=#f8fafc;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=11;fontColor=#1e293b;align=left;spacingLeft=10;verticalAlign=top;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="710" y="85" width="680" height="220" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_movil_views" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;Views&lt;/b&gt;&lt;br/&gt;&lt;span style='font-size:9px;font-weight:normal;'&gt;Flutter Client Screens&lt;/span&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="735" y="125" width="200" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_movil_services" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;Services&lt;/b&gt;&lt;br/&gt;&lt;span style='font-size:9px;font-weight:normal;'&gt;ApiClient &amp;amp; TokenStorage&lt;/span&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="1045" y="125" width="200" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_movil_vestidor" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;Vestidor RA&lt;/b&gt;&lt;br/&gt;&lt;span style='font-size:9px;font-weight:normal;'&gt;ARCore &amp;amp; Visor 3D GLB&lt;/span&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="735" y="215" width="200" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_movil_offline" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;offline&lt;/b&gt;&lt;br/&gt;&lt;span style='font-size:9px;font-weight:normal;'&gt;SQLite DatabaseHelper&lt;/span&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="1045" y="215" width="200" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="capa_negocio" value="&amp;laquo;Capa&amp;raquo;&lt;br/&gt;&lt;b&gt;Negocio&lt;/b&gt;" style="shape=folder;fontStyle=1;tabWidth=140;tabHeight=28;tabPosition=left;html=1;boundedLbl=1;backgroundOutline=0;fillColor=#fafbfc;strokeColor=#1e293b;strokeWidth=2;fontFamily=Segoe UI,Arial;fontSize=13;fontColor=#0f172a;align=left;spacingLeft=15;verticalAlign=top;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="30" y="345" width="1380" height="890" as="geometry"/>
+        </mxCell>
+        <mxCell id="sub_backend" value="&amp;laquo;SubSistema&amp;raquo;&lt;br/&gt;&lt;b&gt;Backend (FastAPI)&lt;/b&gt;" style="shape=folder;fontStyle=1;tabWidth=160;tabHeight=24;tabPosition=left;html=1;boundedLbl=1;backgroundOutline=0;fillColor=#f8fafc;strokeColor=#334155;strokeWidth=1.8;fontFamily=Segoe UI,Arial;fontSize=11;fontColor=#0f172a;align=left;spacingLeft=12;verticalAlign=top;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="50" y="385" width="960" height="835" as="geometry"/>
+        </mxCell>
+        <mxCell id="sub_seguridad" value="&amp;laquo;SubSistema&amp;raquo;&lt;br/&gt;&lt;b&gt;Seguridad&lt;/b&gt;" style="shape=folder;fontStyle=1;tabWidth=130;tabHeight=22;tabPosition=left;html=1;boundedLbl=1;backgroundOutline=0;fillColor=#f8fafc;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=11;fontColor=#1e293b;align=left;spacingLeft=10;verticalAlign=top;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="75" y="425" width="420" height="95" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_middleware" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;middleware&lt;/b&gt;&lt;br/&gt;&lt;span style='font-size:9px;font-weight:normal;'&gt;JWT Auth &amp;amp; Permisos RBAC&lt;/span&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="95" y="455" width="370" height="52" as="geometry"/>
+        </mxCell>
+        <mxCell id="sub_saas" value="&amp;laquo;SubSistema&amp;raquo;&lt;br/&gt;&lt;b&gt;Saas (Multi-tenant)&lt;/b&gt;" style="shape=folder;fontStyle=1;tabWidth=130;tabHeight=22;tabPosition=left;html=1;boundedLbl=1;backgroundOutline=0;fillColor=#f8fafc;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=11;fontColor=#1e293b;align=left;spacingLeft=10;verticalAlign=top;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="535" y="425" width="450" height="95" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_scopes" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;Scopes&lt;/b&gt;&lt;br/&gt;&lt;span style='font-size:9px;font-weight:normal;'&gt;Aislamiento Tenant &amp;amp; Sucursales&lt;/span&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="555" y="455" width="400" height="52" as="geometry"/>
+        </mxCell>
+        <mxCell id="sub_m1" value="&amp;laquo;SubSistema&amp;raquo;&lt;br/&gt;&lt;b&gt;Autenticacion y Usuarios&lt;/b&gt;" style="shape=folder;fontStyle=1;tabWidth=130;tabHeight=22;tabPosition=left;html=1;boundedLbl=1;backgroundOutline=0;fillColor=#f8fafc;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=11;fontColor=#1e293b;align=left;spacingLeft=10;verticalAlign=top;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="75" y="535" width="420" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_m1_srv" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;service&lt;/b&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="90" y="567" width="180" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_m1_ctrl" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;controller&lt;/b&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="290" y="567" width="180" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="sub_m2" value="&amp;laquo;SubSistema&amp;raquo;&lt;br/&gt;&lt;b&gt;Catalogo&lt;/b&gt;" style="shape=folder;fontStyle=1;tabWidth=130;tabHeight=22;tabPosition=left;html=1;boundedLbl=1;backgroundOutline=0;fillColor=#f8fafc;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=11;fontColor=#1e293b;align=left;spacingLeft=10;verticalAlign=top;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="535" y="535" width="450" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_m2_srv" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;service&lt;/b&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="550" y="567" width="195" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_m2_ctrl" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;controller&lt;/b&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="765" y="567" width="195" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="sub_m4" value="&amp;laquo;SubSistema&amp;raquo;&lt;br/&gt;&lt;b&gt;Gestion de E-Commerce&lt;/b&gt;" style="shape=folder;fontStyle=1;tabWidth=130;tabHeight=22;tabPosition=left;html=1;boundedLbl=1;backgroundOutline=0;fillColor=#f8fafc;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=11;fontColor=#1e293b;align=left;spacingLeft=10;verticalAlign=top;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="75" y="650" width="420" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_m4_srv" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;service&lt;/b&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="90" y="682" width="180" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_m4_ctrl" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;controller&lt;/b&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="290" y="682" width="180" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="sub_m3" value="&amp;laquo;SubSistema&amp;raquo;&lt;br/&gt;&lt;b&gt;Sucursales e Inventario&lt;/b&gt;" style="shape=folder;fontStyle=1;tabWidth=130;tabHeight=22;tabPosition=left;html=1;boundedLbl=1;backgroundOutline=0;fillColor=#f8fafc;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=11;fontColor=#1e293b;align=left;spacingLeft=10;verticalAlign=top;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="535" y="650" width="450" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_m3_srv" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;service&lt;/b&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="550" y="682" width="195" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_m3_ctrl" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;controller&lt;/b&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="765" y="682" width="195" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="sub_m5" value="&amp;laquo;SubSistema&amp;raquo;&lt;br/&gt;&lt;b&gt;Reservas&lt;/b&gt;" style="shape=folder;fontStyle=1;tabWidth=130;tabHeight=22;tabPosition=left;html=1;boundedLbl=1;backgroundOutline=0;fillColor=#f8fafc;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=11;fontColor=#1e293b;align=left;spacingLeft=10;verticalAlign=top;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="75" y="765" width="420" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_m5_srv" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;service&lt;/b&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="90" y="797" width="180" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_m5_ctrl" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;controller&lt;/b&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="290" y="797" width="180" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="sub_m6" value="&amp;laquo;SubSistema&amp;raquo;&lt;br/&gt;&lt;b&gt;Punto de Venta (POS)&lt;/b&gt;" style="shape=folder;fontStyle=1;tabWidth=130;tabHeight=22;tabPosition=left;html=1;boundedLbl=1;backgroundOutline=0;fillColor=#f8fafc;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=11;fontColor=#1e293b;align=left;spacingLeft=10;verticalAlign=top;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="535" y="765" width="450" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_m6_srv" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;service&lt;/b&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="550" y="797" width="195" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_m6_ctrl" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;controller&lt;/b&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="765" y="797" width="195" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="sub_m7" value="&amp;laquo;SubSistema&amp;raquo;&lt;br/&gt;&lt;b&gt;Pedidos y Reportes&lt;/b&gt;" style="shape=folder;fontStyle=1;tabWidth=130;tabHeight=22;tabPosition=left;html=1;boundedLbl=1;backgroundOutline=0;fillColor=#f8fafc;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=11;fontColor=#1e293b;align=left;spacingLeft=10;verticalAlign=top;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="75" y="880" width="420" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_m7_srv" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;service&lt;/b&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="90" y="912" width="180" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_m7_ctrl" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;controller&lt;/b&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="290" y="912" width="180" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="sub_m10" value="&amp;laquo;SubSistema&amp;raquo;&lt;br/&gt;&lt;b&gt;Administracion y Respaldos&lt;/b&gt;" style="shape=folder;fontStyle=1;tabWidth=130;tabHeight=22;tabPosition=left;html=1;boundedLbl=1;backgroundOutline=0;fillColor=#f8fafc;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=11;fontColor=#1e293b;align=left;spacingLeft=10;verticalAlign=top;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="535" y="880" width="450" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_m10_srv" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;service&lt;/b&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="550" y="912" width="195" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_m10_ctrl" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;controller&lt;/b&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="765" y="912" width="195" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="sub_ia" value="&amp;laquo;SubSistema&amp;raquo;&lt;br/&gt;&lt;b&gt;Inteligencia Artificial&lt;/b&gt;" style="shape=folder;fontStyle=1;tabWidth=170;tabHeight=24;tabPosition=left;html=1;boundedLbl=1;backgroundOutline=0;fillColor=#faf5ff;strokeColor=#7c3aed;strokeWidth=1.8;fontFamily=Segoe UI,Arial;fontSize=11;fontColor=#4c1d95;align=left;spacingLeft=12;verticalAlign=top;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="385" width="350" height="835" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_ia_service" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;Service (Orquestador IA)&lt;/b&gt;&lt;br/&gt;&lt;span style='font-size:9px;font-weight:normal;'&gt;Aurora Advisor W13 / 26 Tools&lt;/span&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#f3e8ff;gradientColor=#e9d5ff;strokeColor=#9333ea;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#3b0764;" vertex="1" parent="1">
+          <mxGeometry x="1065" y="440" width="300" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_ia_modelo" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;Modelo de ia (LLMs)&lt;/b&gt;&lt;br/&gt;&lt;span style='font-size:9px;font-weight:normal;'&gt;DeepSeek V3/R1, Gemini, OpenAI&lt;/span&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#f3e8ff;gradientColor=#e9d5ff;strokeColor=#9333ea;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#3b0764;" vertex="1" parent="1">
+          <mxGeometry x="1065" y="580" width="300" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_ia_forecast" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;Pronostico de Demanda&lt;/b&gt;&lt;br/&gt;&lt;span style='font-size:9px;font-weight:normal;'&gt;demanda_forecast (Holt 95%)&lt;/span&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#f3e8ff;gradientColor=#e9d5ff;strokeColor=#9333ea;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#3b0764;" vertex="1" parent="1">
+          <mxGeometry x="1065" y="720" width="300" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_ia_afinidad" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;Mini-ML Afinidad&lt;/b&gt;&lt;br/&gt;&lt;span style='font-size:9px;font-weight:normal;'&gt;ml_preferencias (Cosine Model)&lt;/span&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#f3e8ff;gradientColor=#e9d5ff;strokeColor=#9333ea;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#3b0764;" vertex="1" parent="1">
+          <mxGeometry x="1065" y="860" width="300" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="capa_datos" value="&amp;laquo;Capa&amp;raquo;&lt;br/&gt;&lt;b&gt;Datos&lt;/b&gt;" style="shape=folder;fontStyle=1;tabWidth=140;tabHeight=28;tabPosition=left;html=1;boundedLbl=1;backgroundOutline=0;fillColor=#fafbfc;strokeColor=#1e293b;strokeWidth=2;fontFamily=Segoe UI,Arial;fontSize=13;fontColor=#0f172a;align=left;spacingLeft=15;verticalAlign=top;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="30" y="1255" width="1380" height="435" as="geometry"/>
+        </mxCell>
+        <mxCell id="sub_persistencia" value="&amp;laquo;SubSistema&amp;raquo;&lt;br/&gt;&lt;b&gt;Persistencia de Datos&lt;/b&gt;" style="shape=folder;fontStyle=1;tabWidth=130;tabHeight=22;tabPosition=left;html=1;boundedLbl=1;backgroundOutline=0;fillColor=#f8fafc;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=11;fontColor=#1e293b;align=left;spacingLeft=10;verticalAlign=top;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="50" y="1295" width="620" height="375" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_repos" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;repositories&lt;/b&gt;&lt;br/&gt;&lt;span style='font-size:9px;font-weight:normal;'&gt;Capa de Repositorios SQL&lt;/span&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="75" y="1345" width="250" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_entities" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;entities&lt;/b&gt;&lt;br/&gt;&lt;span style='font-size:9px;font-weight:normal;'&gt;Modelos de Dominio &amp;amp; DTOs&lt;/span&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="385" y="1345" width="250" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_almacen_local" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;Almacenamiento Local Offline&lt;/b&gt;&lt;br/&gt;&lt;span style='font-size:9px;font-weight:normal;'&gt;IndexedDB (Web PWA) &amp;amp; SQLite (Flutter Movil)&lt;/span&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="75" y="1460" width="560" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_pool_postgres" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;Conector PostgreSQL (Pool)&lt;/b&gt;&lt;br/&gt;&lt;span style='font-size:9px;font-weight:normal;'&gt;app.core.postgres / Zero RTT / ContextVar&lt;/span&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ffebee;gradientColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="75" y="1570" width="560" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="sub_database" value="&amp;laquo;SubSistema&amp;raquo;&lt;br/&gt;&lt;b&gt;Base de datos (PostgreSQL 15+)&lt;/b&gt;" style="shape=folder;fontStyle=1;tabWidth=200;tabHeight=24;tabPosition=left;html=1;boundedLbl=1;backgroundOutline=0;fillColor=#f0fdf4;strokeColor=#059669;strokeWidth=1.8;fontFamily=Segoe UI,Arial;fontSize=11;fontColor=#064e3b;align=left;spacingLeft=12;verticalAlign=top;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="710" y="1295" width="680" height="375" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_db_usuarios" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;usuarios&lt;/b&gt;&lt;br/&gt;&lt;span style='font-size:9px;font-weight:normal;'&gt;t_usuario, t_rol, t_permiso&lt;/span&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ecfdf5;gradientColor=#d1fae5;strokeColor=#059669;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#064e3b;" vertex="1" parent="1">
+          <mxGeometry x="735" y="1345" width="270" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_db_tienda" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;tienda.sql (comercio)&lt;/b&gt;&lt;br/&gt;&lt;span style='font-size:9px;font-weight:normal;'&gt;empresa, t_producto, t_venta, etc.&lt;/span&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ecfdf5;gradientColor=#d1fae5;strokeColor=#059669;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#064e3b;" vertex="1" parent="1">
+          <mxGeometry x="1045" y="1345" width="310" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_db_vistas" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;Vistas Analiticas SQL&lt;/b&gt;&lt;br/&gt;&lt;span style='font-size:9px;font-weight:normal;'&gt;vw_ventas_reporte, vw_inventario_reporte, etc. (14 vistas)&lt;/span&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ecfdf5;gradientColor=#d1fae5;strokeColor=#059669;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#064e3b;" vertex="1" parent="1">
+          <mxGeometry x="735" y="1460" width="620" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="mod_db_bitacora" value="&amp;laquo;modulo&amp;raquo;&lt;br/&gt;&lt;b&gt;Auditoria &amp;amp; Bitacora Central&lt;/b&gt;&lt;br/&gt;&lt;span style='font-size:9px;font-weight:normal;'&gt;t_bitacora inmutable &amp;amp; t_sync_operacion&lt;/span&gt;" style="shape=component;align=center;valign=middle;html=1;whiteSpace=wrap;fillColor=#ecfdf5;gradientColor=#d1fae5;strokeColor=#059669;strokeWidth=1.4;fontFamily=Segoe UI,Arial;fontSize=11;fontStyle=1;fontColor=#064e3b;" vertex="1" parent="1">
+          <mxGeometry x="735" y="1570" width="620" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_wv_ws" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#475569;labelBackgroundColor=#ffffff;labelBorderColor=#cbd5e1;" edge="1" parent="1" source="mod_web_views" target="mod_web_services">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_wv_wo" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#475569;labelBackgroundColor=#ffffff;labelBorderColor=#cbd5e1;" edge="1" parent="1" source="mod_web_views" target="mod_web_offline">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_mv_ms" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#475569;labelBackgroundColor=#ffffff;labelBorderColor=#cbd5e1;" edge="1" parent="1" source="mod_movil_views" target="mod_movil_services">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_mv_mr" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#475569;labelBackgroundColor=#ffffff;labelBorderColor=#cbd5e1;" edge="1" parent="1" source="mod_movil_views" target="mod_movil_vestidor">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_mv_mo" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#475569;labelBackgroundColor=#ffffff;labelBorderColor=#cbd5e1;" edge="1" parent="1" source="mod_movil_views" target="mod_movil_offline">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_mid_sc" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#475569;labelBackgroundColor=#ffffff;labelBorderColor=#cbd5e1;" edge="1" parent="1" source="mod_middleware" target="mod_scopes">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_m1_ctrl_srv" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#475569;labelBackgroundColor=#ffffff;labelBorderColor=#cbd5e1;" edge="1" parent="1" source="mod_m1_ctrl" target="mod_m1_srv">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_m2_ctrl_srv" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#475569;labelBackgroundColor=#ffffff;labelBorderColor=#cbd5e1;" edge="1" parent="1" source="mod_m2_ctrl" target="mod_m2_srv">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_m4_ctrl_srv" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#475569;labelBackgroundColor=#ffffff;labelBorderColor=#cbd5e1;" edge="1" parent="1" source="mod_m4_ctrl" target="mod_m4_srv">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_m3_ctrl_srv" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#475569;labelBackgroundColor=#ffffff;labelBorderColor=#cbd5e1;" edge="1" parent="1" source="mod_m3_ctrl" target="mod_m3_srv">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_m5_ctrl_srv" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#475569;labelBackgroundColor=#ffffff;labelBorderColor=#cbd5e1;" edge="1" parent="1" source="mod_m5_ctrl" target="mod_m5_srv">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_m6_ctrl_srv" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#475569;labelBackgroundColor=#ffffff;labelBorderColor=#cbd5e1;" edge="1" parent="1" source="mod_m6_ctrl" target="mod_m6_srv">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_m7_ctrl_srv" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#475569;labelBackgroundColor=#ffffff;labelBorderColor=#cbd5e1;" edge="1" parent="1" source="mod_m7_ctrl" target="mod_m7_srv">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_m10_ctrl_srv" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#475569;labelBackgroundColor=#ffffff;labelBorderColor=#cbd5e1;" edge="1" parent="1" source="mod_m10_ctrl" target="mod_m10_srv">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_ia_srv_mod" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#475569;labelBackgroundColor=#ffffff;labelBorderColor=#cbd5e1;" edge="1" parent="1" source="mod_ia_service" target="mod_ia_modelo">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_ia_srv_fc" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#475569;labelBackgroundColor=#ffffff;labelBorderColor=#cbd5e1;" edge="1" parent="1" source="mod_ia_service" target="mod_ia_forecast">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_ia_srv_af" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#475569;labelBackgroundColor=#ffffff;labelBorderColor=#cbd5e1;" edge="1" parent="1" source="mod_ia_service" target="mod_ia_afinidad">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_rep_ent" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#475569;labelBackgroundColor=#ffffff;labelBorderColor=#cbd5e1;" edge="1" parent="1" source="mod_repos" target="mod_entities">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_rep_local" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#475569;labelBackgroundColor=#ffffff;labelBorderColor=#cbd5e1;" edge="1" parent="1" source="mod_repos" target="mod_almacen_local">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_loc_pool" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#475569;labelBackgroundColor=#ffffff;labelBorderColor=#cbd5e1;" edge="1" parent="1" source="mod_almacen_local" target="mod_pool_postgres">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_db_usr_tienda" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#64748b;strokeWidth=1.5;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#475569;labelBackgroundColor=#ffffff;labelBorderColor=#cbd5e1;" edge="1" parent="1" source="mod_db_usuarios" target="mod_db_tienda">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_cross_web_mid" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#dc2626;strokeWidth=1.8;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#991b1b;labelBackgroundColor=#ffffff;labelBorderColor=#fca5a5;" edge="1" parent="1" source="mod_web_services" target="mod_middleware">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_cross_movil_mid" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#dc2626;strokeWidth=1.8;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#991b1b;labelBackgroundColor=#ffffff;labelBorderColor=#fca5a5;" edge="1" parent="1" source="mod_movil_services" target="mod_middleware">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_cross_mid_ctrl" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#dc2626;strokeWidth=1.8;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#991b1b;labelBackgroundColor=#ffffff;labelBorderColor=#fca5a5;" edge="1" parent="1" source="mod_middleware" target="mod_m1_ctrl">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_cross_back_ia" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#dc2626;strokeWidth=1.8;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#991b1b;labelBackgroundColor=#ffffff;labelBorderColor=#fca5a5;" edge="1" parent="1" source="mod_m2_srv" target="mod_ia_service">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_cross_back_repos" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#dc2626;strokeWidth=1.8;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#991b1b;labelBackgroundColor=#ffffff;labelBorderColor=#fca5a5;" edge="1" parent="1" source="mod_m7_srv" target="mod_repos">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_cross_pers_db" value="&amp;laquo;use&amp;raquo;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endSize=8;strokeColor=#dc2626;strokeWidth=1.8;fontFamily=Segoe UI,Arial;fontSize=9;fontColor=#991b1b;labelBackgroundColor=#ffffff;labelBorderColor=#fca5a5;" edge="1" parent="1" source="mod_entities" target="mod_db_usuarios">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

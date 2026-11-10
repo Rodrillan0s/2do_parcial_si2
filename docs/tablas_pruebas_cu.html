@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Pruebas de Casos de Uso - Iteración 1</title>
+<style>
+  body {
+    font-family: Arial, Calibri, sans-serif;
+    font-size: 11pt;
+    color: #000000;
+    line-height: 1.15;
+    margin: 25px;
+    background-color: #ffffff;
+  }
+  h3 {
+    font-size: 12pt;
+    font-weight: bold;
+    color: #000000;
+    margin-top: 25px;
+    margin-bottom: 8px;
+  }
+  table {
+    width: 100%;
+    max-width: 820px;
+    border-collapse: collapse;
+    border: 1px solid #000000;
+    margin-bottom: 12px;
+    color: #000000;
+  }
+  th, td {
+    border: 1px solid #000000;
+    padding: 6px 8px;
+    vertical-align: top;
+    text-align: left;
+    color: #000000;
+  }
+  th {
+    font-weight: bold;
+  }
+  .center {
+    text-align: center;
+  }
+  .col-campo {
+    width: 22%;
+    font-weight: bold;
+  }
+  .col-paso {
+    width: 8%;
+    text-align: center;
+  }
+  .col-accion {
+    width: 32%;
+  }
+  .col-resultado {
+    width: 42%;
+  }
+  .col-estado {
+    width: 18%;
+  }
+</style>
+</head>
+<body>
+
+<!-- CU1 -->
+<h3>Prueba de caso de uso CU1: Registrar cliente</h3>
+<table>
+  <tr>
+    <td class="col-campo">Caso de uso 1</td>
+    <td><b>Registrar cliente</b></td>
+  </tr>
+  <tr>
+    <td class="col-campo">Descripción</td>
+    <td>Este caso de uso permite que un nuevo cliente pueda crear su cuenta personal en el sistema ingresando sus datos principales para poder acceder a la tienda y realizar compras.</td>
+  </tr>
+  <tr>
+    <td class="col-campo">Precondiciones</td>
+    <td>
+      a) El usuario debe tener acceso a la página principal.<br>
+      b) El formulario de registro debe estar habilitado.<br>
+      c) Debe existir conexión activa con la base de datos.
+    </td>
+  </tr>
+</table>
+
+<table>
+  <thead>
+    <tr>
+      <th class="col-paso">Paso</th>
+      <th class="col-accion">Acción</th>
+      <th class="col-resultado">Resultado esperado</th>
+      <th class="col-estado">Estado (Satisfactorio/Fallido)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="center">1</td>
+      <td>Acceder a la opción de registro desde la pantalla principal.</td>
+      <td>Se muestra el formulario con los campos de nombre, apellido, correo, teléfono y contraseña.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">2</td>
+      <td>Ingresar los datos solicitados y confirmar.</td>
+      <td>Se valida que el correo no esté repetido; la cuenta se crea correctamente.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">3</td>
+      <td>Confirmar el registro exitoso.</td>
+      <td>Se muestra un mensaje de bienvenida y se redirige a la pantalla de inicio de sesión.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">4</td>
+      <td>Intentar registrar un cliente con un correo ya existente.</td>
+      <td>Se muestra un mensaje de advertencia indicando que el correo ya está en uso.</td>
+      <td>Satisfactorio</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- CU2 -->
+<h3>Prueba de caso de uso CU2: Iniciar sesión</h3>
+<table>
+  <tr>
+    <td class="col-campo">Caso de uso 2</td>
+    <td><b>Iniciar sesión</b></td>
+  </tr>
+  <tr>
+    <td class="col-campo">Descripción</td>
+    <td>Este caso de uso permite que los usuarios registrados ingresen al sistema mediante su usuario y contraseña para acceder a las opciones según su rol asignado.</td>
+  </tr>
+  <tr>
+    <td class="col-campo">Precondiciones</td>
+    <td>
+      a) El usuario debe contar con una cuenta activa en el sistema.<br>
+      b) El módulo de inicio de sesión debe estar habilitado.<br>
+      c) Debe existir conexión activa con la base de datos.
+    </td>
+  </tr>
+</table>
+
+<table>
+  <thead>
+    <tr>
+      <th class="col-paso">Paso</th>
+      <th class="col-accion">Acción</th>
+      <th class="col-resultado">Resultado esperado</th>
+      <th class="col-estado">Estado (Satisfactorio/Fallido)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="center">1</td>
+      <td>Acceder a la pantalla de inicio de sesión.</td>
+      <td>Se muestra la vista con los campos de usuario y contraseña.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">2</td>
+      <td>Ingresar usuario y contraseña correctos.</td>
+      <td>El sistema valida los datos y permite el ingreso a la plataforma.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">3</td>
+      <td>Redirección de pantalla.</td>
+      <td>El usuario es dirigido al menú principal correspondiente a su rol.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">4</td>
+      <td>Ingresar una contraseña incorrecta.</td>
+      <td>Se muestra una alerta indicando que los datos ingresados no son correctos.</td>
+      <td>Satisfactorio</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- CU3 -->
+<h3>Prueba de caso de uso CU3: Gestionar perfil</h3>
+<table>
+  <tr>
+    <td class="col-campo">Caso de uso 3</td>
+    <td><b>Gestionar perfil</b></td>
+  </tr>
+  <tr>
+    <td class="col-campo">Descripción</td>
+    <td>Este caso de uso permite que el usuario pueda consultar su información personal, modificar sus datos de contacto y mantener su cuenta actualizada.</td>
+  </tr>
+  <tr>
+    <td class="col-campo">Precondiciones</td>
+    <td>
+      a) El usuario debe tener la sesión iniciada.<br>
+      b) El módulo de perfil debe estar habilitado.<br>
+      c) Debe existir conexión activa con la base de datos.
+    </td>
+  </tr>
+</table>
+
+<table>
+  <thead>
+    <tr>
+      <th class="col-paso">Paso</th>
+      <th class="col-accion">Acción</th>
+      <th class="col-resultado">Resultado esperado</th>
+      <th class="col-estado">Estado (Satisfactorio/Fallido)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="center">1</td>
+      <td>Acceder a la sección "Mi Perfil" desde el menú de usuario.</td>
+      <td>Se muestran los datos del usuario registrados actualmente.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">2</td>
+      <td>Modificar el número de teléfono o datos de contacto.</td>
+      <td>Los campos permiten la edición y se valida que tengan el formato correcto.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">3</td>
+      <td>Guardar los cambios realizados.</td>
+      <td>Se actualiza la información y se muestra un mensaje de confirmación.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">4</td>
+      <td>Actualizar la vista.</td>
+      <td>La pantalla refleja de inmediato los datos modificados.</td>
+      <td>Satisfactorio</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- CU4 -->
+<h3>Prueba de caso de uso CU4: Consultar catálogo de prendas</h3>
+<table>
+  <tr>
+    <td class="col-campo">Caso de uso 4</td>
+    <td><b>Consultar catálogo de prendas</b></td>
+  </tr>
+  <tr>
+    <td class="col-campo">Descripción</td>
+    <td>Este caso de uso permite explorar las prendas de vestir disponibles, filtrar por categorías o precios y consultar el detalle de tallas, colores y disponibilidad.</td>
+  </tr>
+  <tr>
+    <td class="col-campo">Precondiciones</td>
+    <td>
+      a) Deben existir productos registrados en el sistema.<br>
+      b) El catálogo público debe estar disponible.<br>
+      c) Debe existir conexión activa con la base de datos.
+    </td>
+  </tr>
+</table>
+
+<table>
+  <thead>
+    <tr>
+      <th class="col-paso">Paso</th>
+      <th class="col-accion">Acción</th>
+      <th class="col-resultado">Resultado esperado</th>
+      <th class="col-estado">Estado (Satisfactorio/Fallido)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="center">1</td>
+      <td>Ingresar al catálogo desde la pantalla principal.</td>
+      <td>Se muestra la lista de prendas con su fotografía, nombre y precio.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">2</td>
+      <td>Seleccionar una categoría en el filtro de búsqueda.</td>
+      <td>La lista se actualiza mostrando únicamente las prendas de la categoría seleccionada.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">3</td>
+      <td>Seleccionar una prenda para ver su detalle.</td>
+      <td>Se despliega una vista con la descripción, fotos, tallas y colores disponibles.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">4</td>
+      <td>Elegir una talla y color determinados.</td>
+      <td>El sistema muestra la cantidad disponible para esa combinación.</td>
+      <td>Satisfactorio</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- CU14 -->
+<h3>Prueba de caso de uso CU14: Gestionar usuarios y roles</h3>
+<table>
+  <tr>
+    <td class="col-campo">Caso de uso 14</td>
+    <td><b>Gestión de usuarios y roles</b></td>
+  </tr>
+  <tr>
+    <td class="col-campo">Descripción</td>
+    <td>Este caso de uso permite que el administrador consulte los usuarios registrados, cree nuevas cuentas del personal, asigne o modifique roles y habilite o deshabilite accesos.</td>
+  </tr>
+  <tr>
+    <td class="col-campo">Precondiciones</td>
+    <td>
+      a) El usuario debe iniciar sesión como Administrador.<br>
+      b) El módulo "Usuarios y Roles" debe estar habilitado.<br>
+      c) Debe existir conexión activa con la base de datos.
+    </td>
+  </tr>
+</table>
+
+<table>
+  <thead>
+    <tr>
+      <th class="col-paso">Paso</th>
+      <th class="col-accion">Acción</th>
+      <th class="col-resultado">Resultado esperado</th>
+      <th class="col-estado">Estado (Satisfactorio/Fallido)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="center">1</td>
+      <td>Acceder al módulo "Usuarios" desde el menú principal.</td>
+      <td>Se muestra la lista de usuarios registrados con su nombre, correo, rol y estado.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">2</td>
+      <td>Crear un nuevo usuario del sistema.</td>
+      <td>Se valida que el usuario y correo no estén repetidos; se guarda correctamente.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">3</td>
+      <td>Editar el rol de un usuario existente.</td>
+      <td>Se actualiza el rol asignado y se muestra un mensaje de confirmación.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">4</td>
+      <td>Desactivar la cuenta de un usuario.</td>
+      <td>El estado cambia a inactivo y el usuario ya no puede ingresar al sistema.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">5</td>
+      <td>Actualizar lista visible.</td>
+      <td>La tabla refleja inmediatamente los cambios realizados.</td>
+      <td>Satisfactorio</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- CU15 -->
+<h3>Prueba de caso de uso CU15: Gestionar cadena de tiendas</h3>
+<table>
+  <tr>
+    <td class="col-campo">Caso de uso 15</td>
+    <td><b>Gestión de cadena de tiendas</b></td>
+  </tr>
+  <tr>
+    <td class="col-campo">Descripción</td>
+    <td>Este caso de uso permite registrar las empresas o tiendas pertenecientes a la plataforma, modificar su información comercial y consultar su estado operativo.</td>
+  </tr>
+  <tr>
+    <td class="col-campo">Precondiciones</td>
+    <td>
+      a) El usuario debe iniciar sesión como Administrador General.<br>
+      b) El módulo "Tiendas / Empresas" debe estar habilitado.<br>
+      c) Debe existir conexión activa con la base de datos.
+    </td>
+  </tr>
+</table>
+
+<table>
+  <thead>
+    <tr>
+      <th class="col-paso">Paso</th>
+      <th class="col-accion">Acción</th>
+      <th class="col-resultado">Resultado esperado</th>
+      <th class="col-estado">Estado (Satisfactorio/Fallido)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="center">1</td>
+      <td>Acceder al módulo "Tiendas" desde el menú principal.</td>
+      <td>Se muestra la lista de empresas registradas con su nombre, NIT y estado.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">2</td>
+      <td>Registrar una nueva tienda ingresando nombre y NIT.</td>
+      <td>Se valida que el NIT no esté duplicado; la tienda se guarda correctamente.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">3</td>
+      <td>Modificar los datos de una tienda existente.</td>
+      <td>Se actualiza la información y se muestra un mensaje de confirmación.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">4</td>
+      <td>Ver detalles de una tienda.</td>
+      <td>Se despliega una vista con la información completa de la empresa.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">5</td>
+      <td>Cambiar estado a inactivo.</td>
+      <td>La tienda cambia de estado y se actualiza la lista visible.</td>
+      <td>Satisfactorio</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- CU16 -->
+<h3>Prueba de caso de uso CU16: Gestionar sucursales y ciudades</h3>
+<table>
+  <tr>
+    <td class="col-campo">Caso de uso 16</td>
+    <td><b>Gestión de sucursales y ciudades</b></td>
+  </tr>
+  <tr>
+    <td class="col-campo">Descripción</td>
+    <td>Este caso de uso permite registrar los puntos de venta físicos de cada tienda, asignarlos a una ciudad, registrar su dirección y administrar su estado de atención.</td>
+  </tr>
+  <tr>
+    <td class="col-campo">Precondiciones</td>
+    <td>
+      a) El usuario debe tener permisos de administración.<br>
+      b) Deben existir ciudades registradas en el sistema.<br>
+      c) Debe existir conexión activa con la base de datos.
+    </td>
+  </tr>
+</table>
+
+<table>
+  <thead>
+    <tr>
+      <th class="col-paso">Paso</th>
+      <th class="col-accion">Acción</th>
+      <th class="col-resultado">Resultado esperado</th>
+      <th class="col-estado">Estado (Satisfactorio/Fallido)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="center">1</td>
+      <td>Acceder al módulo "Sucursales" desde el menú principal.</td>
+      <td>Se muestra la lista de sucursales con su nombre, código, ciudad y estado.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">2</td>
+      <td>Registrar una nueva sucursal con su ciudad y dirección.</td>
+      <td>Se valida que el código no esté repetido; la sucursal se guarda correctamente.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">3</td>
+      <td>Modificar la dirección o teléfono de una sucursal.</td>
+      <td>Se actualizan los datos y se muestra confirmación en pantalla.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">4</td>
+      <td>Ver detalles de una sucursal.</td>
+      <td>Se despliega la información completa del punto de venta.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">5</td>
+      <td>Desactivar una sucursal.</td>
+      <td>La sucursal cambia a estado inactivo y no aparece para entregas al cliente.</td>
+      <td>Satisfactorio</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- CU17 -->
+<h3>Prueba de caso de uso CU17: Gestionar productos</h3>
+<table>
+  <tr>
+    <td class="col-campo">Caso de uso 17</td>
+    <td><b>Gestión de productos</b></td>
+  </tr>
+  <tr>
+    <td class="col-campo">Descripción</td>
+    <td>Este caso de uso permite registrar prendas de vestir en el catálogo, modificar sus precios, actualizar descripciones y administrar su visibilidad para la venta.</td>
+  </tr>
+  <tr>
+    <td class="col-campo">Precondiciones</td>
+    <td>
+      a) El usuario debe tener rol de Administrador o Encargado.<br>
+      b) Debe existir al menos una categoría creada.<br>
+      c) Debe existir conexión activa con la base de datos.
+    </td>
+  </tr>
+</table>
+
+<table>
+  <thead>
+    <tr>
+      <th class="col-paso">Paso</th>
+      <th class="col-accion">Acción</th>
+      <th class="col-resultado">Resultado esperado</th>
+      <th class="col-estado">Estado (Satisfactorio/Fallido)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="center">1</td>
+      <td>Acceder al módulo "Productos" desde el menú principal.</td>
+      <td>Se muestra la lista de productos registrados con su foto, código, nombre y precio.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">2</td>
+      <td>Crear un nuevo producto con su nombre, categoría y precio.</td>
+      <td>Se valida que el precio sea mayor a cero; el producto se guarda correctamente.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">3</td>
+      <td>Modificar el precio de una prenda existente.</td>
+      <td>Se actualiza el precio y se muestra confirmación en pantalla.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">4</td>
+      <td>Ver detalles de un producto.</td>
+      <td>Se despliega la vista con toda la información completa de la prenda.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">5</td>
+      <td>Desactivar un producto.</td>
+      <td>La prenda deja de mostrarse en la tienda pública de clientes.</td>
+      <td>Satisfactorio</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- CU18 -->
+<h3>Prueba de caso de uso CU18: Gestionar categorías</h3>
+<table>
+  <tr>
+    <td class="col-campo">Caso de uso 18</td>
+    <td><b>Gestión de categorías</b></td>
+  </tr>
+  <tr>
+    <td class="col-campo">Descripción</td>
+    <td>Este caso de uso permite crear y administrar las categorías de ropa (ejemplo: Poleras, Pantalones, Calzados) para organizar los productos en el catálogo.</td>
+  </tr>
+  <tr>
+    <td class="col-campo">Precondiciones</td>
+    <td>
+      a) El usuario debe tener permisos de administración de catálogo.<br>
+      b) El módulo "Categorías" debe estar habilitado.<br>
+      c) Debe existir conexión activa con la base de datos.
+    </td>
+  </tr>
+</table>
+
+<table>
+  <thead>
+    <tr>
+      <th class="col-paso">Paso</th>
+      <th class="col-accion">Acción</th>
+      <th class="col-resultado">Resultado esperado</th>
+      <th class="col-estado">Estado (Satisfactorio/Fallido)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="center">1</td>
+      <td>Acceder al módulo "Categorías" desde el menú principal.</td>
+      <td>Se muestra la lista de categorías existentes con su nombre y descripción.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">2</td>
+      <td>Crear una nueva categoría ingresando su nombre.</td>
+      <td>Se valida que el nombre no esté repetido; se guarda correctamente.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">3</td>
+      <td>Modificar el nombre o descripción de una categoría.</td>
+      <td>Se actualizan los datos del registro y se muestra mensaje de confirmación.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">4</td>
+      <td>Ver detalles de una categoría.</td>
+      <td>Se muestra la información completa y la lista de productos vinculados.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">5</td>
+      <td>Actualizar lista visible.</td>
+      <td>La nueva categoría aparece disponible en la lista y en los formularios.</td>
+      <td>Satisfactorio</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- CU19 -->
+<h3>Prueba de caso de uso CU19: Gestionar tallas y colores</h3>
+<table>
+  <tr>
+    <td class="col-campo">Caso de uso 19</td>
+    <td><b>Gestión de tallas y colores</b></td>
+  </tr>
+  <tr>
+    <td class="col-campo">Descripción</td>
+    <td>Este caso de uso permite configurar las combinaciones de tallas y colores para cada prenda y registrar las cantidades de inventario disponibles.</td>
+  </tr>
+  <tr>
+    <td class="col-campo">Precondiciones</td>
+    <td>
+      a) La prenda debe estar registrada previamente en el catálogo.<br>
+      b) El módulo de variantes debe estar habilitado.<br>
+      c) Debe existir conexión activa con la base de datos.
+    </td>
+  </tr>
+</table>
+
+<table>
+  <thead>
+    <tr>
+      <th class="col-paso">Paso</th>
+      <th class="col-accion">Acción</th>
+      <th class="col-resultado">Resultado esperado</th>
+      <th class="col-estado">Estado (Satisfactorio/Fallido)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="center">1</td>
+      <td>Seleccionar una prenda y entrar a "Variantes de Producto".</td>
+      <td>Se muestra la lista de combinaciones de tallas y colores de esa prenda.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">2</td>
+      <td>Agregar una combinación seleccionando talla y color.</td>
+      <td>Se valida que la combinación no exista previamente para la prenda.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">3</td>
+      <td>Ingresar la cantidad de stock inicial y confirmar.</td>
+      <td>La variante se guarda correctamente con la cantidad indicada.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">4</td>
+      <td>Modificar la cantidad disponible de una combinación.</td>
+      <td>Se actualiza la cantidad en inventario y se muestra confirmación.</td>
+      <td>Satisfactorio</td>
+    </tr>
+    <tr>
+      <td class="center">5</td>
+      <td>Actualizar lista visible.</td>
+      <td>La tabla muestra de inmediato el nuevo stock de cada talla y color.</td>
+      <td>Satisfactorio</td>
+    </tr>
+  </tbody>
+</table>
+
+</body>
+</html>

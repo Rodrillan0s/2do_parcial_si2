@@ -1,0 +1,51 @@
+{
+  "date": "2026-11-01",
+  "environment": "LocalPostgres disposable, no real database test",
+  "total": 104,
+  "unit": 5,
+  "integration": 99,
+  "suites": {
+    "tests_iter1": {
+      "count": 29,
+      "elapsed_seconds": 17.82,
+      "result": "OK",
+      "log": "tests_iter1.txt",
+      "sha256": "b6cec6d64fc1a5ffbf0bd5f40810885c7233b3f98440fb709fdabf95f1de5c0e"
+    },
+    "tests_pwa": {
+      "count": 8,
+      "elapsed_seconds": 9.186,
+      "result": "OK",
+      "log": "tests_pwa.txt",
+      "sha256": "0a9bdab2bad3a1a77249dd5554e7532d1363cdac242b26d7a6ed390421ea7b4c"
+    },
+    "tests_sync": {
+      "count": 16,
+      "elapsed_seconds": 51.06,
+      "result": "OK",
+      "log": "tests_sync.txt",
+      "sha256": "f6db386891f6582aed8c38e080075b56704f82fbbb16caaa13bf6caa2b5053a3"
+    },
+    "tests_devoluciones": {
+      "count": 8,
+      "elapsed_seconds": 7.383,
+      "result": "OK",
+      "log": "tests_devoluciones.txt",
+      "sha256": "6f2e79980f39df93436f57a35aeecc5cb82d09c8d68c4d40e34c66de6f072213"
+    },
+    "tests_critical_integrity": {
+      "count": 43,
+      "elapsed_seconds": 33.725,
+      "result": "OK",
+      "log": "tests_critical_integrity.txt",
+      "sha256": "cb7a066470c22a872eb6ac2cad9455702baf461c8926e0f303b9a67a55bb3c00"
+    }
+  },
+  "not_executed": [
+    "real database DDL/DML",
+    "Angular/Flutter builds",
+    "real financial providers",
+    "load tests",
+    "proposed migration up/down with history"
+  ]
+}

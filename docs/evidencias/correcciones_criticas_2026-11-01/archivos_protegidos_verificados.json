@@ -1,0 +1,57 @@
+{
+  "backend/app/modules/ecommerce/routes/sync_routes.py": {
+    "expected": "0a67849d9bf144c2dc45dde175946e289ff2b3235cd9f3cc401bf0c43f0f5631",
+    "actual": "0a67849d9bf144c2dc45dde175946e289ff2b3235cd9f3cc401bf0c43f0f5631",
+    "unchanged": true
+  },
+  "backend\\migrations\\001_iter1_saas.down.sql": {
+    "expected": "05808da42b596390262d5bf89e1134afd0fd3215543d50194b27c8d8c199abf9",
+    "actual": "05808da42b596390262d5bf89e1134afd0fd3215543d50194b27c8d8c199abf9",
+    "unchanged": true
+  },
+  "backend\\migrations\\001_iter1_saas.up.sql": {
+    "expected": "f04b30760a3fa1e57777768855ee13d968f2fa57de31c47f48eaecf4a275c062",
+    "actual": "f04b30760a3fa1e57777768855ee13d968f2fa57de31c47f48eaecf4a275c062",
+    "unchanged": true
+  },
+  "backend\\migrations\\002_iter1_perf_indexes.down.sql": {
+    "expected": "336b44aad913a127fc7295bf0ed893af1affe5f990d8fb27d819c6cbed52f58e",
+    "actual": "336b44aad913a127fc7295bf0ed893af1affe5f990d8fb27d819c6cbed52f58e",
+    "unchanged": true
+  },
+  "backend\\migrations\\002_iter1_perf_indexes.up.sql": {
+    "expected": "07211f488802f2de4f32ea404ce1fc73a73935a4a8ce3f06d34c646350302c8a",
+    "actual": "07211f488802f2de4f32ea404ce1fc73a73935a4a8ce3f06d34c646350302c8a",
+    "unchanged": true
+  },
+  "backend\\migrations\\003_iter2_sync_idempotency.down.sql": {
+    "expected": "a882b0daf31814684906a8fe9c618e101fb811451a71dd17993c5c8eb9d30bb3",
+    "actual": "a882b0daf31814684906a8fe9c618e101fb811451a71dd17993c5c8eb9d30bb3",
+    "unchanged": true
+  },
+  "backend\\migrations\\003_iter2_sync_idempotency.up.sql": {
+    "expected": "1440b36e420a3a989c4d2ea7eea72a51b90297d2e2a60eee3c83187aca93841b",
+    "actual": "1440b36e420a3a989c4d2ea7eea72a51b90297d2e2a60eee3c83187aca93841b",
+    "unchanged": true
+  },
+  "backend\\migrations\\004_iter2_sync_transactional.down.sql": {
+    "expected": "04d126a08056e5929d7ff963dbd645a7d8cd35501c3e0bbceeba7dfdb125fa23",
+    "actual": "04d126a08056e5929d7ff963dbd645a7d8cd35501c3e0bbceeba7dfdb125fa23",
+    "unchanged": true
+  },
+  "backend\\migrations\\004_iter2_sync_transactional.up.sql": {
+    "expected": "7da4e3bd39a31a40846cf18ce83597e3526d88907ca7bd59205e5da6f187aa53",
+    "actual": "7da4e3bd39a31a40846cf18ce83597e3526d88907ca7bd59205e5da6f187aa53",
+    "unchanged": true
+  },
+  "backend\\migrations\\005_iter3_devoluciones.down.sql": {
+    "expected": "c5618024a4d7600a3f6a714431fccbb955e6f90cb474a2a57ac6b02f37427c31",
+    "actual": "c5618024a4d7600a3f6a714431fccbb955e6f90cb474a2a57ac6b02f37427c31",
+    "unchanged": true
+  },
+  "backend\\migrations\\005_iter3_devoluciones.up.sql": {
+    "expected": "575adf053f7e6451af5d4ae592cf42b7aca7f70a3db98d426c4573e01057c26a",
+    "actual": "575adf053f7e6451af5d4ae592cf42b7aca7f70a3db98d426c4573e01057c26a",
+    "unchanged": true
+  }
+}

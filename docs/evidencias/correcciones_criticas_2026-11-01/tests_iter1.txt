@@ -1,0 +1,36 @@
+C:\Users\eddym\AppData\Roaming\Python\Python314\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+test_application_factory_does_not_connect_or_migrate_on_startup (test_iter1.Iter1Integration.test_application_factory_does_not_connect_or_migrate_on_startup) ... ok
+test_assignment_revocation_is_audited_and_effective_immediately (test_iter1.Iter1Integration.test_assignment_revocation_is_audited_and_effective_immediately) ... ok
+test_basic_cannot_use_generative_reports (test_iter1.Iter1Integration.test_basic_cannot_use_generative_reports) ... ok
+test_basic_limit_reactivation_and_inactive_insert (test_iter1.Iter1Integration.test_basic_limit_reactivation_and_inactive_insert) ... ok
+test_caja_and_kpi_contexts_reject_foreign_company_and_branch (test_iter1.Iter1Integration.test_caja_and_kpi_contexts_reject_foreign_company_and_branch) ... ok
+test_client_never_gets_platform_scope (test_iter1.Iter1Integration.test_client_never_gets_platform_scope) ... ok
+test_company_admin_cannot_administer_platform_subscriptions (test_iter1.Iter1Integration.test_company_admin_cannot_administer_platform_subscriptions) ... ok
+test_company_selector_is_not_authority (test_iter1.Iter1Integration.test_company_selector_is_not_authority) ... ok
+test_company_suspension_preserves_plan_history (test_iter1.Iter1Integration.test_company_suspension_preserves_plan_history) ... ok
+test_concurrent_branch_creation_cannot_exceed_limit (test_iter1.Iter1Integration.test_concurrent_branch_creation_cannot_exceed_limit) ... ok
+test_concurrent_subscriptions_cannot_overlap (test_iter1.Iter1Integration.test_concurrent_subscriptions_cannot_overlap) ... ok
+test_cross_tenant_assignment_is_rejected_by_api_and_database (test_iter1.Iter1Integration.test_cross_tenant_assignment_is_rejected_by_api_and_database) ... ok
+test_database_audit_failure_rolls_back_subscription (test_iter1.Iter1Integration.test_database_audit_failure_rolls_back_subscription) ... ok
+test_downgrade_does_not_deactivate_branches (test_iter1.Iter1Integration.test_downgrade_does_not_deactivate_branches) ... ok
+test_empty_branch_scope_never_means_all_branches (test_iter1.Iter1Integration.test_empty_branch_scope_never_means_all_branches) ... ok
+test_expired_subscription_preserves_history_and_blocks_new_operations (test_iter1.Iter1Integration.test_expired_subscription_preserves_history_and_blocks_new_operations) ... ok
+test_fresh_context_ignores_forged_or_stale_claims (test_iter1.Iter1Integration.test_fresh_context_ignores_forged_or_stale_claims) ... ok
+test_future_basic_plan_also_limits_new_activations (test_iter1.Iter1Integration.test_future_basic_plan_also_limits_new_activations) ... ok
+test_migration_cli_is_explicit_idempotent_and_checks_checksum (test_iter1.Iter1Integration.test_migration_cli_is_explicit_idempotent_and_checks_checksum) ... ok
+test_migration_reverses_without_data_loss_and_blocks_if_history_exists (test_iter1.Iter1Integration.test_migration_reverses_without_data_loss_and_blocks_if_history_exists) ... ok
+test_new_checkout_requires_vigency_and_keeps_p1_success_shape (test_iter1.Iter1Integration.test_new_checkout_requires_vigency_and_keeps_p1_success_shape) ... ok
+test_no_automatic_subscription_or_branch_removal (test_iter1.Iter1Integration.test_no_automatic_subscription_or_branch_removal) ... ok
+test_omitting_assignment_list_does_not_revoke_roles (test_iter1.Iter1Integration.test_omitting_assignment_list_does_not_revoke_roles) ... ok
+test_overlap_rejected_contiguous_renewal_allowed (test_iter1.Iter1Integration.test_overlap_rejected_contiguous_renewal_allowed) ... ok
+test_permission_revocation_is_effective_with_existing_jwt (test_iter1.Iter1Integration.test_permission_revocation_is_effective_with_existing_jwt) ... ok
+test_platform_api_subscription_confirmation_and_history (test_iter1.Iter1Integration.test_platform_api_subscription_confirmation_and_history) ... ok
+test_professional_limit (test_iter1.Iter1Integration.test_professional_limit) ... ok
+test_tenant_admin_cannot_mutate_shared_role_definitions (test_iter1.Iter1Integration.test_tenant_admin_cannot_mutate_shared_role_definitions) ... ok
+test_user_create_rolls_back_invalid_assignment_and_uses_password_hash (test_iter1.Iter1Integration.test_user_create_rolls_back_invalid_assignment_and_uses_password_hash) ... ok
+
+----------------------------------------------------------------------
+Ran 29 tests in 17.820s
+
+OK

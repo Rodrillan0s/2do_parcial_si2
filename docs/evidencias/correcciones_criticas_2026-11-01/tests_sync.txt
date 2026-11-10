@@ -1,0 +1,53 @@
+C:\Users\eddym\AppData\Roaming\Python\Python314\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+test_01_missing_table_or_column_fails_closed (test_sync_transactional.TransactionalSyncSuite.test_01_missing_table_or_column_fails_closed) ... ok
+test_02_concurrent_same_key_http (test_sync_transactional.TransactionalSyncSuite.test_02_concurrent_same_key_http) ... ok
+test_03_concurrent_different_keys_cannot_oversell (test_sync_transactional.TransactionalSyncSuite.test_03_concurrent_different_keys_cannot_oversell) ... ok
+test_04_failure_after_payment_rolls_back_all_business_effects (test_sync_transactional.TransactionalSyncSuite.test_04_failure_after_payment_rolls_back_all_business_effects) ... ok
+test_05_receipt_write_failure_rolls_back_sale_and_reservation (test_sync_transactional.TransactionalSyncSuite.test_05_receipt_write_failure_rolls_back_sale_and_reservation) ... ok
+test_06_killed_process_before_commit_can_retry_once (test_sync_transactional.TransactionalSyncSuite.test_06_killed_process_before_commit_can_retry_once) ... ok
+test_07_lost_http_response_replays_after_process_restart (test_sync_transactional.TransactionalSyncSuite.test_07_lost_http_response_replays_after_process_restart) ... ok
+test_08_same_key_concurrent_processes (test_sync_transactional.TransactionalSyncSuite.test_08_same_key_concurrent_processes) ... ok
+test_09_key_reuse_and_legacy_receipt_require_review (test_sync_transactional.TransactionalSyncSuite.test_09_key_reuse_and_legacy_receipt_require_review) ... ok
+test_10_replay_still_checks_tenant_and_branch_authority (test_sync_transactional.TransactionalSyncSuite.test_10_replay_still_checks_tenant_and_branch_authority) ... ok
+test_11_duplicate_variants_are_rejected_without_side_effects (test_sync_transactional.TransactionalSyncSuite.test_11_duplicate_variants_are_rejected_without_side_effects) ... ok
+test_11_unknown_operations_before_cutover_are_preserved_for_review (test_sync_transactional.TransactionalSyncSuite.test_11_unknown_operations_before_cutover_are_preserved_for_review) ... ok
+test_12_cart_update_missing_item_keeps_original_operation_identity (test_sync_transactional.TransactionalSyncSuite.test_12_cart_update_missing_item_keeps_original_operation_identity) ... ok
+test_12_migration_004_reversal_preserves_receipts (test_sync_transactional.TransactionalSyncSuite.test_12_migration_004_reversal_preserves_receipts) ... ok
+test_12_migration_cli_004_checksums_and_idempotency (test_sync_transactional.TransactionalSyncSuite.test_12_migration_cli_004_checksums_and_idempotency) ... ok
+test_13_postgres_crash_restart_retains_committed_receipts (test_sync_transactional.TransactionalSyncSuite.test_13_postgres_crash_restart_retains_committed_receipts) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 51.060s
+
+OK
+ERROR: relation "pwa_e17f75519c1e49f3aec10e18fe8ad49a.t_sync_operacion" does not exist
+LINE 1: ...CT kind, status, request_hash, response_json FROM pwa_e17f75...
+                                                             ^
+, EJECUTANDO ROLLBACK
+ERROR: relation "pwa_e17f75519c1e49f3aec10e18fe8ad49a.t_sync_operacion" does not exist
+LINE 1: ...CT kind, status, request_hash, response_json FROM pwa_e17f75...
+                                                             ^
+, EJECUTANDO ROLLBACK
+ERROR: relation "pwa_e17f75519c1e49f3aec10e18fe8ad49a.t_sync_operacion" does not exist
+LINE 1: ...CT kind, status, request_hash, response_json FROM pwa_e17f75...
+                                                             ^
+, EJECUTANDO ROLLBACK
+ERROR: column "request_hash" does not exist
+LINE 1: SELECT kind, status, request_hash, response_json FROM pwa_e1...
+                             ^
+, EJECUTANDO ROLLBACK
+ERROR: column "request_hash" does not exist
+LINE 1: SELECT kind, status, request_hash, response_json FROM pwa_e1...
+                             ^
+, EJECUTANDO ROLLBACK
+ERROR: column "request_hash" does not exist
+LINE 1: SELECT kind, status, request_hash, response_json FROM pwa_e1...
+                             ^
+, EJECUTANDO ROLLBACK
+ERROR: Injected receipt write failure
+CONTEXT:  PL/pgSQL function reject_receipt() line 2 at RAISE
+, EJECUTANDO ROLLBACK
+ERROR: Injected receipt write failure
+CONTEXT:  PL/pgSQL function reject_receipt() line 2 at RAISE
+, EJECUTANDO ROLLBACK
